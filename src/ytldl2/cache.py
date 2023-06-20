@@ -1,8 +1,5 @@
-import json
-import typing
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Iterator, NewType, Protocol, TypeVarTuple
+from typing import Iterator, NewType, Protocol
 
 VideoId = NewType("VideoId", str)
 

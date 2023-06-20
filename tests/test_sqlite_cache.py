@@ -1,7 +1,6 @@
 import pathlib
 import sqlite3
 from importlib.abc import Traversable
-from shutil import copy
 
 import pytest
 
