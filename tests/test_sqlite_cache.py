@@ -6,7 +6,8 @@ from shutil import copy
 import pytest
 
 from tests import DATA
-from ytldl2.cache import CachedSongInfo, SqliteCache, VideoId
+from ytldl2.cache import CachedSongInfo, VideoId
+from ytldl2.sqlite_cache import SqliteCache
 
 
 def cp(file: Traversable, dir: pathlib.Path) -> pathlib.Path:
