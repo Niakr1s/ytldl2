@@ -4,7 +4,8 @@ from datetime import date, datetime
 from os import PathLike
 from typing import Iterator, Tuple
 
-from ytldl2.cache import Cache, CachedSongInfo, VideoId
+from ytldl2 import VideoId
+from ytldl2.cache import Cache, CachedSongInfo
 
 SqlCommands = list[str]
 

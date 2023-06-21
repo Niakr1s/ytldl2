@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import Iterator, NewType, Protocol
+from typing import Iterator, Protocol
 
-VideoId = NewType("VideoId", str)
+from ytldl2 import VideoId
 
 
 @dataclass
