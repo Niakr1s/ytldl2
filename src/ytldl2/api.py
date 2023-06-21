@@ -1,5 +1,4 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import cast
 
 from ytmusicapi import YTMusic
 
@@ -30,10 +29,7 @@ class YtMusicApi:
         :param each_playlist_limit: How much songs to get from each playlist.
         """
         try:
-            video_ids: list[VideoId] = self._get_video_ids_from_home_items(
-                home_items, each_playlist_limit
-            )
-            return video_ids
+            return self._get_videos(home_items, each_playlist_limit)
         except ExtractError:
             raise
         except Exception as e:
@@ -52,7 +48,7 @@ class YtMusicApi:
         except Exception as e:
             raise YtMusicApiError() from e
 
-    def _get_video_ids_from_home_items(
+    def _get_videos(
         self, home_items: HomeItems, each_playlist_limit: int = 50
     ) -> list[VideoId]:
         """Helper method for get_songs()"""
