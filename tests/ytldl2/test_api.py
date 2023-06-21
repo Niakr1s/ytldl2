@@ -2,6 +2,7 @@ import pytest
 
 from tests.ytldl2 import OAUTH_PATH
 from ytldl2.api import YtMusicApi
+from ytldl2.models import HomeItems
 
 
 class TestYtMusicApi:
@@ -19,10 +20,13 @@ class TestYtMusicApi:
     def yt_music_api(self, oauth) -> YtMusicApi:
         return YtMusicApi(oauth=oauth)
 
-    def test_get_songs(self, yt_music_api: YtMusicApi):
-        extracted = yt_music_api.get_songs(home_limit=2, each_playlist_limit=1)
+    @pytest.fixture()
+    def home_items(self, yt_music_api: YtMusicApi) -> HomeItems:
+        return yt_music_api.get_home_items(home_limit=2)
+
+    def test_get_videos(self, yt_music_api: YtMusicApi, home_items: HomeItems):
+        extracted = yt_music_api.get_videos(home_items, each_playlist_limit=1)
         assert extracted
 
-    def test_get_home_items(self, yt_music_api: YtMusicApi):
-        home_items = yt_music_api.get_home_items(home_limit=2)
+    def test_get_home_items(self, home_items):
         assert not home_items.is_empty()

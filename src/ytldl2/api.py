@@ -19,18 +19,17 @@ class YtMusicApi:
         self._yt = YTMusic(auth=oauth)
         self._extractor = Extractor()
 
-    def get_songs(
+    def get_videos(
         self,
-        home_limit: int = 100,
+        home_items: HomeItems,
         each_playlist_limit: int = 50,
     ) -> list[VideoId]:
         """
         Returns all songs from user's youtube music home page.
-        :param home_limit: Amount of items, requested from home items. Better to leave default.
+        :param home_items: Items, that can be got via method get_home_items().
         :param each_playlist_limit: How much songs to get from each playlist.
         """
         try:
-            home_items = self.get_home_items(home_limit=home_limit)
             video_ids: list[str] = self._get_video_ids_from_home_items(
                 home_items, each_playlist_limit
             )
