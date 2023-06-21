@@ -17,38 +17,47 @@ def oauth() -> str:
     )
 
 
+def test_oauth_works(oauth):
+    assert oauth
+
+
 @pytest.fixture()
-def yt_music_api(oauth, monkeypatch: pytest.MonkeyPatch) -> YtMusicApi:
+def yt_music_api(oauth) -> YtMusicApi:
+    return YtMusicApi(oauth=oauth)
+
+
+@pytest.fixture()
+def yt_music_api__get_home_patched(
+    yt_music_api, monkeypatch: pytest.MonkeyPatch
+) -> YtMusicApi:
     def get_home(*args, **kwargs):
         with (DATA / "home.json").open(encoding="utf-8") as file:
             return json.load(file)
 
     monkeypatch.setattr(YTMusic, "get_home", get_home)
-    return YtMusicApi(oauth=oauth)
+    return yt_music_api
 
 
-def test_oauth_works(oauth):
-    assert oauth
-
-
-def test_get_home_items_monkeypatch_works(yt_music_api: YtMusicApi):
-    items = yt_music_api.get_home_items()
+def test_get_home_items_monkeypatch_works(yt_music_api__get_home_patched: YtMusicApi):
+    items = yt_music_api__get_home_patched.get_home_items()
     assert 3 == len(items)
     assert 1 == len(items["videos"])
     assert 2 == len(items["channels"])
     assert 3 == len(items["playlists"])
 
 
-def test_get_home_items_exlude_titles_works(yt_music_api: YtMusicApi):
-    items = yt_music_api.get_home_items(
+def test_get_home_items_exlude_titles_works(yt_music_api__get_home_patched: YtMusicApi):
+    items = yt_music_api__get_home_patched.get_home_items(
         exclude_titles=["Mixed for you", "Listen again"]
     )
     for item in items.values():
         assert not item
 
 
-def test_get_home_items_exlude_playlists_works(yt_music_api: YtMusicApi):
-    items = yt_music_api.get_home_items(
+def test_get_home_items_exlude_playlists_works(
+    yt_music_api__get_home_patched: YtMusicApi,
+):
+    items = yt_music_api__get_home_patched.get_home_items(
         exclude_playlists=[
             "My Supermix",
             "Your Likes",
