@@ -26,18 +26,12 @@ class Extractor:
     """
 
     def parse_home(
-        self,
-        home: list[dict[Any, Any]],
-        exclude_titles: list[str] | None = None,
-        exclude_playlists: list[str] | None = None,
+        self, home: list[dict[Any, Any]], exclude_titles: list[str] | None = None
     ) -> HomeItems:
         """
         Parses home data, got by YtMusic.get_home() call.
         :param home: Home raw data, got by YtMusic.get_home().
-        :param exclude_titles: Titles of playlists, that will be excluded.
-            Example: exclude_titles=["Mixed for you", "Listen again"]
-        :param exclude_playlists: Titles of playlists, that will be excluded.
-            Example: exclude_titles=["Mixed for you", "Listen again"]
+        :param exclude_titles: See YtMusicApi.get_home_items() doc.
         """
         if exclude_titles:
             home = [item for item in home if item["title"] not in exclude_titles]
@@ -64,7 +58,7 @@ class Extractor:
 
             # playlists
             elif playlist_id := home_item.get(_PLAYLIST_ID, None):
-                if exclude_playlists and title in exclude_playlists:
+                if exclude_titles and title in exclude_titles:
                     print(
                         f"Skipping playlist {title} with {_PLAYLIST_ID}: {playlist_id}"
                     )
@@ -87,18 +81,15 @@ class YtMusicApi:
     def get_home_items(
         self,
         exclude_titles: list[str] | None = None,
-        exclude_playlists: list[str] | None = None,
     ) -> HomeItems:
         """
         Returns home items in format of { videos, playlists, channels },
         that can be put into download function.
-        :param filter_titles: Optional. Here you can exclude some items from parsing.
-            Example: filter_titles = ['Mixed for you', 'Forgotten favorites']
+        :param exclude_titles: Titles of home items and playlists, that will be excluded.
+            Example: exclude_titles=["Mixed for you", "Listen again", "My Supermix", "Your Likes"]
         """
         home = self._yt.get_home(limit=100)
-        return self._extractor.parse_home(
-            home, exclude_titles=exclude_titles, exclude_playlists=exclude_playlists
-        )
+        return self._extractor.parse_home(home, exclude_titles=exclude_titles)
 
     def extract(self, home_items: HomeItems, limit: int = 50) -> list[VideoId]:
         """

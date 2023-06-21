@@ -45,21 +45,25 @@ def test_extractor_parse_home(extractor: Extractor, home):
     assert 3 == len(items["playlists"])
 
 
-def test_extractor_parse_home_exlude_titles_works(extractor: Extractor, home):
+def test_extractor_parse_home__exclude_home_titles(extractor: Extractor, home):
+    """Here we exclude all titles of home."""
     items = extractor.parse_home(home, exclude_titles=["Mixed for you", "Listen again"])
     for item in items.values():
         assert not item
 
 
-def test_extractor_parse_home_exlude_playlists_works(extractor: Extractor, home):
+def test_extractor_parse_home__exclude_playlists(extractor: Extractor, home):
+    """Here we exclude all titles of playlists."""
     items = extractor.parse_home(
         home,
-        exclude_playlists=[
+        exclude_titles=[
             "My Supermix",
             "Your Likes",
             "Suzume no Tojimari Car Playlist",
         ],
     )
+    assert items["videos"]
+    assert items["channels"]
     assert not items["playlists"]
 
 
