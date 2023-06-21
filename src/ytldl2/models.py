@@ -1,22 +1,24 @@
 from dataclasses import dataclass
-from typing import Literal, NewType
+from typing import NewType
 
-HomeItemsKey = Literal["videos", "channels", "playlists"]
+VideoId = NewType("VideoId", str)
+PlaylistId = NewType("PlaylistId", str)
+BrowseId = NewType("BrowseId", str)
 
 
 @dataclass
 class Video:
-    videoId: str
+    videoId: VideoId
 
 
 @dataclass
 class Playlist:
-    playlistId: str
+    playlistId: PlaylistId
 
 
 @dataclass
 class Channel:
-    browseId: str
+    browseId: BrowseId
 
 
 @dataclass
@@ -28,6 +30,3 @@ class HomeItems:
     def is_empty(self) -> bool:
         has_any = self.videos or self.playlists or self.channels
         return not has_any
-
-
-VideoId = NewType("VideoId", str)
