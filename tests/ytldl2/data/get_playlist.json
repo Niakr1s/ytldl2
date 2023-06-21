@@ -1,0 +1,102 @@
+{
+    "id": "RDTMAK5uy_kset8DisdE7LSD4TNjEVvrKRTmG7a56sY",
+    "privacy": "PUBLIC",
+    "title": "My Supermix",
+    "thumbnails": [
+        {
+            "url": "https://music.youtube.com/image/mixart?r=EMgBGMgBMkIIARoNL2cvMTFid2Y3MHlwZBoNL2cvMTFkeW12YjI5aBoNL2cvMTFmNzMwXzFfNBoNL2cvMTFjbHZiNV9ycyICZW4",
+            "width": 200,
+            "height": 200
+        },
+        {
+            "url": "https://music.youtube.com/image/mixart?r=ENgEGNgEMkIIARoNL2cvMTFid2Y3MHlwZBoNL2cvMTFkeW12YjI5aBoNL2cvMTFmNzMwXzFfNBoNL2cvMTFjbHZiNV9ycyICZW4",
+            "width": 600,
+            "height": 600
+        }
+    ],
+    "description": "A mix of songs that span all your tastes. Always updating.",
+    "author": {
+        "name": "YouTube Music",
+        "id": null
+    },
+    "year": "2023",
+    "views": null,
+    "duration": "7 hours, 21 minutes",
+    "trackCount": 100,
+    "related": [],
+    "tracks": [
+        {
+            "videoId": "9amPGYrVxFA",
+            "title": "Paradisus-Paradoxum",
+            "artists": [
+                {
+                    "name": "MYTH & ROID",
+                    "id": "UCy-KRbBQm9bV0Kl0mSyVhAw"
+                }
+            ],
+            "album": {
+                "name": "MYTH & ROID\u30a2\u30eb\u30d0\u30e0\u300ceYe's\u300d",
+                "id": "MPREb_SWPWj6cqWXJ"
+            },
+            "likeStatus": "INDIFFERENT",
+            "thumbnails": [
+                {
+                    "url": "https://lh3.googleusercontent.com/VvjQ3omMJ3Z8GEZfd7-Vw8ESgCYDvpfAzYHwDXGIWaY2u17_7Z0VgyUmUXbdwRj0ipA3qIOOWdk2dU52=w60-h60-l90-rj",
+                    "width": 60,
+                    "height": 60
+                },
+                {
+                    "url": "https://lh3.googleusercontent.com/VvjQ3omMJ3Z8GEZfd7-Vw8ESgCYDvpfAzYHwDXGIWaY2u17_7Z0VgyUmUXbdwRj0ipA3qIOOWdk2dU52=w120-h120-l90-rj",
+                    "width": 120,
+                    "height": 120
+                }
+            ],
+            "isAvailable": true,
+            "isExplicit": false,
+            "videoType": "MUSIC_VIDEO_TYPE_ATV",
+            "duration": "3:52",
+            "duration_seconds": 232,
+            "feedbackTokens": {
+                "add": "AB9zfpID60C0g4RXtrRzmDErbgt1kmeeVi4KyOD7vBzs2he-qGafRMEedAQoZIpai_I8eCxmvyS-OClx3Vfg9bBVbe06TRWmRg",
+                "remove": "AB9zfpIGzYIj61sNfV95rMQ6G0D_czMvesyYBYqfVEXwO0yuRh5tpsDj4MemLWAhm8wJUVcDHuybXvigiPvmux6jNyAk3Ojy-Q"
+            }
+        },
+        {
+            "videoId": "OHcFfF3w0Ok",
+            "title": "Suna No Oshiro",
+            "artists": [
+                {
+                    "name": "Kanon Wakeshima",
+                    "id": "UCGFiOUkwPl1aKO8GNjW0Y8Q"
+                }
+            ],
+            "album": {
+                "name": "Suna No Oshiro",
+                "id": "MPREb_tLAcRtbcQJy"
+            },
+            "likeStatus": "INDIFFERENT",
+            "thumbnails": [
+                {
+                    "url": "https://lh3.googleusercontent.com/yWCX7y3SGjUTx9WquIoZxGWVj40yHwZP9cviFIjvvSTxIN_-bv62CoyMi1_Ydc10Gz9SHABmsM9M3zsc=w60-h60-l90-rj",
+                    "width": 60,
+                    "height": 60
+                },
+                {
+                    "url": "https://lh3.googleusercontent.com/yWCX7y3SGjUTx9WquIoZxGWVj40yHwZP9cviFIjvvSTxIN_-bv62CoyMi1_Ydc10Gz9SHABmsM9M3zsc=w120-h120-l90-rj",
+                    "width": 120,
+                    "height": 120
+                }
+            ],
+            "isAvailable": true,
+            "isExplicit": false,
+            "videoType": "MUSIC_VIDEO_TYPE_ATV",
+            "duration": "3:11",
+            "duration_seconds": 191,
+            "feedbackTokens": {
+                "add": "AB9zfpI4RgxUknI03mUP3Gd6wvoiLbLpwuitF0t8RPgJNgBUztcJVowr0MPXyugS5uu6vCxZCydkyOLDqKFNA_wkXRZuuhkCxg",
+                "remove": "AB9zfpJeeHToTkJBGLtl3XE5RLt9EAqydgLMJ4KYnbH7gDz0wbCR5AdnbQQyjEg9iHIkF8KGVXcd4BahxGMHAzB-goBwgudqxw"
+            }
+        }
+    ],
+    "duration_seconds": 26484
+}
