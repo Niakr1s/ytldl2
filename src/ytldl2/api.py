@@ -55,24 +55,24 @@ class YtMusicApi:
         self, home_items: HomeItems, each_playlist_limit: int = 50
     ) -> list[str]:
         """Helper method for get_songs()"""
-        video_ids: list[str] = home_items["videos"]
+        video_ids: list[str] = [video.videoId for video in home_items.videos]
         with ThreadPoolExecutor(max_workers=10) as executor:
             futures = []
-            if playlists := home_items["playlists"]:
+            if playlists := home_items.playlists:
                 for playlist in playlists:
                     futures.append(
                         executor.submit(
                             self._get_video_ids_from_playlist,
-                            playlist,
+                            playlist.playlistId,
                             limit=each_playlist_limit,
                         )
                     )
-            if channels := home_items["channels"]:
+            if channels := home_items.channels:
                 for channel in channels:
                     futures.append(
                         executor.submit(
                             self._get_video_ids_from_channel,
-                            channel,
+                            channel.browseId,
                             limit=each_playlist_limit,
                         )
                     )

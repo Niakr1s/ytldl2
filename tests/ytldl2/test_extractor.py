@@ -39,18 +39,16 @@ class TestExtractor:
 
     def test_parse_home(self, extractor: Extractor, home):
         items = extractor.parse_home(home)
-        assert 3 == len(items)
-        assert 1 == len(items["videos"])
-        assert 2 == len(items["channels"])
-        assert 3 == len(items["playlists"])
+        assert 1 == len(items.videos)
+        assert 2 == len(items.channels)
+        assert 3 == len(items.playlists)
 
     def test_parse_home__exclude_home_titles(self, extractor: Extractor, home):
         """Here we exclude all titles of home."""
         items = extractor.parse_home(
             home, exclude_titles=["Mixed for you", "Listen again"]
         )
-        for item in items.values():
-            assert not item
+        assert items.is_empty()
 
     def test_parse_home__exclude_playlists(self, extractor: Extractor, home):
         """Here we exclude all titles of playlists."""
@@ -62,9 +60,9 @@ class TestExtractor:
                 "Suzume no Tojimari Car Playlist",
             ],
         )
-        assert items["videos"]
-        assert items["channels"]
-        assert not items["playlists"]
+        assert items.videos
+        assert items.channels
+        assert not items.playlists
 
     # extract_video_ids_from_playlist
 

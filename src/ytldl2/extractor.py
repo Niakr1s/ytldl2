@@ -41,7 +41,7 @@ class Extractor:
             contents for home_item in home for contents in home_item["contents"]
         )
 
-        res: HomeItems = dict(videos=[], playlists=[], channels=[])
+        res = HomeItems(videos=[], playlists=[], channels=[])
 
         for home_item in home_items_contents:
             title = home_item["title"]
@@ -50,12 +50,12 @@ class Extractor:
             if "subscribers" in home_item and _BROWSE_ID in home_item:
                 browse_id = home_item[_BROWSE_ID]
                 print(f"Appending channel {title} with {_BROWSE_ID}: {browse_id}")
-                res["channels"].append(browse_id)
+                res.channels.append(browse_id)
 
             # videos
             elif video_id := home_item.get(_VIDEO_ID, None):
                 print(f"Appending video {title} with {_VIDEO_ID}: {video_id}")
-                res["videos"].append(video_id)
+                res.videos.append(video_id)
 
             # playlists
             elif playlist_id := home_item.get(_PLAYLIST_ID, None):
@@ -67,7 +67,7 @@ class Extractor:
                     print(
                         f"Appending playlist {title} with {_PLAYLIST_ID}: {playlist_id}"
                     )
-                    res["playlists"].append(playlist_id)
+                    res.playlists.append(playlist_id)
         return res
 
     def extract_video_ids_from_playlist(self, playlist: dict) -> list[VideoId]:
