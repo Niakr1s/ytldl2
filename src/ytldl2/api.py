@@ -21,19 +21,16 @@ class YtMusicApi:
 
     def get_songs(
         self,
-        exclude_titles: list[str] | None = None,
         home_limit: int = 100,
         each_playlist_limit: int = 50,
     ) -> list[VideoId]:
         """
         Returns all songs from user's youtube music home page.
-        :param exclude_titles: Titles of home items and playlists, that will be excluded.
-            Example: exclude_titles=["Mixed for you", "Listen again", "My Supermix", "Your Likes"]
         :param home_limit: Amount of items, requested from home items. Better to leave default.
         :param each_playlist_limit: How much songs to get from each playlist.
         """
         try:
-            home_items = self._get_home_items(exclude_titles, home_limit)
+            home_items = self._get_home_items(limit=home_limit)
             video_ids: list[str] = self._get_video_ids_from_home_items(
                 home_items, each_playlist_limit
             )
@@ -43,12 +40,10 @@ class YtMusicApi:
         except Exception as e:
             raise YtMusicApiError() from e
 
-    def _get_home_items(
-        self, exclude_titles: list[str] | None = None, limit: int = 100
-    ) -> HomeItems:
+    def _get_home_items(self, limit: int = 100) -> HomeItems:
         """Helper method for get_songs()"""
         home = self._yt.get_home(limit=limit)
-        return self._extractor.parse_home(home, exclude_titles=exclude_titles)
+        return self._extractor.parse_home(home)
 
     def _get_video_ids_from_home_items(
         self, home_items: HomeItems, each_playlist_limit: int = 50

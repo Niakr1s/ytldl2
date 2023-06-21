@@ -47,27 +47,6 @@ class TestExtractor:
         assert all((isinstance(channel, Channel) for channel in items.channels))
         assert all((isinstance(playlist, Playlist) for playlist in items.playlists))
 
-    def test_parse_home__exclude_home_titles(self, extractor: Extractor, home):
-        """Here we exclude all titles of home."""
-        items = extractor.parse_home(
-            home, exclude_titles=["Mixed for you", "Listen again"]
-        )
-        assert items.is_empty()
-
-    def test_parse_home__exclude_playlists(self, extractor: Extractor, home):
-        """Here we exclude all titles of playlists."""
-        items = extractor.parse_home(
-            home,
-            exclude_titles=[
-                "My Supermix",
-                "Your Likes",
-                "Suzume no Tojimari Car Playlist",
-            ],
-        )
-        assert items.videos
-        assert items.channels
-        assert not items.playlists
-
     # extract_video_ids_from_playlist
 
     def test_extract_video_ids_from_playlist_throws(self, extractor: Extractor):

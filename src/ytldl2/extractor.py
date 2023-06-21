@@ -25,25 +25,17 @@ class Extractor:
     It's a helper class, that helps extract data from raw data, got by YtMusicApi.
     """
 
-    def parse_home(
-        self, home: list[dict[Any, Any]], exclude_titles: list[str] | None = None
-    ) -> HomeItems:
+    def parse_home(self, home: list[dict[Any, Any]]) -> HomeItems:
         """
         Parses home data, got by YtMusic.get_home() call.
         :param home: Home raw data, got by YtMusic.get_home().
-        :param exclude_titles: See YtMusicApi.get_home_items() doc.
         """
         try:
-            return self._parse_home(home, exclude_titles)
+            return self._parse_home(home)
         except Exception as e:
             raise ExtractError(f"error occured in {self.parse_home.__name__}") from e
 
-    def _parse_home(
-        self, home: list[dict[Any, Any]], exclude_titles: list[str] | None = None
-    ) -> HomeItems:
-        if exclude_titles:
-            home = [item for item in home if item["title"] not in exclude_titles]
-
+    def _parse_home(self, home: list[dict[Any, Any]]) -> HomeItems:
         home_items_contents = (
             contents for home_item in home for contents in home_item["contents"]
         )
@@ -66,15 +58,8 @@ class Extractor:
 
             # playlists
             elif playlist_id := cast(str, home_item.get(_PLAYLIST_ID, None)):
-                if exclude_titles and title in exclude_titles:
-                    print(
-                        f"Skipping playlist {title} with {_PLAYLIST_ID}: {playlist_id}"
-                    )
-                else:
-                    print(
-                        f"Appending playlist {title} with {_PLAYLIST_ID}: {playlist_id}"
-                    )
-                    res.playlists.append(Playlist(playlistId=PlaylistId(playlist_id)))
+                print(f"Appending playlist {title} with {_PLAYLIST_ID}: {playlist_id}")
+                res.playlists.append(Playlist(playlistId=PlaylistId(playlist_id)))
         return res
 
     def extract_video_ids_from_playlist(self, playlist: dict) -> list[VideoId]:
