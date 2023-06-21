@@ -33,6 +33,14 @@ class Extractor:
         :param home: Home raw data, got by YtMusic.get_home().
         :param exclude_titles: See YtMusicApi.get_home_items() doc.
         """
+        try:
+            return self._parse_home(home, exclude_titles)
+        except Exception as e:
+            raise ExtractError(f"error occured in {self.parse_home.__name__}") from e
+
+    def _parse_home(
+        self, home: list[dict[Any, Any]], exclude_titles: list[str] | None = None
+    ) -> HomeItems:
         if exclude_titles:
             home = [item for item in home if item["title"] not in exclude_titles]
 
@@ -74,15 +82,25 @@ class Extractor:
         Extracts videoIds from playlist.
         :param playlist: Raw playlist dict, got from YtMusic.get_watch_playlist() or YtMusic.get_playlist() call.
         """
-        tracks: list = playlist["tracks"]
-        return [track[_VIDEO_ID] for track in tracks]
+        try:
+            tracks: list = playlist["tracks"]
+            return [track[_VIDEO_ID] for track in tracks]
+        except Exception as e:
+            raise ExtractError(
+                f"error occured in {self.extract_video_ids_from_playlist.__name__}"
+            ) from e
 
     def extract_songs_browse_id_from_artist(self, artist: dict) -> str:
         """
         Extracts browseId from artist.
         :param artist: Raw artist dict, got from YtMusic.get_artist() call.
         """
-        return artist["songs"][_BROWSE_ID]
+        try:
+            return artist["songs"][_BROWSE_ID]
+        except Exception as e:
+            raise ExtractError(
+                f"error occured in {self.extract_songs_browse_id_from_artist.__name__}"
+            ) from e
 
 
 class YtMusicApiError(Exception):
