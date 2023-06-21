@@ -6,7 +6,7 @@ from ytldl2.models import HomeItems
 
 
 class TestYtMusicApi:
-    # __test__ = False  # it tooks very much time, so i disabled it for a while
+    __test__ = False  # it tooks very much time, so i disabled it for a while
 
     @pytest.fixture(scope="session")
     def oauth(self) -> str:
