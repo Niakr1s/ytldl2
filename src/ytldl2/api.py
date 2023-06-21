@@ -30,7 +30,7 @@ class YtMusicApi:
         :param each_playlist_limit: How much songs to get from each playlist.
         """
         try:
-            home_items = self._get_home_items(limit=home_limit)
+            home_items = self.get_home_items(home_limit=home_limit)
             video_ids: list[str] = self._get_video_ids_from_home_items(
                 home_items, each_playlist_limit
             )
@@ -40,10 +40,18 @@ class YtMusicApi:
         except Exception as e:
             raise YtMusicApiError() from e
 
-    def _get_home_items(self, limit: int = 100) -> HomeItems:
-        """Helper method for get_songs()"""
-        home = self._yt.get_home(limit=limit)
-        return self._extractor.parse_home(home)
+    def get_home_items(self, home_limit: int = 100) -> HomeItems:
+        """
+        Gets home items from user's youtube music home page.
+        :param home_limit: Amount of items, requested from home items. Better to leave default.
+        """
+        try:
+            home = self._yt.get_home(limit=home_limit)
+            return self._extractor.parse_home(home)
+        except ExtractError:
+            raise
+        except Exception as e:
+            raise YtMusicApiError() from e
 
     def _get_video_ids_from_home_items(
         self, home_items: HomeItems, each_playlist_limit: int = 50

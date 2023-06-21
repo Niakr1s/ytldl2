@@ -5,7 +5,7 @@ from ytldl2.api import YtMusicApi
 
 
 class TestYtMusicApi:
-    __test__ = False  # it tooks very much time, so i disabled it for a while
+    # __test__ = False  # it tooks very much time, so i disabled it for a while
 
     @pytest.fixture(scope="session")
     def oauth(self) -> str:
@@ -22,3 +22,7 @@ class TestYtMusicApi:
     def test_get_songs(self, yt_music_api: YtMusicApi):
         extracted = yt_music_api.get_songs(home_limit=2, each_playlist_limit=1)
         assert extracted
+
+    def test_get_home_items(self, yt_music_api: YtMusicApi):
+        home_items = yt_music_api.get_home_items(home_limit=2)
+        assert not home_items.is_empty()
