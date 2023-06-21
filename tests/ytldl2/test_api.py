@@ -49,6 +49,12 @@ def get_watch_playlist():
         return json.load(file)
 
 
+@pytest.fixture(scope="session")
+def artist():
+    with (DATA / "artist.json").open(encoding="utf-8") as file:
+        return json.load(file)
+
+
 def test_extractor_parse_home(extractor: Extractor, home):
     items = extractor.parse_home(home)
     assert 3 == len(items)
@@ -91,6 +97,11 @@ def test_extractor__extract_video_ids_from_playlist__get_watch_playlist(
 ):
     res = extractor.extract_video_ids_from_playlist(get_watch_playlist)
     assert ["6xZWW8ZQvVs", "mrGYm1djl3A", "T_iLqam_f4E"] == res
+
+
+def test_extractor__extract_songs_browse_id_from_artist(extractor: Extractor, artist):
+    res = extractor.extract_songs_browse_id_from_artist(artist)
+    assert "VLOLAK5uy_k3MhpJYfxJH099ZbTqgGF9fpPCE_QXSVQ" == res
 
 
 def test_extract(yt_music_api: YtMusicApi, monkeypatch: pytest.MonkeyPatch):

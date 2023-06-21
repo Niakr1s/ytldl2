@@ -77,6 +77,13 @@ class Extractor:
         tracks: list = playlist["tracks"]
         return [track[_VIDEO_ID] for track in tracks]
 
+    def extract_songs_browse_id_from_artist(self, artist: dict) -> str:
+        """
+        Extracts browseId from artist.
+        :param artist: Raw artist dict, got from YtMusic.get_artist() call.
+        """
+        return artist["songs"][_BROWSE_ID]
+
 
 class YtMusicApi:
     def __init__(self, oauth: str) -> None:
@@ -160,5 +167,5 @@ class YtMusicApi:
             raise ExtractError(f"couldn't get channel's {channel_id} artist") from e
 
         return self.extract_video_ids_from_playlist(
-            artist["songs"][_BROWSE_ID], limit=limit
+            self._extractor.extract_songs_browse_id_from_artist(artist), limit=limit
         )
