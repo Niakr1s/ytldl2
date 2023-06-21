@@ -4,7 +4,7 @@ from typing import NewType
 Title = NewType("Title", str)
 VideoId = NewType("VideoId", str)
 PlaylistId = NewType("PlaylistId", str)
-BrowseId = NewType("BrowseId", str)
+ChannelId = NewType("ChannelId", str)
 
 
 @dataclass
@@ -28,10 +28,10 @@ class Playlist:
 @dataclass
 class Channel:
     title: Title
-    browseId: BrowseId
+    channelId: ChannelId
 
     def is_valid(self) -> bool:
-        return bool(self.title) and bool(self.browseId)
+        return bool(self.title) and bool(self.channelId)
 
 
 @dataclass
