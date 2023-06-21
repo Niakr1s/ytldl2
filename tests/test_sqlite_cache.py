@@ -1,6 +1,8 @@
 import pathlib
 import sqlite3
+from datetime import timedelta
 from importlib.abc import Traversable
+from time import sleep
 
 import pytest
 
@@ -132,3 +134,15 @@ def test_iter(cache: SqliteCache):
     assert len(video_ids) == 2
     assert STORED_SONG.video_id in video_ids
     assert song_to_set.video_id in video_ids
+
+
+def test_last_modified(cache: SqliteCache):
+    cache.set(STORED_SONG)
+    last_modified_old = cache.last_modified(STORED_SONG.video_id)
+    assert last_modified_old
+
+    SLEEP_SECS = 0.1
+    sleep(SLEEP_SECS)
+    cache.set(STORED_SONG)
+    diff = cache.last_modified(STORED_SONG.video_id) - last_modified_old
+    assert diff.total_seconds() >= SLEEP_SECS

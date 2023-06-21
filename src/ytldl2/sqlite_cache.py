@@ -1,6 +1,6 @@
 import pathlib
 import sqlite3
-from datetime import datetime
+from datetime import date, datetime
 from os import PathLike
 from typing import Iterator, Tuple
 
@@ -100,6 +100,16 @@ SELECT video_id,
         fetched = self.conn.cursor().execute(sql).fetchall()
         video_ids = [item[0] for item in fetched]
         return video_ids.__iter__()
+
+    def last_modified(self, video_id: VideoId) -> datetime:
+        fetched = (
+            self.conn.cursor()
+            .execute("SELECT last_modified FROM songs WHERE video_id = ?;", (video_id,))
+            .fetchone()
+        )
+        if not fetched:
+            raise LookupError()
+        return datetime.fromisoformat(fetched[0])
 
     def _apply_migrations_if_needed(self):
         if (db_version := self.db_version) < 0:
