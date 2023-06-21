@@ -28,5 +28,8 @@ class HomeItems:
     channels: list[Channel]
 
     def is_empty(self) -> bool:
-        has_any = self.videos or self.playlists or self.channels
-        return not has_any
+        return (
+            len(self.videos) == 0
+            and len(self.playlists) == 0
+            and len(self.channels) == 0
+        )
