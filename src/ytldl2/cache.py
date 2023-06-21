@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Iterator, Protocol
 
-from ytldl2 import VideoId
+from ytldl2.models import VideoId
 
 
 @dataclass

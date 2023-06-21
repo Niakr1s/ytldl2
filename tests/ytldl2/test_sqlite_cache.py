@@ -6,8 +6,8 @@ from time import sleep
 import pytest
 
 from tests.ytldl2 import DATA
-from ytldl2 import VideoId
 from ytldl2.cache import CachedSongInfo
+from ytldl2.models import VideoId
 from ytldl2.sqlite_cache import SqliteCache
 
 MOCK_SONG = CachedSongInfo(

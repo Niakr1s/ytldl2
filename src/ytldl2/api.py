@@ -3,9 +3,8 @@ from typing import cast
 
 from ytmusicapi import YTMusic
 
-from ytldl2 import VideoId
 from ytldl2.extractor import ExtractError, Extractor
-from ytldl2.models import HomeItems
+from ytldl2.models import HomeItems, VideoId
 
 
 class YtMusicApiError(Exception):

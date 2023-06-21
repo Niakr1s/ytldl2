@@ -1,7 +1,6 @@
 from typing import Any
 
-from ytldl2 import VideoId
-from ytldl2.models import HomeItems
+from ytldl2.models import HomeItems, VideoId
 
 
 class ExtractError(Exception):

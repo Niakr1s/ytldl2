@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, NewType
 
 HomeItemsKey = Literal["videos", "channels", "playlists"]
 
@@ -28,3 +28,6 @@ class HomeItems:
     def is_empty(self) -> bool:
         has_any = self.videos or self.playlists or self.channels
         return not has_any
+
+
+VideoId = NewType("VideoId", str)
