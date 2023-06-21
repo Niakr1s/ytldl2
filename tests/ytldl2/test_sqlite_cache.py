@@ -1,6 +1,5 @@
 import pathlib
 import sqlite3
-from datetime import timedelta
 from importlib.abc import Traversable
 from time import sleep
 

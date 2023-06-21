@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any, Literal, TypeVar, cast
+from typing import Any, Literal, cast
 
 from ytmusicapi import YTMusic
 

@@ -1,8 +1,8 @@
 import pathlib
 import sqlite3
-from datetime import date, datetime
+from datetime import datetime
 from os import PathLike
-from typing import Iterator, Tuple
+from typing import Iterator
 
 from ytldl2 import VideoId
 from ytldl2.cache import Cache, CachedSongInfo

@@ -3,7 +3,7 @@ import json
 import pytest
 from ytmusicapi import YTMusic
 
-from tests.ytldl2 import DATA, OAUTH_PATH, TEST_CONFIG_DIR
+from tests.ytldl2 import DATA, OAUTH_PATH
 from ytldl2 import VideoId
 from ytldl2.api import HomeItems, YtMusicApi
 
@@ -25,11 +25,6 @@ def yt_music_api(oauth, monkeypatch: pytest.MonkeyPatch) -> YtMusicApi:
 
     monkeypatch.setattr(YTMusic, "get_home", get_home)
     return YtMusicApi(oauth=oauth)
-
-
-@pytest.fixture
-def home_items(yt_music_api: YtMusicApi) -> HomeItems:
-    return yt_music_api.get_home_items()
 
 
 def test_oauth_works(oauth):
