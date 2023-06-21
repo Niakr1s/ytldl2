@@ -43,9 +43,14 @@ class TestExtractor:
         assert 1 == len(items.videos)
         assert 2 == len(items.channels)
         assert 3 == len(items.playlists)
+
         assert all((isinstance(video, Video) for video in items.videos))
         assert all((isinstance(channel, Channel) for channel in items.channels))
         assert all((isinstance(playlist, Playlist) for playlist in items.playlists))
+
+        assert all((video.is_valid() for video in items.videos))
+        assert all((channel.is_valid() for channel in items.channels))
+        assert all((playlist.is_valid() for playlist in items.playlists))
 
     # extract_video_ids_from_playlist
 

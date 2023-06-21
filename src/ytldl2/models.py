@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import NewType
 
+Title = NewType("Title", str)
 VideoId = NewType("VideoId", str)
 PlaylistId = NewType("PlaylistId", str)
 BrowseId = NewType("BrowseId", str)
@@ -8,17 +9,29 @@ BrowseId = NewType("BrowseId", str)
 
 @dataclass
 class Video:
+    title: Title
     videoId: VideoId
+
+    def is_valid(self) -> bool:
+        return bool(self.title) and bool(self.videoId)
 
 
 @dataclass
 class Playlist:
+    title: Title
     playlistId: PlaylistId
+
+    def is_valid(self) -> bool:
+        return bool(self.title) and bool(self.playlistId)
 
 
 @dataclass
 class Channel:
+    title: Title
     browseId: BrowseId
+
+    def is_valid(self) -> bool:
+        return bool(self.title) and bool(self.browseId)
 
 
 @dataclass

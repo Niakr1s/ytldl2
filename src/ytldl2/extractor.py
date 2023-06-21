@@ -6,6 +6,7 @@ from ytldl2.models import (
     HomeItems,
     Playlist,
     PlaylistId,
+    Title,
     Video,
     VideoId,
 )
@@ -43,23 +44,25 @@ class Extractor:
         res = HomeItems(videos=[], playlists=[], channels=[])
 
         for home_item in home_items_contents:
-            title = home_item["title"]
+            title = Title(home_item["title"])
 
             # channels
             if "subscribers" in home_item and _BROWSE_ID in home_item:
                 browse_id = cast(str, home_item[_BROWSE_ID])
                 print(f"Appending channel {title} with {_BROWSE_ID}: {browse_id}")
-                res.channels.append(Channel(browseId=BrowseId(browse_id)))
+                res.channels.append(Channel(title=title, browseId=BrowseId(browse_id)))
 
             # videos
             elif video_id := cast(str, home_item.get(_VIDEO_ID, None)):
                 print(f"Appending video {title} with {_VIDEO_ID}: {video_id}")
-                res.videos.append(Video(videoId=VideoId(video_id)))
+                res.videos.append(Video(title=title, videoId=VideoId(video_id)))
 
             # playlists
             elif playlist_id := cast(str, home_item.get(_PLAYLIST_ID, None)):
                 print(f"Appending playlist {title} with {_PLAYLIST_ID}: {playlist_id}")
-                res.playlists.append(Playlist(playlistId=PlaylistId(playlist_id)))
+                res.playlists.append(
+                    Playlist(title=title, playlistId=PlaylistId(playlist_id))
+                )
         return res
 
     def extract_video_ids_from_playlist(self, playlist: dict) -> list[VideoId]:
