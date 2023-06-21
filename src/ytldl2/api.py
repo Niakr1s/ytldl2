@@ -5,6 +5,10 @@ from ytmusicapi import YTMusic
 
 from ytldl2 import VideoId
 
+_BROWSE_ID = "browseId"
+_VIDEO_ID = "videoId"
+_PLAYLIST_ID = "playlistId"
+
 HomeItemsKey = Literal["videos", "channels", "playlists"]
 
 HomeItems = dict[HomeItemsKey, list[str]]
@@ -17,10 +21,6 @@ class ExtractError(Exception):
 
 
 class YtMusicApi:
-    _BROWSE_ID = "browseId"
-    _VIDEO_ID = "videoId"
-    _PLAYLIST_ID = "playlistId"
-
     def __init__(self, oauth: str) -> None:
         """
         :param oauth: oauth file,
@@ -91,7 +91,7 @@ class YtMusicApi:
                     f"couldn't get songs from playlist {playlist_id}"
                 ) from e
         tracks: list = contents["tracks"]
-        return [track[self._VIDEO_ID] for track in tracks]
+        return [track[_VIDEO_ID] for track in tracks]
 
     def extract_video_ids_from_channel(
         self, channel_id: str, /, limit: int = 50
@@ -105,7 +105,7 @@ class YtMusicApi:
             raise ExtractError(f"couldn't get channel's {channel_id} artist") from e
 
         return self.extract_video_ids_from_playlist(
-            artist["songs"][self._BROWSE_ID], limit=limit
+            artist["songs"][_BROWSE_ID], limit=limit
         )
 
     def _parse_home(
@@ -121,25 +121,25 @@ class YtMusicApi:
             title = home_item["title"]
 
             # channels
-            if "subscribers" in home_item and self._BROWSE_ID in home_item:
-                browse_id = home_item[self._BROWSE_ID]
-                print(f"Appending channel {title} with {self._BROWSE_ID}: {browse_id}")
+            if "subscribers" in home_item and _BROWSE_ID in home_item:
+                browse_id = home_item[_BROWSE_ID]
+                print(f"Appending channel {title} with {_BROWSE_ID}: {browse_id}")
                 res["channels"].append(browse_id)
 
             # videos
-            elif video_id := home_item.get(self._VIDEO_ID, None):
-                print(f"Appending video {title} with {self._VIDEO_ID}: {video_id}")
+            elif video_id := home_item.get(_VIDEO_ID, None):
+                print(f"Appending video {title} with {_VIDEO_ID}: {video_id}")
                 res["videos"].append(video_id)
 
             # playlists
-            elif playlist_id := home_item.get(self._PLAYLIST_ID, None):
+            elif playlist_id := home_item.get(_PLAYLIST_ID, None):
                 if exclude_playlists and title in exclude_playlists:
                     print(
-                        f"Skipping playlist {title} with {self._PLAYLIST_ID}: {playlist_id}"
+                        f"Skipping playlist {title} with {_PLAYLIST_ID}: {playlist_id}"
                     )
                 else:
                     print(
-                        f"Appending playlist {title} with {self._PLAYLIST_ID}: {playlist_id}"
+                        f"Appending playlist {title} with {_PLAYLIST_ID}: {playlist_id}"
                     )
                     res["playlists"].append(playlist_id)
         return res
