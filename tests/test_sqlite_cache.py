@@ -91,6 +91,18 @@ def test_valid_cache_has_stored_song(cache: SqliteCache):
     assert STORED_SONG == got
 
 
+def test_set_with_none_attribute(cache: SqliteCache):
+    MOCK_SONG.filtered_reason = None
+    cache.set(MOCK_SONG)
+    assert MOCK_SONG == cache[MOCK_SONG.video_id]
+
+
+def test_set_with_empty_attribute(cache: SqliteCache):
+    MOCK_SONG.filtered_reason = ""
+    cache.set(MOCK_SONG)
+    assert MOCK_SONG == cache[MOCK_SONG.video_id]
+
+
 def test_get_set_len(cache: SqliteCache):
     assert len(cache) == 1
 
