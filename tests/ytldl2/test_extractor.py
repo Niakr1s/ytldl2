@@ -4,6 +4,7 @@ import pytest
 
 from tests.ytldl2 import DATA
 from ytldl2.extractor import ExtractError, Extractor
+from ytldl2.models import Channel, Playlist, Video
 
 
 class TestExtractor:
@@ -42,6 +43,9 @@ class TestExtractor:
         assert 1 == len(items.videos)
         assert 2 == len(items.channels)
         assert 3 == len(items.playlists)
+        assert all((isinstance(video, Video) for video in items.videos))
+        assert all((isinstance(channel, Channel) for channel in items.channels))
+        assert all((isinstance(playlist, Playlist) for playlist in items.playlists))
 
     def test_parse_home__exclude_home_titles(self, extractor: Extractor, home):
         """Here we exclude all titles of home."""
