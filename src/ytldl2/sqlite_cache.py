@@ -25,7 +25,7 @@ CREATE TABLE songs (
 ]
 """
 (Index+1) of each migration corresponds to migration version.
-Warning: DON'T EVER ADD MIGRATIONS, JUST ADD NEW.
+Warning: DON'T EVER REMOVE MIGRATIONS, JUST ADD NEW.
 """
 
 
