@@ -104,30 +104,6 @@ def test_extractor__extract_songs_browse_id_from_artist(extractor: Extractor, ar
     assert "VLOLAK5uy_k3MhpJYfxJH099ZbTqgGF9fpPCE_QXSVQ" == res
 
 
-def test_extract(yt_music_api: YtMusicApi, monkeypatch: pytest.MonkeyPatch):
-    VIDEO_ID = "video_id"
-    PLAYLIST_VIDEO_ID = "playlist_video_id"
-    CHANNEL_VIDEO_ID = "channel_video_id"
-
-    def extract_video_ids_from_playlist(*args, **kwargs) -> list[VideoId]:
-        return [VideoId(PLAYLIST_VIDEO_ID)]
-
-    def extract_video_ids_from_channel(*args, **kwargs) -> list[VideoId]:
-        return [VideoId(CHANNEL_VIDEO_ID)]
-
-    monkeypatch.setattr(
-        YtMusicApi, "extract_video_ids_from_playlist", extract_video_ids_from_playlist
-    )
-    monkeypatch.setattr(
-        YtMusicApi, "extract_video_ids_from_channel", extract_video_ids_from_channel
-    )
-
-    home_items: HomeItems = {
-        "videos": [VIDEO_ID],
-        "channels": ["channel"] * 2,
-        "playlists": ["playlist"] * 3,
-    }
-
-    extracted = yt_music_api.extract(home_items=home_items)
-    assert 6 == len(extracted)
-    assert {VIDEO_ID, PLAYLIST_VIDEO_ID, CHANNEL_VIDEO_ID} == set(extracted)
+def test_yt_music_api__get_songs(yt_music_api: YtMusicApi):
+    extracted = yt_music_api.get_songs(home_limit=2, each_playlist_limit=1)
+    assert extracted
