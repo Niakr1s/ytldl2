@@ -5,7 +5,7 @@ from ytmusicapi import YTMusic
 
 from tests.ytldl2 import DATA, OAUTH_PATH
 from ytldl2 import VideoId
-from ytldl2.api import Extractor, HomeItems, YtMusicApi
+from ytldl2.api import ExtractError, Extractor, HomeItems, YtMusicApi
 
 
 class TestExtractor:
@@ -32,6 +32,12 @@ class TestExtractor:
     def artist(self):
         with (DATA / "artist.json").open(encoding="utf-8") as file:
             return json.load(file)
+
+    # parse_home
+
+    def test_parse_home_throws(self, extractor: Extractor):
+        with pytest.raises(ExtractError):
+            extractor.parse_home([{"contents": "wrong"}])
 
     def test_parse_home(self, extractor: Extractor, home):
         items = extractor.parse_home(home)
@@ -62,6 +68,12 @@ class TestExtractor:
         assert items["channels"]
         assert not items["playlists"]
 
+    # extract_video_ids_from_playlist
+
+    def test_extract_video_ids_from_playlist_throws(self, extractor: Extractor):
+        with pytest.raises(ExtractError):
+            extractor.extract_video_ids_from_playlist({})
+
     def test_extract_video_ids_from_playlist__get_playlist(
         self, extractor: Extractor, get_playlist
     ):
@@ -73,6 +85,12 @@ class TestExtractor:
     ):
         res = extractor.extract_video_ids_from_playlist(get_watch_playlist)
         assert ["6xZWW8ZQvVs", "mrGYm1djl3A", "T_iLqam_f4E"] == res
+
+    # extract_songs_browse_id_from_artist
+
+    def test_extract_songs_browse_id_from_artist_throws(self, extractor: Extractor):
+        with pytest.raises(ExtractError):
+            extractor.extract_songs_browse_id_from_artist({})
 
     def test_extract_songs_browse_id_from_artist(self, extractor: Extractor, artist):
         res = extractor.extract_songs_browse_id_from_artist(artist)
