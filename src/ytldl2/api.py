@@ -1,9 +1,9 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 
 from ytmusicapi import YTMusic
 
 from ytldl2.extractor import ExtractError, Extractor
-from ytldl2.models import HomeItems, VideoId
+from ytldl2.models import HomeItems, Video, VideoId
 
 
 class YtMusicApiError(Exception):
@@ -22,7 +22,7 @@ class YtMusicApi:
         self,
         home_items: HomeItems,
         each_playlist_limit: int = 50,
-    ) -> list[VideoId]:
+    ) -> list[Video]:
         """
         Returns all songs from user's youtube music home page.
         :param home_items: Items, that can be got via method get_home_items().
@@ -50,11 +50,11 @@ class YtMusicApi:
 
     def _get_videos(
         self, home_items: HomeItems, each_playlist_limit: int = 50
-    ) -> list[VideoId]:
+    ) -> list[Video]:
         """Helper method for get_songs()"""
-        video_ids: list[VideoId] = [video.videoId for video in home_items.videos]
+        videos: list[Video] = [video for video in home_items.videos]
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = []
+            futures: list[Future[list[Video]]] = []
             if playlists := home_items.playlists:
                 for playlist in playlists:
                     futures.append(
@@ -75,15 +75,15 @@ class YtMusicApi:
                     )
             for future in as_completed(futures):
                 try:
-                    video_ids += future.result()
+                    videos += future.result()
                 except Exception as e:
                     print(f"skipping playlist, couldn't extract video ids: {e}")
-        print(f"Extracted {len(video_ids)} videos")
-        return video_ids
+        print(f"Extracted {len(videos)} videos")
+        return videos
 
     def _get_video_ids_from_playlist(
         self, playlist_id: str, /, limit: int = 50
-    ) -> list[VideoId]:
+    ) -> list[Video]:
         """
         Extracts videoIds from playlist.
         """
@@ -91,11 +91,11 @@ class YtMusicApi:
             contents = self._yt.get_playlist(playlistId=playlist_id, limit=limit)
         except Exception:
             contents = self._yt.get_watch_playlist(playlistId=playlist_id, limit=limit)
-        return self._extractor.extract_video_ids_from_playlist(contents)
+        return self._extractor.extract_videos_from_playlist(contents)
 
     def _get_video_ids_from_channel(
         self, channel_id: str, /, limit: int = 50
-    ) -> list[VideoId]:
+    ) -> list[Video]:
         """
         Extracts videoIds from channel.
         """

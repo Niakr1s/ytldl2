@@ -54,21 +54,25 @@ class TestExtractor:
 
     # extract_video_ids_from_playlist
 
-    def test_extract_video_ids_from_playlist_throws(self, extractor: Extractor):
+    def test_extract_videos_from_playlist_throws(self, extractor: Extractor):
         with pytest.raises(ExtractError):
-            extractor.extract_video_ids_from_playlist({})
+            extractor.extract_videos_from_playlist({})
 
-    def test_extract_video_ids_from_playlist__get_playlist(
+    def test_extract_videos_from_playlist__get_playlist(
         self, extractor: Extractor, get_playlist
     ):
-        res = extractor.extract_video_ids_from_playlist(get_playlist)
-        assert ["9amPGYrVxFA", "OHcFfF3w0Ok"] == res
+        videos = extractor.extract_videos_from_playlist(get_playlist)
+        assert all([video.is_valid() for video in videos])
+        assert ["9amPGYrVxFA", "OHcFfF3w0Ok"] == [video.videoId for video in videos]
 
-    def test_extract_video_ids_from_playlist__get_watch_playlist(
+    def test_extract_videos_from_playlist__get_watch_playlist(
         self, extractor: Extractor, get_watch_playlist
     ):
-        res = extractor.extract_video_ids_from_playlist(get_watch_playlist)
-        assert ["6xZWW8ZQvVs", "mrGYm1djl3A", "T_iLqam_f4E"] == res
+        videos = extractor.extract_videos_from_playlist(get_watch_playlist)
+        assert all([video.is_valid() for video in videos])
+        assert ["6xZWW8ZQvVs", "mrGYm1djl3A", "T_iLqam_f4E"] == [
+            video.videoId for video in videos
+        ]
 
     # extract_songs_browse_id_from_artist
 

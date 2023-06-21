@@ -65,17 +65,20 @@ class Extractor:
                 )
         return res
 
-    def extract_video_ids_from_playlist(self, playlist: dict) -> list[VideoId]:
+    def extract_videos_from_playlist(self, playlist: dict) -> list[Video]:
         """
         Extracts videoIds from playlist.
         :param playlist: Raw playlist dict, got from YtMusic.get_watch_playlist() or YtMusic.get_playlist() call.
         """
         try:
             tracks: list = playlist["tracks"]
-            return [track[_VIDEO_ID] for track in tracks]
+            return [
+                Video(title=track["title"], videoId=VideoId(track[_VIDEO_ID]))
+                for track in tracks
+            ]
         except Exception as e:
             raise ExtractError(
-                f"error occured in {self.extract_video_ids_from_playlist.__name__}"
+                f"error occured in {self.extract_videos_from_playlist.__name__}"
             ) from e
 
     def extract_songs_browse_id_from_artist(self, artist: dict) -> str:
