@@ -3,7 +3,7 @@ from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from ytmusicapi import YTMusic
 
 from ytldl2.extractor import ExtractError, Extractor
-from ytldl2.models import HomeItems, Video, VideoId
+from ytldl2.models import ChannelId, HomeItems, PlaylistId, Video, VideoId
 
 
 class YtMusicApiError(Exception):
@@ -82,7 +82,7 @@ class YtMusicApi:
         return videos
 
     def _get_video_ids_from_playlist(
-        self, playlist_id: str, /, limit: int = 50
+        self, playlist_id: PlaylistId, /, limit: int = 50
     ) -> list[Video]:
         """
         Extracts videoIds from playlist.
@@ -94,7 +94,7 @@ class YtMusicApi:
         return self._extractor.extract_videos_from_playlist(contents)
 
     def _get_video_ids_from_channel(
-        self, channel_id: str, /, limit: int = 50
+        self, channel_id: ChannelId, /, limit: int = 50
     ) -> list[Video]:
         """
         Extracts videoIds from channel.
