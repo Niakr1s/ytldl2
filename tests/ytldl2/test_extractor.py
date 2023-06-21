@@ -74,12 +74,12 @@ class TestExtractor:
             video.videoId for video in videos
         ]
 
-    # extract_songs_browse_id_from_artist
+    # extract_playlist_id_from_artist
 
-    def test_extract_songs_browse_id_from_artist_throws(self, extractor: Extractor):
+    def test_extract_playlist_id_from_artist_throws(self, extractor: Extractor):
         with pytest.raises(ExtractError):
-            extractor.extract_songs_browse_id_from_artist({})
+            extractor.extract_playlist_id_from_artist({})
 
-    def test_extract_songs_browse_id_from_artist(self, extractor: Extractor, artist):
-        res = extractor.extract_songs_browse_id_from_artist(artist)
+    def test_extract_playlist_id_from_artist(self, extractor: Extractor, artist):
+        res = extractor.extract_playlist_id_from_artist(artist)
         assert "VLOLAK5uy_k3MhpJYfxJH099ZbTqgGF9fpPCE_QXSVQ" == res

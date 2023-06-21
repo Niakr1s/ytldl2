@@ -101,5 +101,5 @@ class YtMusicApi:
         """
         artist = self._yt.get_artist(channelId=channel_id)
         return self._get_video_ids_from_playlist(
-            self._extractor.extract_songs_browse_id_from_artist(artist), limit=limit
+            self._extractor.extract_playlist_id_from_artist(artist), limit=limit
         )

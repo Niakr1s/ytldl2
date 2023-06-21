@@ -81,14 +81,15 @@ class Extractor:
                 f"error occured in {self.extract_videos_from_playlist.__name__}"
             ) from e
 
-    def extract_songs_browse_id_from_artist(self, artist: dict) -> str:
+    def extract_playlist_id_from_artist(self, artist: dict) -> str:
         """
         Extracts browseId from artist.
         :param artist: Raw artist dict, got from YtMusic.get_artist() call.
         """
         try:
+            # it's kinda tricky: songs have "browseId" key, but it actually playlistId key
             return artist["songs"][_BROWSE_ID]
         except Exception as e:
             raise ExtractError(
-                f"error occured in {self.extract_songs_browse_id_from_artist.__name__}"
+                f"error occured in {self.extract_playlist_id_from_artist.__name__}"
             ) from e
