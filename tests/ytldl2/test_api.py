@@ -5,7 +5,7 @@ from ytmusicapi import YTMusic
 
 from tests.ytldl2 import DATA, OAUTH_PATH
 from ytldl2 import VideoId
-from ytldl2.api import HomeItems, YtMusicApi
+from ytldl2.api import Extractor, HomeItems, YtMusicApi
 
 
 @pytest.fixture(scope="session")
@@ -26,43 +26,39 @@ def yt_music_api(oauth) -> YtMusicApi:
     return YtMusicApi(oauth=oauth)
 
 
-@pytest.fixture()
-def yt_music_api__get_home_patched(
-    yt_music_api, monkeypatch: pytest.MonkeyPatch
-) -> YtMusicApi:
-    def get_home(*args, **kwargs):
-        with (DATA / "home.json").open(encoding="utf-8") as file:
-            return json.load(file)
-
-    monkeypatch.setattr(YTMusic, "get_home", get_home)
-    return yt_music_api
+@pytest.fixture
+def extractor() -> Extractor:
+    return Extractor()
 
 
-def test_get_home_items_monkeypatch_works(yt_music_api__get_home_patched: YtMusicApi):
-    items = yt_music_api__get_home_patched.get_home_items()
+@pytest.fixture(scope="session")
+def home():
+    with (DATA / "home.json").open(encoding="utf-8") as file:
+        return json.load(file)
+
+
+def test_extractor_parse_home(extractor: Extractor, home):
+    items = extractor.parse_home(home)
     assert 3 == len(items)
     assert 1 == len(items["videos"])
     assert 2 == len(items["channels"])
     assert 3 == len(items["playlists"])
 
 
-def test_get_home_items_exlude_titles_works(yt_music_api__get_home_patched: YtMusicApi):
-    items = yt_music_api__get_home_patched.get_home_items(
-        exclude_titles=["Mixed for you", "Listen again"]
-    )
+def test_extractor_parse_home_exlude_titles_works(extractor: Extractor, home):
+    items = extractor.parse_home(home, exclude_titles=["Mixed for you", "Listen again"])
     for item in items.values():
         assert not item
 
 
-def test_get_home_items_exlude_playlists_works(
-    yt_music_api__get_home_patched: YtMusicApi,
-):
-    items = yt_music_api__get_home_patched.get_home_items(
+def test_extractor_parse_home_exlude_playlists_works(extractor: Extractor, home):
+    items = extractor.parse_home(
+        home,
         exclude_playlists=[
             "My Supermix",
             "Your Likes",
             "Suzume no Tojimari Car Playlist",
-        ]
+        ],
     )
     assert not items["playlists"]
 
