@@ -2,9 +2,34 @@ import pathlib
 import sqlite3
 from datetime import datetime
 from os import PathLike
-from typing import Iterator
+from typing import Iterator, Tuple
 
 from ytldl2.cache import Cache, CachedSongInfo, VideoId
+
+SqlCommands = list[str]
+
+_migrations: list[SqlCommands] = [
+    [
+        r"""
+CREATE TABLE songs (
+    video_id        TEXT PRIMARY KEY ON CONFLICT REPLACE
+                         NOT NULL,
+    title           TEXT NOT NULL,
+    artist          TEXT NOT NULL,
+    filtered_reason TEXT,
+    last_modified   TEXT NOT NULL
+);
+        """,
+    ],
+]
+"""
+(Index+1) of each migration corresponds to migration version.
+Warning: DON'T EVER ADD MIGRATIONS, JUST ADD NEW.
+"""
+
+
+class MigrationError(Exception):
+    pass
 
 
 class SqliteCache(Cache):
@@ -13,13 +38,11 @@ class SqliteCache(Cache):
         self.conn: sqlite3.Connection
 
     def open(self) -> None:
-        if not (db_existed := self.db_path.exists()):
+        if not self.db_path.exists():
             self.db_path.touch()
 
         self.conn = sqlite3.connect(self.db_path)
-
-        if not db_existed:
-            self._init_db()
+        self._apply_migrations_if_needed()
 
         len(self)  # calling to ensure that db is valid
 
@@ -78,22 +101,22 @@ SELECT video_id,
         video_ids = [item[0] for item in fetched]
         return video_ids.__iter__()
 
-    def _init_db(self):
-        self._init_songs_table()
-        self._set_db_version(1)
-
-    def _init_songs_table(self):
-        sql = r"""
-CREATE TABLE songs (
-    video_id        TEXT PRIMARY KEY ON CONFLICT REPLACE
-                         NOT NULL,
-    title           TEXT NOT NULL,
-    artist          TEXT NOT NULL,
-    filtered_reason TEXT,
-    last_modified   TEXT NOT NULL
-);
-        """
-        self.conn.cursor().execute(sql)
+    def _apply_migrations_if_needed(self):
+        if (db_version := self.db_version) < 0:
+            raise MigrationError(f"db version is < 0")
+        elif db_version < len(_migrations):
+            # actual work here
+            cur = self.conn.cursor()
+            for migration in _migrations[db_version:]:
+                for sql in migration:
+                    cur.execute(sql)
+            self._set_db_version(len(_migrations))
+            self.conn.commit()
+            # migrations ended
+        elif db_version == len(_migrations):
+            return
+        else:
+            raise MigrationError(f"db version exeeds available migrations")
 
     def _set_db_version(self, v: int):
         self.conn.cursor().execute(f"PRAGMA user_version = {v}")
