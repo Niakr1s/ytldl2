@@ -37,6 +37,18 @@ def home():
         return json.load(file)
 
 
+@pytest.fixture(scope="session")
+def get_playlist():
+    with (DATA / "get_playlist.json").open(encoding="utf-8") as file:
+        return json.load(file)
+
+
+@pytest.fixture(scope="session")
+def get_watch_playlist():
+    with (DATA / "get_watch_playlist.json").open(encoding="utf-8") as file:
+        return json.load(file)
+
+
 def test_extractor_parse_home(extractor: Extractor, home):
     items = extractor.parse_home(home)
     assert 3 == len(items)
@@ -67,31 +79,17 @@ def test_extractor_parse_home__exclude_playlists(extractor: Extractor, home):
     assert not items["playlists"]
 
 
-def test_extract_video_ids_from_playlist__get_playlist(
-    yt_music_api: YtMusicApi, monkeypatch: pytest.MonkeyPatch
+def test_extractor__extract_video_ids_from_playlist__get_playlist(
+    extractor: Extractor, get_playlist
 ):
-    def get_playlist(*args, **kwargs):
-        with (DATA / "get_playlist.json").open(encoding="utf-8") as file:
-            return json.load(file)
-
-    monkeypatch.setattr(YTMusic, "get_playlist", get_playlist)
-
-    res = yt_music_api.extract_video_ids_from_playlist(
-        "RDTMAK5uy_kset8DisdE7LSD4TNjEVvrKRTmG7a56sY"
-    )
+    res = extractor.extract_video_ids_from_playlist(get_playlist)
     assert ["9amPGYrVxFA", "OHcFfF3w0Ok"] == res
 
 
-def test_extract_video_ids_from_playlist__get_watch_playlist(
-    yt_music_api: YtMusicApi, monkeypatch: pytest.MonkeyPatch
+def test_extractor__extract_video_ids_from_playlist__get_watch_playlist(
+    extractor: Extractor, get_watch_playlist
 ):
-    def get_watch_playlist(*args, **kwargs):
-        with (DATA / "get_watch_playlist.json").open(encoding="utf-8") as file:
-            return json.load(file)
-
-    monkeypatch.setattr(YTMusic, "get_watch_playlist", get_watch_playlist)
-
-    res = yt_music_api.extract_video_ids_from_playlist("RDAMVMpm9JyMiAU6A")
+    res = extractor.extract_video_ids_from_playlist(get_watch_playlist)
     assert ["6xZWW8ZQvVs", "mrGYm1djl3A", "T_iLqam_f4E"] == res
 
 

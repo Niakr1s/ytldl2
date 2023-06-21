@@ -69,6 +69,14 @@ class Extractor:
                     res["playlists"].append(playlist_id)
         return res
 
+    def extract_video_ids_from_playlist(self, playlist: dict) -> list[VideoId]:
+        """
+        Extracts videoIds from playlist.
+        :param playlist: Raw playlist dict, got from YtMusic.get_watch_playlist() or YtMusic.get_playlist() call.
+        """
+        tracks: list = playlist["tracks"]
+        return [track[_VIDEO_ID] for track in tracks]
+
 
 class YtMusicApi:
     def __init__(self, oauth: str) -> None:
@@ -138,8 +146,7 @@ class YtMusicApi:
                 raise ExtractError(
                     f"couldn't get songs from playlist {playlist_id}"
                 ) from e
-        tracks: list = contents["tracks"]
-        return [track[_VIDEO_ID] for track in tracks]
+        return self._extractor.extract_video_ids_from_playlist(contents)
 
     def extract_video_ids_from_channel(
         self, channel_id: str, /, limit: int = 50
