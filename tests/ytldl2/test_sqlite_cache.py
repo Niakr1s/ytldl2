@@ -1,7 +1,6 @@
 import pathlib
 import sqlite3
 from copy import copy
-from datetime import datetime
 from time import sleep
 
 import pytest

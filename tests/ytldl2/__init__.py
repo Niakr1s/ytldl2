@@ -1,7 +1,6 @@
 import os
 import pathlib
 from importlib import resources
-from importlib.abc import Traversable
 
 DATA = resources.files("tests.ytldl2.data")
 
