@@ -1,21 +1,13 @@
 import pathlib
 import sqlite3
-from importlib.abc import Traversable
 from time import sleep
 
 import pytest
 
-from tests.ytldl2 import DATA
+from tests.ytldl2 import DATA, cp
 from ytldl2 import VideoId
 from ytldl2.cache import CachedSongInfo
 from ytldl2.sqlite_cache import SqliteCache
-
-
-def cp(file: Traversable, dir: pathlib.Path) -> pathlib.Path:
-    to_path = dir / file.name
-    with to_path.open("wb") as to:
-        to.write(file.read_bytes())
-    return to_path
 
 
 @pytest.fixture
