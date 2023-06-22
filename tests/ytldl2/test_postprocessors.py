@@ -2,7 +2,13 @@ import pytest
 import requests
 
 from tests.ytldl2 import DATA
-from ytldl2.postprocessors import FilterSongPP, LyricsPP, MetadataPP, SongFiltered
+from ytldl2.postprocessors import (
+    FilterSongPP,
+    LyricsPP,
+    MetadataPP,
+    RetainMainArtistPP,
+    SongFiltered,
+)
 
 from . import marks
 
@@ -95,3 +101,26 @@ class TestFilterSongPP:
             filter_song_pp.run(info)
         with pytest.raises(SongFiltered):
             filter_song_pp.run(info)
+
+
+class TestRetainMainArtistPP:
+    @pytest.fixture
+    def retain_main_artist(self):
+        return RetainMainArtistPP()
+
+    def test_run__None(self, retain_main_artist: RetainMainArtistPP):
+        info = {}
+        retain_main_artist.run(info)
+        assert not info
+
+    def test_run__solo_artist(self, retain_main_artist: RetainMainArtistPP):
+        artist = "Nightwish"
+        info = {"artist": artist}
+        retain_main_artist.run(info)
+        assert info["artist"] == artist
+
+    def test_run__multiple_artists(self, retain_main_artist: RetainMainArtistPP):
+        artists = "Nightwish, やなぎなぎ, Егор Летов"
+        info = {"artist": artists}
+        retain_main_artist.run(info)
+        assert info["artist"] == "Nightwish"

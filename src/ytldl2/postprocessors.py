@@ -116,3 +116,25 @@ class FilterSongPP(PostProcessor):
         if not self.is_song(info):
             raise SongFiltered("it's video, not a song", info)
         return [], info
+
+
+class RetainMainArtistPP(PostProcessor):
+    """
+    Info "artist" tag, in case if there are multiple artists, holds value in format:
+    'artist': 'Nightwish, Tuomas Holopainen'.
+    This postprocessor removes everything after first comma, remaining only main artist.
+    If "artist" is None, does nothing.
+    """
+
+    @staticmethod
+    def retain_main_artist(artist: str) -> str:
+        comma_index = artist.find(",")
+        if comma_index == -1:
+            return artist
+        return artist[:comma_index]
+
+    def run(self, info: dict[str, Any]):
+        artist: str | None = info.get("artist")
+        if artist:
+            info["artist"] = self.retain_main_artist(artist)
+        return [], info
