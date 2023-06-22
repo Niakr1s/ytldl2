@@ -43,6 +43,58 @@ class LyricsPP(PostProcessor):
         return self.yt.get_lyrics(lyrics_browse_id).get("lyrics")
 
 
+class MetadataPP(PostProcessor):
+    """
+    Sets metadata to file: artist, title, lyrics, url.
+    If info doesn't contain "artist", "title", "webpage_url", raises KeyError.
+    Should be run after LyricsPP, othervise will raise KeyError.
+    Raises UnexpectedFileTypeError, if file is not MP4
+    """
+
+    def __init__(self, with_lyrics_strict: bool = True, downloader=None):
+        """
+        :param with_lyrics_strict: If set to True, raises KeyError at run() method,
+        if "lyrics" not in info.
+        Adding LyricsPP as postprocessor before MetadataPP
+        will propagate "lyrics" key.
+        """
+        super().__init__(downloader)
+        self._with_lyrics_strict = with_lyrics_strict
+
+    def run(self, info: dict[str, Any]):
+        lyrics: str = info.get("lyrics", "")
+        if self._with_lyrics_strict and not lyrics:
+            raise KeyError("'lyrics'")
+
+        metadata = dict(
+            artist=info["artist"],
+            title=info["title"],
+            url=info["webpage_url"],
+            lyrics=lyrics,
+            thumbnail=None,
+        )
+
+        THUMBNAIL = "thumbnail"
+        thumbnail = info.get(THUMBNAIL)
+        if thumbnail:
+            metadata[THUMBNAIL] = self.get_image_bytes(thumbnail)
+
+        filepath = info["filepath"]
+        self.write_metadata(filepath, metadata)
+
+        return [], info
+
+    def write_metadata(self, filepath: str, metadata):
+        self.write_debug(f"Starting to write metadata to {filepath}")
+        write_metadata(filepath, metadata)
+        self.to_screen(f"Wrote metadata to {filepath}")
+
+    def get_image_bytes(self, url: str, format: str = "png") -> bytes:
+        response = requests.get(url)
+        img = Image.open(BytesIO(response.content))
+        img_jpg = BytesIO()
+        img.save(img_jpg, format=format)
+        return img_jpg.getvalue()
 
 
 class SongFiltered(Exception):
