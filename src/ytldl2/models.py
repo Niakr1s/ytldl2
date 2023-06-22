@@ -44,18 +44,18 @@ class Channel:
     """In raw home data, channel is entity, that contains "subscribers" and "browseId" fields."""
 
     title: Title
-    channelId: ChannelId
+    browseId: BrowseId
     """Actually, in raw home data, this represents as "browseId"."""
 
     @property
-    def browseId(self) -> BrowseId:
-        return BrowseId(self.channelId)
+    def channelId(self) -> ChannelId:
+        return ChannelId(self.browseId)
 
     def is_valid(self) -> bool:
-        return bool(self.title) and bool(self.channelId)
+        return bool(self.title) and bool(self.browseId)
 
     def to_url(self) -> str:
-        return f"https://music.youtube.com/browse/{self.browseId}"
+        return f"https://music.youtube.com/browse/{self.channelId}"
 
 
 @dataclass

@@ -1,6 +1,7 @@
 from typing import Any, cast
 
 from ytldl2.models import (
+    BrowseId,
     Channel,
     ChannelId,
     HomeItems,
@@ -50,9 +51,7 @@ class Extractor:
             if "subscribers" in home_item and _BROWSE_ID in home_item:
                 browse_id = cast(str, home_item[_BROWSE_ID])
                 print(f"Appending channel {title} with {_BROWSE_ID}: {browse_id}")
-                res.channels.append(
-                    Channel(title=title, channelId=ChannelId(browse_id))
-                )
+                res.channels.append(Channel(title=title, browseId=BrowseId(browse_id)))
 
             # videos
             elif video_id := cast(str, home_item.get(_VIDEO_ID, None)):
