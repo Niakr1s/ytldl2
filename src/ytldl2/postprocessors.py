@@ -43,3 +43,24 @@ class LyricsPP(PostProcessor):
         return self.yt.get_lyrics(lyrics_browse_id).get("lyrics")
 
 
+
+
+class SongFiltered(Exception):
+    pass
+
+
+class FilterSongPP(PostProcessor):
+    """
+    Filters out unwanted songs via raising exception.
+    Songs hase both "artist" and "title" in info, otherwise it's video.
+    Raises SongFiltered whenever not-song videoId was filtered out.
+    """
+
+    @staticmethod
+    def is_song(info: dict[str, Any]) -> bool:
+        return all(k in info for k in ["artist", "title"])
+
+    def run(self, info: dict[str, Any]):
+        if not self.is_song(info):
+            raise SongFiltered("it's video, not a song", info)
+        return [], info

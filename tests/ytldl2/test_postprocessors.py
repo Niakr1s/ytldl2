@@ -1,6 +1,6 @@
 import pytest
 
-from ytldl2.postprocessors import LyricsPP
+from ytldl2.postprocessors import FilterSongPP, LyricsPP, SongFiltered
 
 
 class TestLyricsPP:
@@ -34,3 +34,18 @@ class TestLyricsPP:
         info = {"id": "id"}
         lyrics_pp.run(info)
         assert info["lyrics"] == ""
+
+
+class TestFilterSongPP:
+    @pytest.fixture
+    def filter_song_pp(self) -> FilterSongPP:
+        return FilterSongPP()
+
+    def test_run__is_song(self, filter_song_pp: FilterSongPP):
+        info = {"artist": "artist", "title": "title"}
+        filter_song_pp.run(info)
+
+    def test_run__is_not_song(self, filter_song_pp: FilterSongPP):
+        info = {"title": "title"}
+        with pytest.raises(SongFiltered):
+            filter_song_pp.run(info)
