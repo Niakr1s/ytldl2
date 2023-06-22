@@ -3,7 +3,6 @@ from typing import Any, cast
 from ytldl2.models import (
     BrowseId,
     Channel,
-    ChannelId,
     HomeItems,
     Playlist,
     PlaylistId,
@@ -69,7 +68,8 @@ class Extractor:
     def extract_videos_from_playlist(self, playlist: dict) -> list[Video]:
         """
         Extracts videoIds from playlist.
-        :param playlist: Raw playlist dict, got from YtMusic.get_watch_playlist() or YtMusic.get_playlist() call.
+        :param playlist: Raw playlist dict,
+        got from YtMusic.get_watch_playlist() or YtMusic.get_playlist() call.
         """
         try:
             tracks: list = playlist["tracks"]
@@ -88,7 +88,7 @@ class Extractor:
         :param artist: Raw artist dict, got from YtMusic.get_artist() call.
         """
         try:
-            # it's kinda tricky: songs have "browseId" key, but it actually playlistId key
+            # it's kinda tricky: songs have "browseId" key, but it actually playlistId
             return artist["songs"][_BROWSE_ID]
         except Exception as e:
             raise ExtractError(

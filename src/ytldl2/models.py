@@ -1,8 +1,5 @@
-import pathlib
 from dataclasses import dataclass
 from typing import NewType
-
-import urllib3
 
 Title = NewType("Title", str)
 VideoId = NewType("VideoId", str)
@@ -13,7 +10,9 @@ BrowseId = NewType("BrowseId", str)
 
 @dataclass
 class Video:
-    """In raw home data, video is entity, that contains "videoId" field."""
+    """
+    In raw home data, video is entity, that contains "videoId" field.
+    """
 
     title: Title
     videoId: VideoId
@@ -27,7 +26,10 @@ class Video:
 
 @dataclass
 class Playlist:
-    """In raw home data, playlist is entity, that contains "playlistId" field."""
+    """
+    In raw home data, playlist is entity,
+    that contains "playlistId" field.
+    """
 
     title: Title
     playlistId: PlaylistId
@@ -41,7 +43,10 @@ class Playlist:
 
 @dataclass
 class Channel:
-    """In raw home data, channel is entity, that contains "subscribers" and "browseId" fields."""
+    """
+    In raw home data, channel is entity,
+    that contains "subscribers" and "browseId" fields
+    """
 
     title: Title
     browseId: BrowseId
