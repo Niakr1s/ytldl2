@@ -20,7 +20,8 @@ class Video:
     def is_valid(self) -> bool:
         return bool(self.title) and bool(self.videoId)
 
-    def to_url(self) -> str:
+    @property
+    def youtube_music_url(self) -> str:
         return f"https://music.youtube.com/watch?v={self.videoId}"
 
 
@@ -37,7 +38,8 @@ class Playlist:
     def is_valid(self) -> bool:
         return bool(self.title) and bool(self.playlistId)
 
-    def to_url(self) -> str:
+    @property
+    def youtube_music_url(self) -> str:
         return f"https://music.youtube.com/playlist?list={self.playlistId}"
 
 
@@ -59,7 +61,8 @@ class Channel:
     def is_valid(self) -> bool:
         return bool(self.title) and bool(self.browseId)
 
-    def to_url(self) -> str:
+    @property
+    def youtube_music_url(self) -> str:
         return f"https://music.youtube.com/browse/{self.channelId}"
 
 
