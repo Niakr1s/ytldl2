@@ -13,7 +13,8 @@ class TestYtMusicApi:
         if OAUTH_PATH.exists():
             return OAUTH_PATH.read_text()
         raise FileNotFoundError(
-            f"oauth path {OAUTH_PATH} not found, please run command 'python -m tests.ytldl2' to init it"
+            f"oauth path {OAUTH_PATH} not found, \
+                run command 'python -m tests.ytldl2' to init"
         )
 
     @pytest.fixture()

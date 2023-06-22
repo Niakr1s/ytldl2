@@ -114,7 +114,7 @@ SELECT video_id,
 
     def _apply_migrations_if_needed(self):
         if (db_version := self.db_version) < 0:
-            raise MigrationError(f"db version is < 0")
+            raise MigrationError("db version is < 0")
         elif db_version < len(_migrations):
             # actual work here
             cur = self.conn.cursor()
@@ -127,7 +127,7 @@ SELECT video_id,
         elif db_version == len(_migrations):
             return
         else:
-            raise MigrationError(f"db version exeeds available migrations")
+            raise MigrationError("db version exeeds available migrations")
 
     def _set_db_version(self, v: int):
         self.conn.cursor().execute(f"PRAGMA user_version = {v}")

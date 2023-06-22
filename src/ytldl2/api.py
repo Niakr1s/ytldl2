@@ -3,7 +3,7 @@ from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from ytmusicapi import YTMusic
 
 from ytldl2.extractor import ExtractError, Extractor
-from ytldl2.models import ChannelId, HomeItems, PlaylistId, Video, VideoId
+from ytldl2.models import ChannelId, HomeItems, PlaylistId, Video
 
 
 class YtMusicApiError(Exception):
@@ -21,7 +21,8 @@ class YtMusicApi:
     def get_home_items(self, home_limit: int = 100) -> HomeItems:
         """
         Gets home items from user's youtube music home page.
-        :param home_limit: Amount of items, requested from home items. Better to leave default.
+        :param home_limit: Amount of items, requested from home items.
+        Better to leave default.
         """
         try:
             home = self._yt.get_home(limit=home_limit)
