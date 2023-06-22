@@ -4,6 +4,8 @@ import requests
 from tests.ytldl2 import DATA
 from ytldl2.postprocessors import FilterSongPP, LyricsPP, MetadataPP, SongFiltered
 
+from . import marks
+
 
 class TestLyricsPP:
     VIDEO_ID_WITH_LYRICS = "pm9JyMiAU6A"
@@ -13,12 +15,15 @@ class TestLyricsPP:
     def lyrics_pp(self) -> LyricsPP:
         return LyricsPP()
 
+    @marks.long_test
     def test_get__song_with_lyrics(self, lyrics_pp: LyricsPP):
         assert lyrics_pp.get_lyrics(self.VIDEO_ID_WITH_LYRICS)
 
+    @marks.long_test
     def test_get__song_without_lyrics(self, lyrics_pp: LyricsPP):
         assert not lyrics_pp.get_lyrics(self.VIDEO_ID_WITHOUT_LYRICS)
 
+    @marks.long_test
     def test_run__song_with_lyrics(
         self, lyrics_pp: LyricsPP, monkeypatch: pytest.MonkeyPatch
     ):
@@ -28,6 +33,7 @@ class TestLyricsPP:
         lyrics_pp.run(info)
         assert info["lyrics"]
 
+    @marks.long_test
     def test_run__song_without_lyrics(
         self, lyrics_pp: LyricsPP, monkeypatch: pytest.MonkeyPatch
     ):
@@ -85,5 +91,7 @@ class TestFilterSongPP:
 
     def test_run__is_not_song(self, filter_song_pp: FilterSongPP):
         info = {"title": "title"}
+        with pytest.raises(SongFiltered):
+            filter_song_pp.run(info)
         with pytest.raises(SongFiltered):
             filter_song_pp.run(info)
