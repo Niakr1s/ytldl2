@@ -21,16 +21,19 @@ class TestDownloadQueue:
         return DownloadQueue([VideoId("a"), VideoId("b")])
 
     def test_next(self, queue: DownloadQueue):
-        item = queue.__next__()
+        item = queue.next()
+        assert item
         assert "a" == item.video_id
         with pytest.raises(ItemNotCompletedError):
-            queue.__next__()
+            queue.next()
         item.mark_as_downloaded(pathlib.Path())
-        item = queue.__next__()
+
+        item = queue.next()
+        assert item
         assert "b" == item.video_id
         item.mark_as_downloaded(pathlib.Path())
-        with pytest.raises(StopIteration):
-            queue.__next__()
+
+        assert not queue.next()
 
     def item_can_not_be_completed_twice(self, item: Item):
         with pytest.raises(ItemAlreadyCompletedError):
@@ -41,7 +44,8 @@ class TestDownloadQueue:
             item.mark_as_skipped("")
 
     def test_item__mark_as_downloaded(self, queue: DownloadQueue):
-        item = queue.__next__()
+        item = queue.next()
+        assert item
         path = pathlib.Path()
         item.mark_as_downloaded(path)
         self.item_can_not_be_completed_twice(item)
@@ -55,7 +59,8 @@ class TestDownloadQueue:
         assert not queue.skipped
 
     def test_item__mark_as_failed(self, queue: DownloadQueue):
-        item = queue.__next__()
+        item = queue.next()
+        assert item
         err = Exception("some error")
         item.mark_as_failed(err)
         self.item_can_not_be_completed_twice(item)
@@ -69,7 +74,8 @@ class TestDownloadQueue:
         assert not queue.skipped
 
     def test_item__mark_as_skipped(self, queue: DownloadQueue):
-        item = queue.__next__()
+        item = queue.next()
+        assert item
         reason = "some reason"
         item.mark_as_skipped(reason)
         self.item_can_not_be_completed_twice(item)
@@ -92,6 +98,6 @@ class TestDownloadQueue:
         assert not res.skipped
 
     def test_to_result__item_uncompleted(self, queue: DownloadQueue):
-        queue.__next__()
+        queue.next()
         with pytest.raises(DownloadQueueHasUncompleteItem):
             queue.to_result()

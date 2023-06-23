@@ -85,8 +85,9 @@ class DownloadQueue:
     def __len__(self) -> int:
         return len(self.remained)
 
-    def __next__(self) -> Item:
-        """Iterates over self.remained videos.
+    def next(self) -> Item | None:
+        """Iterates over self.remained videos. Doesn't throw StopIteration - instead,
+        returns None if no items remained.
         User should use .mark_as method on each item to mark it as completed.
         Raises:
             ItemNotMarkedError: Raised when Item is not marked as completed.
@@ -100,7 +101,7 @@ class DownloadQueue:
             next_video_id = self.remained.pop()
             self._has_incompleted_item = True
         except IndexError:
-            raise StopIteration
+            return None
         return Item(self, next_video_id)
 
     def to_result(self) -> DownloadResult:
