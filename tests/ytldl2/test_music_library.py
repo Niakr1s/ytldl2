@@ -29,7 +29,10 @@ class TestMusicLibraryConfig:
 
 class TestMusicLibrary:
     @pytest.fixture
-    def library(self, tmp_path: pathlib.Path) -> MusicLibrary:
+    def library(
+        self, tmp_path: pathlib.Path, oauth: str, monkeypatch: pytest.MonkeyPatch
+    ) -> MusicLibrary:
+        monkeypatch.setattr("ytldl2.music_library.get_oauth", lambda *_: oauth)
         return MusicLibrary(tmp_path / "library", skip_download=True)
 
     def test_init(self, library: MusicLibrary):

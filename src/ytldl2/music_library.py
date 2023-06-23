@@ -4,6 +4,7 @@ import tempfile
 
 from pydantic import BaseModel, Field
 
+from ytldl2.api import YtMusicApi, get_oauth
 from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
 from ytldl2.sqlite_cache import SqliteCache
 
@@ -54,6 +55,9 @@ class MusicLibrary:
         self._downloader = self._init_downloader(
             home_dir=home_dir, skip_download=skip_download
         )
+
+        oauth_json_path = self.dot_dir / "oauth.json"
+        self._api = YtMusicApi(get_oauth(oauth_json_path))
 
     @staticmethod
     def _init_dirs(dirs: list[pathlib.Path]):
