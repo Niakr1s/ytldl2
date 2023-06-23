@@ -89,9 +89,14 @@ class TestMusicDownloader:
 
         assert videos == res.videos
         assert not res.queue
+
         assert res.downloaded
         assert res.failed
         assert res.skipped
-        # assert expected_downloads == res.downloaded
-        # assert expected_failed == res.failed
-        # assert expected_skipped == res.skipped
+
+        def to_video_ids(lst: list):
+            return [x.videoId for x in lst]
+
+        assert expected_downloads == to_video_ids(res.downloaded)
+        assert expected_failed == to_video_ids(res.failed)
+        assert expected_skipped == to_video_ids(res.skipped)

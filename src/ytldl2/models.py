@@ -9,13 +9,17 @@ BrowseId = NewType("BrowseId", str)
 
 
 @dataclass
-class Video:
+class WithVideoId:
+    videoId: VideoId
+
+
+@dataclass
+class Video(WithVideoId):
     """
     In raw home data, video is entity, that contains "videoId" field.
     """
 
     title: Title
-    videoId: VideoId
 
     def is_valid(self) -> bool:
         return bool(self.title) and bool(self.videoId)

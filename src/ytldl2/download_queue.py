@@ -1,24 +1,21 @@
 import pathlib
 from dataclasses import dataclass
 
-from ytldl2.models import VideoId
+from ytldl2.models import VideoId, WithVideoId
 
 
 @dataclass
-class Downloaded:
-    video_id: VideoId
+class Downloaded(WithVideoId):
     path: pathlib.Path
 
 
 @dataclass
-class Failed:
-    video_id: VideoId
+class Failed(WithVideoId):
     error: Exception
 
 
 @dataclass
-class Skipped:
-    video_id: VideoId
+class Skipped(WithVideoId):
     reason: str
 
 
