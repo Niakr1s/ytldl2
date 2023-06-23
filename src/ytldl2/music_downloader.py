@@ -7,6 +7,7 @@ from yt_dlp import YoutubeDL
 from ytldl2.cache import Cache
 from ytldl2.download_queue import DownloadQueue, DownloadResult, Item
 from ytldl2.killer import CancellationToken
+from ytldl2.memory_cache import MemoryCache
 from ytldl2.models import VideoId
 from ytldl2.postprocessors import (
     FilterSongPP,
@@ -92,7 +93,9 @@ class MusicDownloader:
     """
 
     def __init__(
-        self, cache: Cache, ydl_params: YoutubeDlParams = YoutubeDlParams()
+        self,
+        cache: Cache = MemoryCache(),
+        ydl_params: YoutubeDlParams = YoutubeDlParams(),
     ) -> None:
         """
         :param cache: Songs, contained in cache, will be skipped.
@@ -101,6 +104,7 @@ class MusicDownloader:
         """
         self._cache = cache
         self._ydl_builder = MusicYoutubeDlBuilder(ydl_params)
+        self._skip_download = ydl_params.skip_download
 
     def download(
         self, videos: list[VideoId], cancellation_token: CancellationToken | None = None
@@ -143,9 +147,11 @@ class MusicDownloader:
                 try:
                     ydl.download([current_item.video_id])
                     # complete_as_* will be operated in progress_hook function from now
+                    if self._skip_download:
+                        current_item.complete_as_skipped("skip_download")
                 except SongFiltered as song_filtered:
                     current_item.complete_as_skipped(str(song_filtered))
-                except ProgressHookError as e:
+                except Exception as e:
                     current_item.complete_as_failed(e)
 
         return queue.to_result()

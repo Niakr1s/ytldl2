@@ -62,9 +62,9 @@ class MetadataPP(PostProcessor):
         self._with_lyrics_strict = with_lyrics_strict
 
     def run(self, info: dict[str, Any]):
-        lyrics: str = info.get("lyrics", "")
-        if self._with_lyrics_strict and not lyrics:
+        if self._with_lyrics_strict and "lyrics" not in info:
             raise KeyError("'lyrics'")
+        lyrics: str = info.get("lyrics", "")
 
         metadata = dict(
             artist=info["artist"],

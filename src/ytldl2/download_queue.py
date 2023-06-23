@@ -58,6 +58,9 @@ class Item:
         self._complete()
         self.queue._queue.append(self.video_id)
 
+    def __repr__(self) -> str:
+        return f"Item({self.video_id}, modify_allowed={self._modify_allowed})"
+
 
 @dataclass
 class DownloadResult:
