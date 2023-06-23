@@ -51,12 +51,13 @@ class TestDownloadQueue:
         self.item_can_not_be_completed_twice(item)
 
         video_id = item.video_id
-        assert video_id not in queue._queue
-
         expected = Downloaded(item.video_id, path)
-        assert expected in queue._downloaded
-        assert not queue._failed
-        assert not queue._skipped
+        res = queue.to_result()
+
+        assert video_id not in res.queue
+        assert expected in res.downloaded
+        assert not res.failed
+        assert not res.skipped
 
     def test_item__complete_as_failed(self, queue: DownloadQueue):
         item = queue.next()
@@ -66,12 +67,13 @@ class TestDownloadQueue:
         self.item_can_not_be_completed_twice(item)
 
         video_id = item.video_id
-        assert video_id not in queue._queue
-
         expected = Failed(item.video_id, err)
-        assert not queue._downloaded
-        assert expected in queue._failed
-        assert not queue._skipped
+        res = queue.to_result()
+
+        assert video_id not in res.queue
+        assert not res.downloaded
+        assert expected in res.failed
+        assert not res.skipped
 
     def test_item__complete_as_skipped(self, queue: DownloadQueue):
         item = queue.next()
@@ -81,12 +83,13 @@ class TestDownloadQueue:
         self.item_can_not_be_completed_twice(item)
 
         video_id = item.video_id
-        assert video_id not in queue._queue
-
         expected = Skipped(item.video_id, reason)
-        assert not queue._downloaded
-        assert not queue._failed
-        assert expected in queue._skipped
+        res = queue.to_result()
+
+        assert video_id not in res.queue
+        assert not res.downloaded
+        assert not res.failed
+        assert expected in res.skipped
 
     def test_item__return_to_queue(self, queue: DownloadQueue):
         item = queue.next()
