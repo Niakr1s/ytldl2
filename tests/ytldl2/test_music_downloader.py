@@ -3,7 +3,7 @@ import pathlib
 
 from yt_dlp.postprocessor.ffmpeg import FFmpegExtractAudioPP
 
-from ytldl2.downloader import MusicYoutubeDlBuilder, YoutubeDlParams
+from ytldl2.music_downloader import MusicYoutubeDlBuilder, YoutubeDlParams
 from ytldl2.postprocessors import FilterSongPP, LyricsPP, MetadataPP, RetainMainArtistPP
 
 
