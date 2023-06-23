@@ -44,15 +44,15 @@ class Item:
 
     def complete_as_downloaded(self, path: pathlib.Path):
         self._complete()
-        self.queue.downloaded.append(Downloaded(self.video_id, path))
+        self.queue._downloaded.append(Downloaded(self.video_id, path))
 
     def complete_as_failed(self, error: Exception):
         self._complete()
-        self.queue.failed.append(Failed(self.video_id, error))
+        self.queue._failed.append(Failed(self.video_id, error))
 
     def complete_as_skipped(self, reason: str):
         self._complete()
-        self.queue.skipped.append(Skipped(self.video_id, reason))
+        self.queue._skipped.append(Skipped(self.video_id, reason))
 
 
 @dataclass
@@ -72,18 +72,18 @@ class DownloadQueueHasUncompleteItem(Exception):
 
 class DownloadQueue:
     def __init__(self, videos: list[VideoId]) -> None:
-        self.videos: list[VideoId] = videos[:]
+        self._videos: list[VideoId] = videos[:]
         """Initial video list. Always remains unchanged."""
-        self.remained: list[VideoId] = list(reversed(videos))
+        self._queue: list[VideoId] = list(reversed(videos))
         """Queue of videos, waiting to be downloaded."""
-        self.downloaded: list[Downloaded] = []
-        self.failed: list[Failed] = []
-        self.skipped: list[Skipped] = []
+        self._downloaded: list[Downloaded] = []
+        self._failed: list[Failed] = []
+        self._skipped: list[Skipped] = []
 
         self._has_incompleted_item = False
 
     def __len__(self) -> int:
-        return len(self.remained)
+        return len(self._queue)
 
     def next(self) -> Item | None:
         """Iterates over self.remained videos. Doesn't throw StopIteration - instead,
@@ -99,7 +99,7 @@ class DownloadQueue:
             raise ItemNotCompletedError
 
         try:
-            next_video_id = self.remained.pop()
+            next_video_id = self._queue.pop()
             self._has_incompleted_item = True
         except IndexError:
             return None
@@ -119,9 +119,9 @@ class DownloadQueue:
             raise DownloadQueueHasUncompleteItem
 
         return DownloadResult(
-            self.videos[:],
-            self.remained[:],
-            self.downloaded[:],
-            self.failed[:],
-            self.skipped[:],
+            self._videos[:],
+            self._queue[:],
+            self._downloaded[:],
+            self._failed[:],
+            self._skipped[:],
         )
