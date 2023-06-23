@@ -26,7 +26,7 @@ class ItemNotCompletedError(Exception):
     pass
 
 
-class ItemAlreadyCompletedError(Exception):
+class ItemModifyNotAllowed(Exception):
     pass
 
 
@@ -34,13 +34,13 @@ class Item:
     def __init__(self, queue: "DownloadQueue", video_id: VideoId) -> None:
         self.queue = queue
         self.video_id = video_id
-        self._completed = False
+        self._modify_allowed = True
 
     def _complete(self):
-        if self._completed:
-            raise ItemAlreadyCompletedError
+        if not self._modify_allowed:
+            raise ItemModifyNotAllowed
         self.queue._has_incompleted_item = False
-        self._completed = True
+        self._modify_allowed = False
 
     def complete_as_downloaded(self, path: pathlib.Path):
         self._complete()

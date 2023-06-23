@@ -8,7 +8,7 @@ from ytldl2.download_queue import (
     DownloadQueueHasUncompleteItem,
     Failed,
     Item,
-    ItemAlreadyCompletedError,
+    ItemModifyNotAllowed,
     ItemNotCompletedError,
     Skipped,
 )
@@ -36,11 +36,11 @@ class TestDownloadQueue:
         assert not queue.next()
 
     def item_can_not_be_completed_twice(self, item: Item):
-        with pytest.raises(ItemAlreadyCompletedError):
+        with pytest.raises(ItemModifyNotAllowed):
             item.complete_as_downloaded(pathlib.Path())
-        with pytest.raises(ItemAlreadyCompletedError):
+        with pytest.raises(ItemModifyNotAllowed):
             item.complete_as_failed(Exception())
-        with pytest.raises(ItemAlreadyCompletedError):
+        with pytest.raises(ItemModifyNotAllowed):
             item.complete_as_skipped("")
 
     def test_item__complete_as_downloaded(self, queue: DownloadQueue):
