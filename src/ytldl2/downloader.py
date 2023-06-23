@@ -94,9 +94,9 @@ class MusicDownloader:
         self.cache = cache
         self.ydl = MusicYoutubeDlBuilder(youtubedl_params).build()
 
-    def download_songs(
+    def download(
         self, videos: list[Video], cancellation_token: CancellationToken | None = None
-    ) -> pathlib.Path | None:
+    ):
         """
         Download songs in best quality in current thread.
         Downloads only songs (e.g skips videos).
