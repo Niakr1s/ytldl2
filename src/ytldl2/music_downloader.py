@@ -5,8 +5,8 @@ from typing import Literal, cast
 from yt_dlp import YoutubeDL
 
 from ytldl2.cache import Cache
+from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.download_queue import DownloadQueue, DownloadResult, Item
-from ytldl2.killer import CancellationToken
 from ytldl2.memory_cache import MemoryCache
 from ytldl2.models import VideoId
 from ytldl2.postprocessors import (
