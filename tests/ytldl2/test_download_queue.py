@@ -95,7 +95,7 @@ class TestDownloadQueue:
 
         item.return_to_queue()
         res = queue.to_result()
-        assert video_id == res.remained[-1]
+        assert video_id == res.queue[-1]
         assert not res.downloaded
         assert not res.failed
         assert not res.skipped
@@ -108,7 +108,7 @@ class TestDownloadQueue:
         res = queue.to_result()
         videos = ["a", "b"]
         assert videos == res.videos
-        assert list(reversed(videos)) == res.remained
+        assert list(reversed(videos)) == res.queue
         assert not res.downloaded
         assert not res.failed
         assert not res.skipped

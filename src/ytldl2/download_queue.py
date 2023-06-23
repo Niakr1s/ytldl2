@@ -63,7 +63,7 @@ class Item:
 class DownloadResult:
     videos: list[VideoId]
     """Initial video list. Always remains unchanged."""
-    remained: list[VideoId]
+    queue: list[VideoId]
     """Queue of videos, waiting to be downloaded."""
     downloaded: list[Downloaded]
     failed: list[Failed]
