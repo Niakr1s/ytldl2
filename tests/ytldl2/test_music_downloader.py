@@ -4,15 +4,16 @@ from typing import TypeVar
 
 import pytest
 from yt_dlp.postprocessor.ffmpeg import FFmpegExtractAudioPP
-
-from tests.ytldl2.marks import slow_test
-from ytldl2.models import VideoId
+from ytldl2.cancellation_tokens import CancellationToken
+from ytldl2.models import VideoId, WithVideoId
 from ytldl2.music_downloader import (
     MusicDownloader,
     MusicYoutubeDlBuilder,
     YoutubeDlParams,
 )
 from ytldl2.postprocessors import FilterSongPP, LyricsPP, MetadataPP, RetainMainArtistPP
+
+from tests.ytldl2.marks import slow_test
 
 
 class TestMusicYoutubeDlBuilder:
@@ -127,6 +128,20 @@ class TestMusicDownloader:
         assert expexted_failed == got_failed
         assert expected_skipped == got_skipped
 
+    def test_download__cancellation_token(self, ydl_params: YoutubeDlParams):
+        ydl_params.skip_download = True
+
+        token = CancellationToken()
+        token.request_kill()
+
+        downloader = MusicDownloader()
+
+        res = downloader.download(self.VIDEOS, cancellation_token=token)
+        assert self.VIDEOS == res.videos
+        assert list(reversed(self.VIDEOS)) == res.queue
+        assert not res.downloaded
+        assert not res.skipped
+        assert not res.failed
 
     WithVideoIdT = TypeVar("WithVideoIdT", bound=WithVideoId)
 
