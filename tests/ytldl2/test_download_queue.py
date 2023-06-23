@@ -97,6 +97,20 @@ class TestDownloadQueue:
         assert not res.failed
         assert not res.skipped
 
+    def test_to_result__with_incompleted_item(self, queue: DownloadQueue):
+        assert queue.next()
+        with pytest.raises(DownloadQueueHasUncompleteItem):
+            queue.to_result()
+
+    def test_to_result_in_loop(self, queue: DownloadQueue):
+        while item := queue.next():
+            item.mark_as_downloaded(pathlib.Path())
+            res = queue.to_result()
+            assert ["a", "b"] == res.videos
+            assert res.downloaded
+            assert not res.failed
+            assert not res.skipped
+
     def test_to_result__item_uncompleted(self, queue: DownloadQueue):
         queue.next()
         with pytest.raises(DownloadQueueHasUncompleteItem):
