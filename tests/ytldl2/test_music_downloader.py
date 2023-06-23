@@ -4,6 +4,7 @@ import pathlib
 import pytest
 from yt_dlp.postprocessor.ffmpeg import FFmpegExtractAudioPP
 
+from tests.ytldl2.marks import long_test
 from ytldl2.models import VideoId
 from ytldl2.music_downloader import (
     MusicDownloader,
@@ -14,6 +15,7 @@ from ytldl2.postprocessors import FilterSongPP, LyricsPP, MetadataPP, RetainMain
 
 
 class TestMusicYoutubeDlBuilder:
+    @long_test
     def test_build(self):
         params = YoutubeDlParams(
             logger=logging.Logger("logger"),
@@ -53,50 +55,76 @@ class TestMusicDownloader:
     SONG_WITH_LYRICS = VideoId("OCYdICRobEo")
     SONG_WITHOUT_LYRICS = VideoId("rVryEboMof8")
     VIDEO = VideoId("F7NOovxx3lg")
+    VIDEOS = [
+        INVALID_VIDEO,
+        VIDEO,
+        SONG_WITH_LYRICS,
+        SONG_WITHOUT_LYRICS,
+    ]
 
     @pytest.fixture
     def ydl_params(self, tmp_path: pathlib.Path) -> YoutubeDlParams:
         music_tmp_dir = tmp_path / "tmp"
         music_home_dir = tmp_path / "home"
-        skip_download = False
-        return YoutubeDlParams(
-            skip_download=skip_download, home_dir=music_home_dir, tmp_dir=music_tmp_dir
+        return YoutubeDlParams(home_dir=music_home_dir, tmp_dir=music_tmp_dir)
+
+    @long_test
+    def test_download(self, ydl_params: YoutubeDlParams):
+        ydl_params.skip_download = False
+
+        expected_downloaded = [
+            self.SONG_WITH_LYRICS,
+            self.SONG_WITHOUT_LYRICS,
+        ]
+        expected_failed = [self.INVALID_VIDEO]
+        expected_skipped = [self.VIDEO]
+        self._test_download(
+            ydl_params,
+            self.VIDEOS[:],
+            expected_downloaded,
+            expected_failed,
+            expected_skipped,
         )
 
-    @pytest.fixture
-    def ydl_params_with_skip_download(
-        self, ydl_params: YoutubeDlParams
-    ) -> YoutubeDlParams:
+    @long_test
+    def test_download_with_skip_download(self, ydl_params: YoutubeDlParams):
         ydl_params.skip_download = True
-        return ydl_params
-
-    def test_download(self, ydl_params: YoutubeDlParams):
-        downloader = MusicDownloader(ydl_params=ydl_params)
-        videos = [
-            self.INVALID_VIDEO,
-            self.SONG_WITH_LYRICS,
-            self.SONG_WITHOUT_LYRICS,
+        expected_downloaded = []
+        expected_failed = [self.INVALID_VIDEO]
+        expected_skipped = [
             self.VIDEO,
-        ]
-        res = downloader.download(videos)
-
-        expected_downloads = [  # noqa: F841
             self.SONG_WITH_LYRICS,
             self.SONG_WITHOUT_LYRICS,
         ]
-        expected_failed = [self.INVALID_VIDEO]  # noqa: F841
-        expected_skipped = [self.VIDEO]  # noqa: F841
+        self._test_download(
+            ydl_params,
+            self.VIDEOS[:],
+            expected_downloaded,
+            expected_failed,
+            expected_skipped,
+        )
+
+    def _test_download(
+        self,
+        ydl_params: YoutubeDlParams,
+        videos: list[VideoId],
+        expected_downloaded: list[VideoId],
+        expexted_failed: list[VideoId],
+        expected_skipped: list[VideoId],
+    ):
+        downloader = MusicDownloader(ydl_params=ydl_params)
+        res = downloader.download(videos)
 
         assert videos == res.videos
         assert not res.queue
 
-        assert res.downloaded
-        assert res.failed
-        assert res.skipped
-
         def to_video_ids(lst: list):
             return [x.videoId for x in lst]
 
-        assert expected_downloads == to_video_ids(res.downloaded)
-        assert expected_failed == to_video_ids(res.failed)
-        assert expected_skipped == to_video_ids(res.skipped)
+        got_downloaded = to_video_ids(res.downloaded)
+        got_failed = to_video_ids(res.failed)
+        got_skipped = to_video_ids(res.skipped)
+
+        assert expected_downloaded == got_downloaded
+        assert expexted_failed == got_failed
+        assert expected_skipped == got_skipped
