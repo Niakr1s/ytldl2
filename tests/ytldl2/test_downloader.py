@@ -3,11 +3,11 @@ import pathlib
 
 from yt_dlp.postprocessor.ffmpeg import FFmpegExtractAudioPP
 
-from ytldl2.downloader import SongYoutubeDlBuilder, YoutubeDlParams
+from ytldl2.downloader import MusicYoutubeDlBuilder, YoutubeDlParams
 from ytldl2.postprocessors import FilterSongPP, LyricsPP, MetadataPP, RetainMainArtistPP
 
 
-class TestSongYoutubeDlBuilder:
+class TestMusicYoutubeDlBuilder:
     def test_build(self):
         params = YoutubeDlParams(
             logger=logging.Logger("logger"),
@@ -18,7 +18,7 @@ class TestSongYoutubeDlBuilder:
             skip_download=True,
         )
 
-        builder = SongYoutubeDlBuilder(params)
+        builder = MusicYoutubeDlBuilder(params)
 
         ydl = builder.build()
 

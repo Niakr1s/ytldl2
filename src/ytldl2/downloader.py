@@ -27,9 +27,9 @@ class YoutubeDlParams:
         self.skip_download = skip_download
 
 
-class SongYoutubeDlBuilder:
+class MusicYoutubeDlBuilder:
     """
-    Class, that builds YoutubeDL, that downloads only songs. So, videos will be skipped.
+    Class, that builds YoutubeDL, that downloads only music. So, videos will be skipped.
     Downloaded song will have valid metadata (including lyrics) written.
     """
 
@@ -76,11 +76,11 @@ class SongYoutubeDlBuilder:
         return ydl_opts
 
 
-class SongDownloader:
+class MusicDownloader:
     """
     Class, that downloads music from youtube. So, videos will be skipped.
     Downloaded music will be stored with correct metadata and lyrics.
-    Uses SongYoutubeDlBuilder internally.
+    Uses MusicYoutubeDlBuilder internally.
     """
 
     def __init__(
@@ -92,7 +92,7 @@ class SongDownloader:
         will be created.
         """
         self.cache = cache
-        self.ydl = SongYoutubeDlBuilder(youtubedl_params).build()
+        self.ydl = MusicYoutubeDlBuilder(youtubedl_params).build()
 
     def download_songs(
         self, videos: list[Video], cancellation_token: CancellationToken | None = None
