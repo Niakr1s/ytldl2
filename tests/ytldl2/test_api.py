@@ -1,22 +1,11 @@
 import pytest
-
-from tests.ytldl2 import OAUTH_PATH
 from ytldl2.api import YtMusicApi
 from ytldl2.models import ChannelId, HomeItems, PlaylistId
 
-from . import marks
+from tests.ytldl2 import marks
 
 
 class TestYtMusicApi:
-    @pytest.fixture(scope="session")
-    def oauth(self) -> str:
-        if OAUTH_PATH.exists():
-            return OAUTH_PATH.read_text()
-        raise FileNotFoundError(
-            f"oauth path {OAUTH_PATH} not found, \
-                run command 'python -m tests.ytldl2' to init"
-        )
-
     @pytest.fixture()
     def yt_music_api(self, oauth) -> YtMusicApi:
         return YtMusicApi(oauth=oauth)
