@@ -11,3 +11,6 @@ def oauth() -> str:
         f"oauth path {OAUTH_PATH} not found, \
             run command 'python -m tests.ytldl2' to init"
     )
+
+
+__all__ = ["oauth"]
