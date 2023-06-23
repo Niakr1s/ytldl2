@@ -26,28 +26,28 @@ class TestDownloadQueue:
         assert "a" == item.video_id
         with pytest.raises(ItemNotCompletedError):
             queue.next()
-        item.mark_as_downloaded(pathlib.Path())
+        item.complete_as_downloaded(pathlib.Path())
 
         item = queue.next()
         assert item
         assert "b" == item.video_id
-        item.mark_as_downloaded(pathlib.Path())
+        item.complete_as_downloaded(pathlib.Path())
 
         assert not queue.next()
 
     def item_can_not_be_completed_twice(self, item: Item):
         with pytest.raises(ItemAlreadyCompletedError):
-            item.mark_as_downloaded(pathlib.Path())
+            item.complete_as_downloaded(pathlib.Path())
         with pytest.raises(ItemAlreadyCompletedError):
-            item.mark_as_failed(Exception())
+            item.complete_as_failed(Exception())
         with pytest.raises(ItemAlreadyCompletedError):
-            item.mark_as_skipped("")
+            item.complete_as_skipped("")
 
-    def test_item__mark_as_downloaded(self, queue: DownloadQueue):
+    def test_item__complete_as_downloaded(self, queue: DownloadQueue):
         item = queue.next()
         assert item
         path = pathlib.Path()
-        item.mark_as_downloaded(path)
+        item.complete_as_downloaded(path)
         self.item_can_not_be_completed_twice(item)
 
         video_id = item.video_id
@@ -58,11 +58,11 @@ class TestDownloadQueue:
         assert not queue.failed
         assert not queue.skipped
 
-    def test_item__mark_as_failed(self, queue: DownloadQueue):
+    def test_item__complete_as_failed(self, queue: DownloadQueue):
         item = queue.next()
         assert item
         err = Exception("some error")
-        item.mark_as_failed(err)
+        item.complete_as_failed(err)
         self.item_can_not_be_completed_twice(item)
 
         video_id = item.video_id
@@ -73,11 +73,11 @@ class TestDownloadQueue:
         assert expected in queue.failed
         assert not queue.skipped
 
-    def test_item__mark_as_skipped(self, queue: DownloadQueue):
+    def test_item__complete_as_skipped(self, queue: DownloadQueue):
         item = queue.next()
         assert item
         reason = "some reason"
-        item.mark_as_skipped(reason)
+        item.complete_as_skipped(reason)
         self.item_can_not_be_completed_twice(item)
 
         video_id = item.video_id
@@ -104,7 +104,7 @@ class TestDownloadQueue:
 
     def test_to_result_in_loop(self, queue: DownloadQueue):
         while item := queue.next():
-            item.mark_as_downloaded(pathlib.Path())
+            item.complete_as_downloaded(pathlib.Path())
             res = queue.to_result()
             assert ["a", "b"] == res.videos
             assert res.downloaded

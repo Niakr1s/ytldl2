@@ -42,15 +42,15 @@ class Item:
         self.queue._has_incompleted_item = False
         self._completed = True
 
-    def mark_as_downloaded(self, path: pathlib.Path):
+    def complete_as_downloaded(self, path: pathlib.Path):
         self._complete()
         self.queue.downloaded.append(Downloaded(self.video_id, path))
 
-    def mark_as_failed(self, error: Exception):
+    def complete_as_failed(self, error: Exception):
         self._complete()
         self.queue.failed.append(Failed(self.video_id, error))
 
-    def mark_as_skipped(self, reason: str):
+    def complete_as_skipped(self, reason: str):
         self._complete()
         self.queue.skipped.append(Skipped(self.video_id, reason))
 
@@ -88,9 +88,10 @@ class DownloadQueue:
     def next(self) -> Item | None:
         """Iterates over self.remained videos. Doesn't throw StopIteration - instead,
         returns None if no items remained.
-        User should use .mark_as method on each item to mark it as completed.
+        User should use .complete_as method on each item to mark it as completed.
         Raises:
-            ItemNotMarkedError: Raised when Item is not marked as completed.
+            ItemNotCompletedError: Raised when previously retrieved item
+            is not marked as completed.
         Returns:
             Item: Next item in queue.
         """
