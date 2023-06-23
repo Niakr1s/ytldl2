@@ -21,14 +21,12 @@ from ytldl2.postprocessors import (
 class YoutubeDlParams:
     def __init__(
         self,
-        logger: logging.Logger | None = None,
         home_dir: pathlib.Path | None = None,
         tmp_dir: pathlib.Path | None = None,
         progress_hooks: list | None = None,
         postprocessor_hooks: list | None = None,
         skip_download: bool = False,
     ) -> None:
-        self.logger = logger
         self.home_dir = home_dir
         self.tmp_dir = tmp_dir
         self.progress_hooks = progress_hooks
@@ -71,8 +69,7 @@ class MusicYoutubeDlBuilder:
             "windowsfilenames": True,
             "skip_download": self.params.skip_download,
         }
-        if self.params.logger:
-            ydl_opts["logger"] = self.params.logger
+        ydl_opts["logger"] = logging.getLogger(__name__ + "." + YoutubeDL.__name__)
         if self.params.home_dir:
             ydl_opts["paths"]["home"] = str(self.params.home_dir)
         if self.params.tmp_dir:

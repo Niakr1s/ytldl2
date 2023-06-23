@@ -1,4 +1,3 @@
-import logging
 import pathlib
 from typing import TypeVar
 
@@ -20,7 +19,6 @@ class TestMusicYoutubeDlBuilder:
     @slow_test
     def test_build(self):
         params = YoutubeDlParams(
-            logger=logging.Logger("logger"),
             home_dir=pathlib.Path("~"),
             tmp_dir=pathlib.Path("f:/"),
             progress_hooks=["progress_hook"],
@@ -33,7 +31,6 @@ class TestMusicYoutubeDlBuilder:
         ydl = builder.build()
 
         ydl_params = ydl.params
-        assert params.logger == ydl_params["logger"]
         assert str(params.home_dir) == ydl_params["paths"]["home"]
         assert str(params.tmp_dir) == ydl_params["paths"]["tmp"]
         assert params.progress_hooks == ydl_params["progress_hooks"]
