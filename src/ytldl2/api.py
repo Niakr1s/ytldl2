@@ -1,6 +1,8 @@
+import json
+import pathlib
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 
-from ytmusicapi import YTMusic
+from ytmusicapi import YTMusic, setup_oauth
 
 from ytldl2.extractor import ExtractError, Extractor
 from ytldl2.models import ChannelId, HomeItems, PlaylistId, Video
@@ -104,3 +106,12 @@ class YtMusicApi:
         return self.get_videos_from_playlist(
             self._extractor.extract_playlist_id_from_artist(artist), limit=limit
         )
+
+
+def user_wide_oauth() -> str:
+    oauth_json_path = pathlib.Path.home() / ".ytldl2" / "oauth.json"
+    oauth_json_path.parent.mkdir(parents=True, exist_ok=True)
+    if oauth_json_path.exists():
+        return oauth_json_path.read_text()
+    else:
+        return json.dumps(setup_oauth(str(oauth_json_path), open_browser=True))
