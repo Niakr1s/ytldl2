@@ -1,3 +1,7 @@
+import os
+
 import pytest
 
-slow_test: pytest.MarkDecorator = pytest.mark.skip(reason="slow test")
+ALL_TESTS = "ALL" in os.environ
+
+slow_test: pytest.MarkDecorator = pytest.mark.skipif(not ALL_TESTS, reason="slow test")
