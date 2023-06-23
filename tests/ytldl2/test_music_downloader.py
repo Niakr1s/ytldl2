@@ -1,5 +1,6 @@
 import logging
 import pathlib
+from typing import TypeVar
 
 import pytest
 from yt_dlp.postprocessor.ffmpeg import FFmpegExtractAudioPP
@@ -118,13 +119,17 @@ class TestMusicDownloader:
         assert videos == res.videos
         assert not res.queue
 
-        def to_video_ids(lst: list):
-            return [x.videoId for x in lst]
-
-        got_downloaded = to_video_ids(res.downloaded)
-        got_failed = to_video_ids(res.failed)
-        got_skipped = to_video_ids(res.skipped)
+        got_downloaded = self.to_video_ids(res.downloaded)
+        got_failed = self.to_video_ids(res.failed)
+        got_skipped = self.to_video_ids(res.skipped)
 
         assert expected_downloaded == got_downloaded
         assert expexted_failed == got_failed
         assert expected_skipped == got_skipped
+
+
+    WithVideoIdT = TypeVar("WithVideoIdT", bound=WithVideoId)
+
+    @staticmethod
+    def to_video_ids(lst: list[WithVideoIdT]):
+        return [x.videoId for x in lst]
