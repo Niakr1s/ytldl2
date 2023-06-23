@@ -54,6 +54,10 @@ class Item:
         self._complete()
         self.queue._skipped.append(Skipped(self.video_id, reason))
 
+    def return_to_queue(self):
+        self._complete()
+        self.queue._queue.append(self.video_id)
+
 
 @dataclass
 class DownloadResult:

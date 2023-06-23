@@ -88,6 +88,22 @@ class TestDownloadQueue:
         assert not queue._failed
         assert expected in queue._skipped
 
+    def test_item__return_to_queue(self, queue: DownloadQueue):
+        item = queue.next()
+        assert item
+        video_id = item.video_id
+
+        item.return_to_queue()
+        res = queue.to_result()
+        assert video_id == res.remained[-1]
+        assert not res.downloaded
+        assert not res.failed
+        assert not res.skipped
+
+        same_item = queue.next()
+        assert same_item
+        assert video_id == same_item.video_id
+
     def test_to_result(self, queue: DownloadQueue):
         res = queue.to_result()
         videos = ["a", "b"]
