@@ -1,7 +1,6 @@
 import pathlib
 import sqlite3
 from datetime import datetime
-from os import PathLike
 from typing import Iterator
 
 from ytldl2.cache import Cache, CachedSongInfo
@@ -34,8 +33,8 @@ class MigrationError(Exception):
 
 
 class SqliteCache(Cache):
-    def __init__(self, db_path: PathLike) -> None:
-        self.db_path = pathlib.Path(db_path)
+    def __init__(self, db_path: pathlib.Path) -> None:
+        self.db_path = db_path
         self.conn: sqlite3.Connection
 
     def open(self) -> None:
