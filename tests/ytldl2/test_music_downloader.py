@@ -4,7 +4,7 @@ import pathlib
 import pytest
 from yt_dlp.postprocessor.ffmpeg import FFmpegExtractAudioPP
 
-from tests.ytldl2.marks import long_test
+from tests.ytldl2.marks import slow_test
 from ytldl2.models import VideoId
 from ytldl2.music_downloader import (
     MusicDownloader,
@@ -15,7 +15,7 @@ from ytldl2.postprocessors import FilterSongPP, LyricsPP, MetadataPP, RetainMain
 
 
 class TestMusicYoutubeDlBuilder:
-    @long_test
+    @slow_test
     def test_build(self):
         params = YoutubeDlParams(
             logger=logging.Logger("logger"),
@@ -68,7 +68,7 @@ class TestMusicDownloader:
         music_home_dir = tmp_path / "home"
         return YoutubeDlParams(home_dir=music_home_dir, tmp_dir=music_tmp_dir)
 
-    @long_test
+    @slow_test
     def test_download(self, ydl_params: YoutubeDlParams):
         ydl_params.skip_download = False
 
@@ -86,7 +86,7 @@ class TestMusicDownloader:
             expected_skipped,
         )
 
-    @long_test
+    @slow_test
     def test_download_with_skip_download(self, ydl_params: YoutubeDlParams):
         ydl_params.skip_download = True
         expected_downloaded = []

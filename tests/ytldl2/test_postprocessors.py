@@ -21,15 +21,15 @@ class TestLyricsPP:
     def lyrics_pp(self) -> LyricsPP:
         return LyricsPP()
 
-    @marks.long_test
+    @marks.slow_test
     def test_get__song_with_lyrics(self, lyrics_pp: LyricsPP):
         assert lyrics_pp.get_lyrics(self.VIDEO_ID_WITH_LYRICS)
 
-    @marks.long_test
+    @marks.slow_test
     def test_get__song_without_lyrics(self, lyrics_pp: LyricsPP):
         assert not lyrics_pp.get_lyrics(self.VIDEO_ID_WITHOUT_LYRICS)
 
-    @marks.long_test
+    @marks.slow_test
     def test_run__song_with_lyrics(
         self, lyrics_pp: LyricsPP, monkeypatch: pytest.MonkeyPatch
     ):
@@ -39,7 +39,7 @@ class TestLyricsPP:
         lyrics_pp.run(info)
         assert info["lyrics"]
 
-    @marks.long_test
+    @marks.slow_test
     def test_run__song_without_lyrics(
         self, lyrics_pp: LyricsPP, monkeypatch: pytest.MonkeyPatch
     ):
