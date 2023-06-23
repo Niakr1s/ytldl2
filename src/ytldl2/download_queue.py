@@ -109,7 +109,7 @@ class DownloadQueue:
 
         Raises:
             DownloadQueueHasUncompleteItem: Raises when some item retrieved
-            from self.remained via __next__ method, but had not marked as completed.
+            from self.remained via next method, but had not marked as completed.
 
         Returns:
             DownloadResult: _description_
