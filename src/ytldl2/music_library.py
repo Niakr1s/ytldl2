@@ -38,3 +38,38 @@ class MusicLibraryConfig(BaseModel):
             config.save()
             print(f"created new config at {config_path}")
             return config
+
+
+class MusicLibrary:
+    def __init__(
+        self,
+        home_dir: pathlib.Path,
+        skip_download: bool = False,
+    ):
+        self.home_dir = home_dir
+        self.dot_dir = home_dir / ".ytldl2"
+        self._init_dirs([self.home_dir, self.dot_dir])
+
+        self.config = MusicLibraryConfig.load(self.dot_dir / "config.json")
+        self._downloader = self._init_downloader(
+            home_dir=home_dir, skip_download=skip_download
+        )
+
+    @staticmethod
+    def _init_dirs(dirs: list[pathlib.Path]):
+        for dir in dirs:
+            dir.mkdir(parents=True, exist_ok=True)
+
+    @staticmethod
+    def _init_downloader(
+        home_dir: pathlib.Path, skip_download: bool
+    ) -> MusicDownloader:
+        tmp_dir = pathlib.Path(tempfile.mkdtemp(suffix=".ytldl2_"))
+        ydl_params = YoutubeDlParams(
+            home_dir=home_dir,
+            tmp_dir=tmp_dir,
+            skip_download=skip_download,
+        )
+
+        cache = SqliteCache(home_dir / "cache.db")
+        return MusicDownloader(cache=cache, ydl_params=ydl_params)
