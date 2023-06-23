@@ -84,15 +84,15 @@ class MusicDownloader:
     """
 
     def __init__(
-        self, cache: Cache, youtubedl_params: YoutubeDlParams = YoutubeDlParams()
+        self, cache: Cache, ydl_params: YoutubeDlParams = YoutubeDlParams()
     ) -> None:
         """
         :param cache: Songs, contained in cache, will be skipped.
         :param youtubedl_params: Params, of which instance of SongYoutubeDlBuilder
         will be created.
         """
-        self.cache = cache
-        self.ydl = MusicYoutubeDlBuilder(youtubedl_params).build()
+        self._cache = cache
+        self._ydl_builder = MusicYoutubeDlBuilder(ydl_params)
 
     def download(
         self, videos: list[Video], cancellation_token: CancellationToken | None = None
@@ -101,8 +101,10 @@ class MusicDownloader:
         Download songs in best quality in current thread.
         Downloads only songs (e.g skips videos).
         """
+        ydl = self._ydl_builder.build()
+
         for video in videos:
             if cancellation_token and cancellation_token.kill_requested:
                 return
-            with self.ydl:
-                self.ydl.download([video.videoId])
+            with ydl:
+                ydl.download([video.videoId])
