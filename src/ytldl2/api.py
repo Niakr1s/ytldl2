@@ -108,8 +108,10 @@ class YtMusicApi:
         )
 
 
-def user_wide_oauth() -> str:
-    oauth_json_path = pathlib.Path.home() / ".ytldl2" / "oauth.json"
+def get_oauth(
+    oauth_json_path: pathlib.Path = pathlib.Path.home() / ".ytldl2" / "oauth.json",
+) -> str:
+    """"""
     oauth_json_path.parent.mkdir(parents=True, exist_ok=True)
     if oauth_json_path.exists():
         return oauth_json_path.read_text()
