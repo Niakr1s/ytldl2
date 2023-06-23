@@ -5,6 +5,7 @@ import pytest
 from ytldl2.download_queue import (
     Downloaded,
     DownloadQueue,
+    DownloadQueueHasUncompleteItem,
     Failed,
     Item,
     ItemAlreadyCompletedError,
@@ -80,3 +81,17 @@ class TestDownloadQueue:
         assert not queue.downloaded
         assert not queue.failed
         assert expected in queue.skipped
+
+    def test_to_result(self, queue: DownloadQueue):
+        res = queue.to_result()
+        videos = ["a", "b"]
+        assert videos == res.videos
+        assert list(reversed(videos)) == res.remained
+        assert not res.downloaded
+        assert not res.failed
+        assert not res.skipped
+
+    def test_to_result__item_uncompleted(self, queue: DownloadQueue):
+        queue.__next__()
+        with pytest.raises(DownloadQueueHasUncompleteItem):
+            queue.to_result()

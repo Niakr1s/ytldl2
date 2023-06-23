@@ -55,9 +55,24 @@ class Item:
         self.queue.skipped.append(Skipped(self.video_id, reason))
 
 
+@dataclass
+class DownloadResult:
+    videos: list[VideoId]
+    """Initial video list. Always remains unchanged."""
+    remained: list[VideoId]
+    """Queue of videos, waiting to be downloaded."""
+    downloaded: list[Downloaded]
+    failed: list[Failed]
+    skipped: list[Skipped]
+
+
+class DownloadQueueHasUncompleteItem(Exception):
+    pass
+
+
 class DownloadQueue:
     def __init__(self, videos: list[VideoId]) -> None:
-        self.videos: list[VideoId] = videos
+        self.videos: list[VideoId] = videos[:]
         """Initial video list. Always remains unchanged."""
         self.remained: list[VideoId] = list(reversed(videos))
         """Queue of videos, waiting to be downloaded."""
@@ -87,3 +102,24 @@ class DownloadQueue:
         except IndexError:
             raise StopIteration
         return Item(self, next_video_id)
+
+    def to_result(self) -> DownloadResult:
+        """Returns download reuslt. Makes copies of inner data.
+
+        Raises:
+            DownloadQueueHasUncompleteItem: Raises when some item retrieved
+            from self.remained via __next__ method, but had not marked as completed.
+
+        Returns:
+            DownloadResult: _description_
+        """
+        if self._has_incompleted_item:
+            raise DownloadQueueHasUncompleteItem
+
+        return DownloadResult(
+            self.videos[:],
+            self.remained[:],
+            self.downloaded[:],
+            self.failed[:],
+            self.skipped[:],
+        )
