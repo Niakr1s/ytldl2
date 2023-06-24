@@ -5,6 +5,7 @@ import tempfile
 from pydantic import BaseModel, Field
 
 from ytldl2.api import YtMusicApi
+from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models import Title
 from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
 from ytldl2.oauth import get_oauth
@@ -80,12 +81,19 @@ class MusicLibrary:
         cache = SqliteCache(home_dir / "cache.db")
         return MusicDownloader(cache=cache, ydl_params=ydl_params)
 
-    def update(self):
+    def update(self, cancellation_token: CancellationToken = CancellationToken()):
         """
         Updates library
         """
         home_items = self._api.get_home_items()
         home_items = home_items.filtered(
+            incl_videos=None,
             incl_playlists=self.config.include_playlists,
             incl_channels=self.config.include_channels,
         )
+
+        videos = self._api.get_videos(home_items=home_items)
+        result = self._downloader.download(
+            videos=[v.videoId for v in videos], cancellation_token=cancellation_token
+        )
+        print(result)
