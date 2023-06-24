@@ -1,6 +1,16 @@
 import pathlib
 
 import pytest
+from ytldl2.models import (
+    BrowseId,
+    Channel,
+    HomeItems,
+    Playlist,
+    PlaylistId,
+    Title,
+    Video,
+    VideoId,
+)
 from ytldl2.music_library import (
     MusicLibrary,
     MusicLibraryConfig,
@@ -19,7 +29,7 @@ class TestMusicLibraryConfig:
         assert config.include_playlists == default_include_playlists()
         assert config.include_channels is not None
 
-        include_channels = ["1", "2", "3"]
+        include_channels = [Title("1"), Title("2"), Title("3")]
         config.include_channels = include_channels
         config.save()
 
@@ -40,3 +50,32 @@ class TestMusicLibrary:
         assert library.dot_dir.exists()
         assert (config_path := library.config.config_path).exists()
         assert config_path.read_text()
+
+    def test_filter_home_items(self):
+        video_titles = ["video 1", "video 2"]
+        playlist_titles = ["playlist 1", "playlist 2"]
+        channel_titles = ["channel 1", "channel 2"]
+
+        home_items = HomeItems(
+            videos=[
+                Video(videoId=VideoId(str(id)), title=Title(title))
+                for id, title in enumerate(video_titles)
+            ],
+            playlists=[
+                Playlist(playlistId=PlaylistId(str(id)), title=Title(title))
+                for id, title in enumerate(playlist_titles)
+            ],
+            channels=[
+                Channel(browseId=BrowseId(str(id)), title=Title(title))
+                for id, title in enumerate(channel_titles)
+            ],
+        )
+
+        filtered = MusicLibrary.filter_home_items(
+            home_items,
+            incl_videos=None,
+            incl_playlists=None,
+            incl_channels=None,
+        )
+
+        assert filtered.is_empty()

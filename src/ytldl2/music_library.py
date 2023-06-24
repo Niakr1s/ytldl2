@@ -5,20 +5,21 @@ import tempfile
 from pydantic import BaseModel, Field
 
 from ytldl2.api import YtMusicApi
+from ytldl2.models import HomeItems, Title
 from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
 from ytldl2.oauth import get_oauth
 from ytldl2.sqlite_cache import SqliteCache
 
 
-def default_include_playlists() -> list[str]:
+def default_include_playlists() -> list[Title]:
     my_mixes = (f"My Mix {i}" for i in range(1, 7))
-    return ["My Supermix", *my_mixes]
+    return [Title(x) for x in ["My Supermix", *my_mixes]]
 
 
 class MusicLibraryConfig(BaseModel):
     config_path: pathlib.Path
-    include_playlists: list[str] = Field(default_factory=default_include_playlists)
-    include_channels: list[str] = []
+    include_playlists: list[Title] = Field(default_factory=default_include_playlists)
+    include_channels: list[Title] = []
 
     def save(self):
         """Saves config to config_path."""
@@ -78,3 +79,32 @@ class MusicLibrary:
 
         cache = SqliteCache(home_dir / "cache.db")
         return MusicDownloader(cache=cache, ydl_params=ydl_params)
+
+    def update(self):
+        """
+        Updates library
+        """
+        home_items = self._api.get_home_items()
+        home_items = self.filter_home_items(
+            home_items,
+            incl_videos=[],
+            incl_playlists=self.config.include_playlists,
+            incl_channels=self.config.include_channels,
+        )
+
+    @staticmethod
+    def filter_home_items(
+        home_items: HomeItems,
+        /,
+        incl_videos: list[Title] | None = None,
+        incl_playlists: list[Title] | None = None,
+        incl_channels: list[Title] | None = None,
+    ) -> HomeItems:
+        """
+        Filters home items according to config.
+        """
+        return HomeItems(
+            [x for x in home_items.videos if x.title in (incl_videos or [])],
+            [x for x in home_items.playlists if x.title in (incl_playlists or [])],
+            [x for x in home_items.channels if x.title in (incl_channels or [])],
+        )
