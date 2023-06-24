@@ -225,9 +225,6 @@ SELECT id,
             lyrics=info[5],
         )
 
-    def get_infos(self, video_ids: list[VideoId]) -> dict[VideoId, SongInfo | None]:
-        return {id: self.get_info(id) for id in video_ids}
-
     def _apply_migrations_if_needed(self):
         if (db_version := self.db_version) < 0:
             raise MigrationError("db version is < 0")

@@ -49,8 +49,4 @@ class Cache(Protocol):
         ...
 
     def get_infos(self, video_ids: list[VideoId]) -> dict[VideoId, SongInfo | None]:
-        """
-        Gets infos for video_ids. Garanteed, that result dict contains
-        all requested video ids as keys.
-        """
-        ...
+        return {id: self.get_info(id) for id in video_ids}
