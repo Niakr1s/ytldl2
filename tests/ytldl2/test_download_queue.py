@@ -1,12 +1,12 @@
 import pathlib
 
 import pytest
-
 from ytldl2.download_queue import (
     Downloaded,
     DownloadQueue,
     DownloadQueueHasUncompleteItem,
     Failed,
+    Filtered,
     Item,
     ItemModifyNotAllowed,
     ItemNotCompletedError,
@@ -42,6 +42,8 @@ class TestDownloadQueue:
             item.complete_as_failed(Exception())
         with pytest.raises(ItemModifyNotAllowed):
             item.complete_as_skipped("")
+        with pytest.raises(ItemModifyNotAllowed):
+            item.complete_as_filtered("")
 
     def test_item__complete_as_downloaded(self, queue: DownloadQueue):
         item = queue.next()
@@ -59,6 +61,22 @@ class TestDownloadQueue:
         assert not res.failed
         assert not res.skipped
 
+    def test_item__complete_as_filtered(self, queue: DownloadQueue):
+        item = queue.next()
+        assert item
+        item.complete_as_filtered("filtered")
+        self.item_can_not_be_completed_twice(item)
+
+        video_id = item.video_id
+        expected = Filtered(item.video_id, "filtered")
+        res = queue.to_result()
+
+        assert video_id not in res.queue
+        assert not res.downloaded
+        assert expected in res.filtered
+        assert not res.failed
+        assert not res.skipped
+
     def test_item__complete_as_failed(self, queue: DownloadQueue):
         item = queue.next()
         assert item
@@ -72,6 +90,7 @@ class TestDownloadQueue:
 
         assert video_id not in res.queue
         assert not res.downloaded
+        assert not res.filtered
         assert expected in res.failed
         assert not res.skipped
 
@@ -88,6 +107,7 @@ class TestDownloadQueue:
 
         assert video_id not in res.queue
         assert not res.downloaded
+        assert not res.filtered
         assert not res.failed
         assert expected in res.skipped
 
@@ -99,6 +119,7 @@ class TestDownloadQueue:
         item.return_to_queue()
         res = queue.to_result()
         assert video_id == res.queue[-1]
+        assert not res.filtered
         assert not res.downloaded
         assert not res.failed
         assert not res.skipped
@@ -115,6 +136,7 @@ class TestDownloadQueue:
         assert not res.downloaded
         assert not res.failed
         assert not res.skipped
+        assert not res.filtered
 
     def test_to_result__with_incompleted_item(self, queue: DownloadQueue):
         assert queue.next()
@@ -127,6 +149,7 @@ class TestDownloadQueue:
             res = queue.to_result()
             assert ["a", "b"] == res.videos
             assert res.downloaded
+            assert not res.filtered
             assert not res.failed
             assert not res.skipped
 

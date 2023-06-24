@@ -145,6 +145,10 @@ class MusicDownloader:
                 current_item.return_to_queue()
                 return queue.to_result()
 
+            if self._skip_download:
+                current_item.complete_as_skipped("skip_download")
+                continue
+
             if current_item.video_id in self._cache:
                 current_item.complete_as_skipped("already in cache")
                 continue
@@ -153,10 +157,8 @@ class MusicDownloader:
                 try:
                     ydl.download([current_item.video_id])
                     # complete_as_* will be operated in progress_hook function from now
-                    if self._skip_download:
-                        current_item.complete_as_skipped("skip_download")
-                except SongFiltered as song_filtered:
-                    current_item.complete_as_skipped(str(song_filtered))
+                except SongFiltered:
+                    current_item.complete_as_filtered("not a song")
                 except DownloadQueueHasUncompleteItem:
                     raise
                 except Exception as e:

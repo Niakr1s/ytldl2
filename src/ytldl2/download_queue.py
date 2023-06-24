@@ -10,6 +10,11 @@ class Downloaded(WithVideoId):
 
 
 @dataclass
+class Filtered(WithVideoId):
+    filtered_reason: str
+
+
+@dataclass
 class Failed(WithVideoId):
     error: Exception
 
@@ -43,6 +48,12 @@ class Item:
         self._complete()
         self.queue._downloaded.append(Downloaded(self.video_id, path))
 
+    def complete_as_filtered(self, filtered_reason: str):
+        self._complete()
+        self.queue._filtered.append(
+            Filtered(self.video_id, filtered_reason=filtered_reason)
+        )
+
     def complete_as_failed(self, error: Exception):
         self._complete()
         self.queue._failed.append(Failed(self.video_id, error))
@@ -65,9 +76,13 @@ class DownloadResult:
     """Initial video list. Always remains unchanged."""
     queue: list[VideoId]
     """Queue of videos, waiting to be downloaded."""
+
     downloaded: list[Downloaded]
-    failed: list[Failed]
+    filtered: list[Filtered]
+
     skipped: list[Skipped]
+
+    failed: list[Failed]
 
 
 class DownloadQueueHasUncompleteItem(Exception):
@@ -81,6 +96,7 @@ class DownloadQueue:
         self._queue: list[VideoId] = list(reversed(videos))
         """Queue of videos, waiting to be downloaded."""
         self._downloaded: list[Downloaded] = []
+        self._filtered: list[Filtered] = []
         self._failed: list[Failed] = []
         self._skipped: list[Skipped] = []
 
@@ -126,6 +142,7 @@ class DownloadQueue:
             self._videos[:],
             self._queue[:],
             self._downloaded[:],
-            self._failed[:],
+            self._filtered[:],
             self._skipped[:],
+            self._failed[:],
         )
