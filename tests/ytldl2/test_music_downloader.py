@@ -89,7 +89,9 @@ class TestMusicDownloader:
             expected_skipped,
             cache=(cache := SqliteCache()),
         )
-        assert set(expected_downloaded) == in_cache_info(cache, expected_downloaded)
+        assert set(expected_downloaded) == set(
+            cache.get_infos(expected_downloaded).keys()
+        )
 
     @slow_test
     def test_download__respects_cache(self, ydl_params: YoutubeDlParams):
@@ -131,7 +133,7 @@ class TestMusicDownloader:
             expected_skipped,
             cache=(cache := SqliteCache()),
         )
-        assert set(expected_skipped) == in_cache_info(cache, expected_skipped)
+        assert set(expected_skipped) == set(cache.get_infos(expected_skipped).keys())
 
     def test_download__cancellation_token(self, ydl_params: YoutubeDlParams):
         ydl_params.skip_download = True
@@ -180,8 +182,3 @@ class TestMusicDownloader:
     @staticmethod
     def to_video_ids(lst: list[WithVideoIdT]):
         return [x.videoId for x in lst]
-
-
-def in_cache_info(cache: Cache, keys: list[VideoId]) -> set[VideoId]:
-    """Gets all non-none video ids of cached song info."""
-    return {info.id for x in keys if (info := cache.get_info(x)) is not None}
