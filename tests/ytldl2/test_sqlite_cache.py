@@ -105,6 +105,19 @@ class TestSqliteCache:
         cached_info = cache.get_info(info.id)
         assert info == cached_info
 
+    def test_get_song_info(self, cache: SqliteCache):
+        old_info = self.SONG_INFO
+        old_id = old_info.id
+        cache.set_info(self.SONG_INFO)
+
+        new_info: SongInfo = old_info.copy()
+        new_id = VideoId("new id")
+        new_info.id = new_id
+        cache.set_info(new_info)
+
+        assert old_info == cache.get_info(old_id)
+        assert new_info == cache.get_info(new_id)
+
     def test_set_get_song_info_null_values(self, cache: SqliteCache):
         info = self.SONG_INFO.copy()
         info.channel = None
