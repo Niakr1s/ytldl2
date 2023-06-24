@@ -145,10 +145,6 @@ class MusicDownloader:
                 current_item.complete_as_skipped("cancelled")
                 continue
 
-            if self._skip_download:
-                current_item.complete_as_skipped("skip_download")
-                continue
-
             if current_item.video_id in self._cache:
                 current_item.complete_as_skipped("already in cache")
                 continue
@@ -160,6 +156,8 @@ class MusicDownloader:
                         current_item.video_id, download=not self._skip_download
                     )
                     info = self._raw_info_to_info(raw_info)
+                    if self._skip_download:
+                        current_item.complete_as_skipped("skip_download")
                     # complete_as_* will be operated in progress_hook function from now
                 except SongFiltered:
                     current_item.complete_as_filtered("not a song")
