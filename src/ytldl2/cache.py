@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Iterator, Protocol
 
+import pydantic
+
 from ytldl2.models import VideoId
 
 
@@ -12,6 +14,23 @@ class CachedVideo:
     @property
     def url(self) -> str:
         return f"https://www.youtube.com/watch?v={self.video_id}"
+
+
+class BaseInfo(pydantic.BaseModel):
+    id: VideoId
+    title: str
+    duration: int
+    channel: str | None
+    """I'm pretty sure it won't have None, but made optional just in case"""
+
+
+class VideoInfo(BaseInfo):
+    pass
+
+
+class SongInfo(BaseInfo):
+    artist: str
+    lyrics: str | None
 
 
 class Cache(Protocol):
@@ -30,4 +49,10 @@ class Cache(Protocol):
         ...
 
     def __iter__(self) -> Iterator[VideoId]:
+        ...
+
+    def set_info(self, video_info: BaseInfo):
+        ...
+
+    def get_info(self, video_id: VideoId) -> BaseInfo | None:
         ...
