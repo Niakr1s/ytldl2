@@ -15,11 +15,6 @@ class CachedSongInfo:
 
 
 class Cache(Protocol):
-    def open(self) -> None:
-        """
-        Should init cache.
-        """
-
     def close(self) -> None:
         """
         Should force dump data and close resources.

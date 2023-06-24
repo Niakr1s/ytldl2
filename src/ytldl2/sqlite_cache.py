@@ -66,27 +66,28 @@ class SqliteCache(Cache):
         :param db_path: Can be also ":memory:" for RAM usage.
         """
         self.db_path: pathlib.Path | Literal[":memory:"] = db_path
-        self.conn: sqlite3.Connection
-
-    def open(self) -> None:
-        db_path: str
-
-        match self.db_path:
-            case pathlib.Path():
-                if not self.db_path.exists():
-                    self.db_path.touch()
-                db_path = str(self.db_path)
-            case ":memory:":
-                db_path = self.db_path
-            case _:
-                raise ValueError(
-                    f"db path {self.db_path} is nor file path, nor ':memory:'"
-                )
-
-        self.conn = sqlite3.connect(db_path)
+        self.conn = self._init_connection(self.db_path)
         self._apply_migrations_if_needed()
-
         len(self)  # calling to ensure that db is valid
+
+    @staticmethod
+    def _init_connection(
+        db_path: pathlib.Path | Literal[":memory:"],
+    ) -> sqlite3.Connection:
+        db_path_str: str
+
+        match db_path:
+            case pathlib.Path():
+                if not db_path.exists():
+                    db_path.touch()
+                db_path_str = str(db_path)
+            case ":memory:":
+                db_path_str = db_path
+            case _:
+                raise ValueError(f"db path {db_path} is nor file path, nor ':memory:'")
+
+        conn = sqlite3.connect(db_path_str)
+        return conn
 
     def close(self) -> None:
         self.conn.commit()

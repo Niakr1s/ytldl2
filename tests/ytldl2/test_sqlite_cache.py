@@ -25,17 +25,15 @@ class TestSqliteCache:
 
     @pytest.fixture
     def cache(self, tmp_path: pathlib.Path):
-        cache = SqliteCache(tmp_path / "cache.db")
-        cache.open()
-        return cache
+        return SqliteCache(tmp_path / "cache.db")
 
     def test_empty_cache(self, cache):
         assert cache.db_version > 0
         assert len(cache) == 0
 
-    def test_open_invalid_cache(self, invalid_cache_path):
+    def test_init_invalid_cache(self, invalid_cache_path):
         with pytest.raises((sqlite3.DatabaseError)):
-            SqliteCache(invalid_cache_path).open()
+            SqliteCache(invalid_cache_path)
 
     def test_close(self, cache: SqliteCache):
         cache.set(MOCK_SONG)
@@ -43,7 +41,6 @@ class TestSqliteCache:
         cache.close()
 
         new_cache = SqliteCache(cache.db_path)
-        new_cache.open()
 
         new_video_ids = list(new_cache)
         assert set(video_ids) == set(new_video_ids)
