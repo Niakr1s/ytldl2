@@ -12,7 +12,6 @@ from ytldl2.download_queue import (
     DownloadResult,
     Item,
 )
-from ytldl2.memory_cache import MemoryCache
 from ytldl2.models import VideoId
 from ytldl2.postprocessors import (
     FilterSongPP,
@@ -21,6 +20,7 @@ from ytldl2.postprocessors import (
     RetainMainArtistPP,
     SongFiltered,
 )
+from ytldl2.sqlite_cache import SqliteCache
 
 
 class YoutubeDlParams:
@@ -96,7 +96,7 @@ class MusicDownloader:
 
     def __init__(
         self,
-        cache: Cache = MemoryCache(),
+        cache: Cache = SqliteCache(),
         ydl_params: YoutubeDlParams = YoutubeDlParams(),
     ) -> None:
         """

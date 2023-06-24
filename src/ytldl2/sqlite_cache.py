@@ -1,7 +1,7 @@
 import pathlib
 import sqlite3
 from datetime import datetime
-from typing import Iterator
+from typing import Iterator, Literal
 
 from ytldl2.cache import Cache, CachedSongInfo
 from ytldl2.models import VideoId
@@ -59,15 +59,31 @@ class MigrationError(Exception):
 
 
 class SqliteCache(Cache):
-    def __init__(self, db_path: pathlib.Path) -> None:
-        self.db_path = db_path
+    def __init__(
+        self, db_path: pathlib.Path | Literal[":memory:"] = ":memory:"
+    ) -> None:
+        """
+        :param db_path: Can be also ":memory:" for RAM usage.
+        """
+        self.db_path: pathlib.Path | Literal[":memory:"] = db_path
         self.conn: sqlite3.Connection
 
     def open(self) -> None:
-        if not self.db_path.exists():
-            self.db_path.touch()
+        db_path: str
 
-        self.conn = sqlite3.connect(self.db_path)
+        match self.db_path:
+            case pathlib.Path():
+                if not self.db_path.exists():
+                    self.db_path.touch()
+                db_path = str(self.db_path)
+            case ":memory:":
+                db_path = self.db_path
+            case _:
+                raise ValueError(
+                    f"db path {self.db_path} is nor file path, nor ':memory:'"
+                )
+
+        self.conn = sqlite3.connect(db_path)
         self._apply_migrations_if_needed()
 
         len(self)  # calling to ensure that db is valid

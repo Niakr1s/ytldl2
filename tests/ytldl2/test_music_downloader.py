@@ -5,7 +5,6 @@ import pytest
 from yt_dlp.postprocessor.ffmpeg import FFmpegExtractAudioPP
 from ytldl2.cache import Cache, CachedSongInfo
 from ytldl2.cancellation_tokens import CancellationToken
-from ytldl2.memory_cache import MemoryCache
 from ytldl2.models import VideoId, WithVideoId
 from ytldl2.music_downloader import (
     MusicDownloader,
@@ -13,6 +12,7 @@ from ytldl2.music_downloader import (
     YoutubeDlParams,
 )
 from ytldl2.postprocessors import FilterSongPP, LyricsPP, MetadataPP, RetainMainArtistPP
+from ytldl2.sqlite_cache import SqliteCache
 
 from tests.ytldl2.marks import slow_test
 
@@ -92,7 +92,7 @@ class TestMusicDownloader:
     @slow_test
     def test_download__respects_cache(self, ydl_params: YoutubeDlParams):
         ydl_params.skip_download = True
-        cache = MemoryCache()
+        cache = SqliteCache()
 
         for v in self.VIDEOS:
             cache.set(CachedSongInfo(v, None))
@@ -139,7 +139,7 @@ class TestMusicDownloader:
         expected_filtered: list[VideoId],
         expexted_failed: list[VideoId],
         expected_skipped: list[VideoId],
-        cache: Cache = MemoryCache(),
+        cache: Cache = SqliteCache(),
     ):
         downloader = MusicDownloader(ydl_params=ydl_params, cache=cache)
         res = downloader.download(videos)
