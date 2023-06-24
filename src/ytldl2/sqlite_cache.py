@@ -203,7 +203,7 @@ INSERT INTO song_info (
             ],
         )
 
-    def get_info(self, video_id: VideoId) -> SongInfo:
+    def get_info(self, video_id: VideoId) -> SongInfo | None:
         sql = r"""
 SELECT id,
        title,
@@ -214,14 +214,15 @@ SELECT id,
   FROM song_info
   WHERE id = ?
         """
-        cur = self.conn.execute(sql, [video_id]).fetchone()
+        if not (info := self.conn.execute(sql, [video_id]).fetchone()):
+            return None
         return SongInfo(
-            id=cur[0],
-            title=cur[1],
-            duration=cur[2],
-            channel=cur[3],
-            artist=cur[4],
-            lyrics=cur[5],
+            id=info[0],
+            title=info[1],
+            duration=info[2],
+            channel=info[3],
+            artist=info[4],
+            lyrics=info[5],
         )
 
     def _apply_migrations_if_needed(self):
