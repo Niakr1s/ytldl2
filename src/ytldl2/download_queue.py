@@ -72,17 +72,27 @@ class Item:
 
 @dataclass
 class DownloadResult:
+    """
+    Result of download.
+    Attributes, that are intended to be cached are: downloaded and filtered.
+    """
+
     videos: list[VideoId]
     """Initial video list. Always remains unchanged."""
     queue: list[VideoId]
     """Queue of videos, waiting to be downloaded."""
 
     downloaded: list[Downloaded]
+    """List of downloaded items. Should be cached by caller."""
+
     filtered: list[Filtered]
+    """List of filtered items. Should be cached by caller."""
 
     skipped: list[Skipped]
+    """Just skipped. Should not be cached by caller."""
 
     failed: list[Failed]
+    """Failed due to external reasons, e.g network problems etc."""
 
 
 class DownloadQueueHasUncompleteItem(Exception):
@@ -90,15 +100,25 @@ class DownloadQueueHasUncompleteItem(Exception):
 
 
 class DownloadQueue:
+    """
+    Download queue of videos. User can get next item via next() method. For full
+    description of it usage, see .next() doc.
+    """
+
     def __init__(self, videos: list[VideoId]) -> None:
         self._videos: list[VideoId] = videos[:]
         """Initial video list. Always remains unchanged."""
         self._queue: list[VideoId] = list(reversed(videos))
         """Queue of videos, waiting to be downloaded."""
+
         self._downloaded: list[Downloaded] = []
+        """List of downloaded items. Should be cached."""
         self._filtered: list[Filtered] = []
+        """List of filtered items. These items are intendend to be cached too."""
         self._failed: list[Failed] = []
+        """List of items, that failed to download."""
         self._skipped: list[Skipped] = []
+        """List of items, skipped due to various reasons."""
 
         self._has_incompleted_item = False
 
@@ -109,6 +129,10 @@ class DownloadQueue:
         """Iterates over self.remained videos. Doesn't throw StopIteration - instead,
         returns None if no items remained.
         User should use .complete_as method on each item to mark it as completed.
+        User can also return item to queue using .return_to_queue method.
+        If user don't mark or return item, next call to this method will raise
+        ItemNotCompletedError.
+
         Raises:
             ItemNotCompletedError: Raised when previously retrieved item
             is not marked as completed.
