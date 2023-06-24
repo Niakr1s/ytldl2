@@ -131,6 +131,16 @@ class TestMusicDownloader:
             expected_skipped,
         )
 
+    def test_download__cancellation_token(self, ydl_params: YoutubeDlParams):
+        ydl_params.skip_download = True
+
+        token = CancellationToken()
+        token.request_kill()
+
+        self._test_download(
+            ydl_params, self.VIDEOS, [], [], [], self.VIDEOS[:], token=token
+        )
+
     def _test_download(
         self,
         ydl_params: YoutubeDlParams,
@@ -140,9 +150,10 @@ class TestMusicDownloader:
         expexted_failed: list[VideoId],
         expected_skipped: list[VideoId],
         cache: Cache = SqliteCache(),
+        token: CancellationToken = CancellationToken(),
     ):
         downloader = MusicDownloader(ydl_params=ydl_params, cache=cache)
-        res = downloader.download(videos)
+        res = downloader.download(videos, cancellation_token=token)
 
         assert videos == res.videos
         assert not res.queue
@@ -156,21 +167,6 @@ class TestMusicDownloader:
         assert expected_filtered == got_filtered
         assert expexted_failed == got_failed
         assert expected_skipped == got_skipped
-
-    def test_download__cancellation_token(self, ydl_params: YoutubeDlParams):
-        ydl_params.skip_download = True
-
-        token = CancellationToken()
-        token.request_kill()
-
-        downloader = MusicDownloader()
-
-        res = downloader.download(self.VIDEOS, cancellation_token=token)
-        assert self.VIDEOS == res.videos
-        assert list(reversed(self.VIDEOS)) == res.queue
-        assert not res.downloaded
-        assert not res.skipped
-        assert not res.failed
 
     WithVideoIdT = TypeVar("WithVideoIdT", bound=WithVideoId)
 

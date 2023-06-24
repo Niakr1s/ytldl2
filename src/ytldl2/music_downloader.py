@@ -142,8 +142,8 @@ class MusicDownloader:
 
         while current_item := queue.next():
             if cancellation_token and cancellation_token.kill_requested:
-                current_item.return_to_queue()
-                break
+                current_item.complete_as_skipped("cancelled")
+                continue
 
             if self._skip_download:
                 current_item.complete_as_skipped("skip_download")
