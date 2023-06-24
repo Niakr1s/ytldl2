@@ -16,19 +16,12 @@ class CachedVideo:
         return f"https://www.youtube.com/watch?v={self.video_id}"
 
 
-class BaseInfo(pydantic.BaseModel):
+class SongInfo(pydantic.BaseModel):
     id: VideoId
     title: str
     duration: int
     channel: str | None
     """I'm pretty sure it won't have None, but made optional just in case"""
-
-
-class VideoInfo(BaseInfo):
-    pass
-
-
-class SongInfo(BaseInfo):
     artist: str
     lyrics: str | None
 
@@ -51,8 +44,8 @@ class Cache(Protocol):
     def __iter__(self) -> Iterator[VideoId]:
         ...
 
-    def set_info(self, video_info: BaseInfo):
+    def set_info(self, video_info: SongInfo):
         ...
 
-    def get_info(self, video_id: VideoId) -> BaseInfo | None:
+    def get_info(self, video_id: VideoId) -> SongInfo | None:
         ...

@@ -4,7 +4,7 @@ from copy import copy
 from time import sleep
 
 import pytest
-from ytldl2.cache import BaseInfo, CachedVideo, SongInfo, VideoInfo
+from ytldl2.cache import CachedVideo, SongInfo
 from ytldl2.models import VideoId
 from ytldl2.sqlite_cache import SqliteCache
 
@@ -90,32 +90,25 @@ class TestSqliteCache:
         diff = cache.last_modified(video_id=MOCK_VIDEO.video_id) - last_modified_old
         assert diff.total_seconds() >= SLEEP_SECS
 
-    BASE_VIDEO_INFO = BaseInfo(
-        id=VideoId("id"), title="title", duration=3, channel="channel"
+    SONG_INFO = SongInfo(
+        id=VideoId("id"),
+        title="title",
+        duration=3,
+        channel="channel",
+        artist="artist",
+        lyrics="lyrics",
     )
 
-    def test_set_get_video_info(self, cache: SqliteCache):
-        info = VideoInfo(**self.BASE_VIDEO_INFO.dict())
-        cache.set_info(info)
-        cached_info = cache.get_info(info.id)
-        assert info == cached_info
-
     def test_set_get_song_info(self, cache: SqliteCache):
-        info = SongInfo(artist="artist", lyrics="lyrics", **self.BASE_VIDEO_INFO.dict())
-        cache.set_info(info)
-        cached_info = cache.get_info(info.id)
-        assert info == cached_info
-
-    def test_set_get_video_info_null_values(self, cache: SqliteCache):
-        info = VideoInfo(**self.BASE_VIDEO_INFO.dict())
-        info.channel = None
-        cache.set_info(info)
+        info = self.SONG_INFO
+        cache.set_info(self.SONG_INFO)
         cached_info = cache.get_info(info.id)
         assert info == cached_info
 
     def test_set_get_song_info_null_values(self, cache: SqliteCache):
-        info = SongInfo(**self.BASE_VIDEO_INFO.dict(), artist="artist")
-        assert not info.lyrics
+        info = self.SONG_INFO.copy()
+        info.channel = None
+        info.lyrics = None
         cache.set_info(info)
         cached_info = cache.get_info(info.id)
         assert info == cached_info

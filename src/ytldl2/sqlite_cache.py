@@ -3,7 +3,7 @@ import sqlite3
 from datetime import datetime
 from typing import Iterator, Literal
 
-from ytldl2.cache import BaseInfo, Cache, CachedVideo, SongInfo, VideoInfo
+from ytldl2.cache import Cache, CachedVideo, SongInfo
 from ytldl2.models import VideoId
 
 SqlCommands = list[str]
@@ -68,15 +68,6 @@ PRAGMA foreign_keys = 1;
         """.split(
             ";"
         ),
-        r"""
-CREATE TABLE video_info (
-    id       TEXT    PRIMARY KEY ON CONFLICT REPLACE
-                     NOT NULL,
-    title    TEXT    NOT NULL,
-    duration INTEGER NOT NULL,
-    channel  TEXT
-);
-        """,
         r"""
 CREATE TABLE song_info (
     id       TEXT    PRIMARY KEY ON CONFLICT REPLACE
@@ -188,37 +179,7 @@ SELECT video_id,
             raise LookupError()
         return datetime.fromisoformat(fetched[0])
 
-    def set_info(self, video_info: BaseInfo):
-        if isinstance(video_info, VideoInfo):
-            self._set_video_info(video_info)
-        elif isinstance(video_info, SongInfo):
-            self._set_song_info(video_info)
-        else:
-            raise ValueError(
-                f"{video_info} is not {SongInfo.__name__} nor {VideoInfo.__name__}"
-            )
-
-    def _set_video_info(self, video_info: VideoInfo):
-        sql = r"""
-INSERT INTO video_info (
-                           id,
-                           title,
-                           duration,
-                           channel
-                       )
-                       VALUES (?, ?, ?, ?);
-            """
-        self.conn.execute(
-            sql,
-            [
-                video_info.id,
-                video_info.title,
-                video_info.duration,
-                video_info.channel,
-            ],
-        )
-
-    def _set_song_info(self, video_info: SongInfo):
+    def set_info(self, song_info: SongInfo):
         sql = r"""
 INSERT INTO song_info (
                           id,
@@ -233,47 +194,16 @@ INSERT INTO song_info (
         self.conn.execute(
             sql,
             [
-                video_info.id,
-                video_info.title,
-                video_info.duration,
-                video_info.channel,
-                video_info.artist,
-                video_info.lyrics,
+                song_info.id,
+                song_info.title,
+                song_info.duration,
+                song_info.channel,
+                song_info.artist,
+                song_info.lyrics,
             ],
         )
 
-    def get_info(self, video_id: VideoId) -> BaseInfo | None:
-        sql = "select id from {} where id = ?"
-        if (
-            self.conn.execute(sql.format("song_info"), [video_id]).fetchone()
-            is not None
-        ):
-            return self._get_song_info(video_id)
-        elif (
-            self.conn.execute(sql.format("video_info"), [video_id]).fetchone()
-            is not None
-        ):
-            return self._get_video_info(video_id)
-        else:
-            return None
-
-    def _get_video_info(self, video_id: VideoId) -> VideoInfo:
-        sql = r"""
-SELECT id,
-       title,
-       duration,
-       channel
-  FROM video_info
-        """
-        cur = self.conn.execute(sql).fetchone()
-        return VideoInfo(
-            id=cur[0],
-            title=cur[1],
-            duration=cur[2],
-            channel=cur[3],
-        )
-
-    def _get_song_info(self, video_id: VideoId) -> SongInfo:
+    def get_info(self, video_id: VideoId) -> SongInfo:
         sql = r"""
 SELECT id,
        title,
@@ -282,8 +212,9 @@ SELECT id,
        artist,
        lyrics
   FROM song_info
+  WHERE id = ?
         """
-        cur = self.conn.execute(sql).fetchone()
+        cur = self.conn.execute(sql, [video_id]).fetchone()
         return SongInfo(
             id=cur[0],
             title=cur[1],
