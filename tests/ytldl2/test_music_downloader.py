@@ -173,6 +173,11 @@ class TestMusicDownloader:
         expected_cache = {*cache_items_before, *expected_downloaded, *expected_filtered}
         assert expected_cache == {x for x in cache}
 
+        cached_info = {
+            info.id for x in expected_cache if (info := cache.get_info(x)) is not None
+        }
+        assert expected_cache == cached_info
+
     WithVideoIdT = TypeVar("WithVideoIdT", bound=WithVideoId)
 
     @staticmethod

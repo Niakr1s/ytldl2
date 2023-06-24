@@ -4,7 +4,7 @@ from typing import Literal, cast
 
 from yt_dlp import YoutubeDL
 
-from ytldl2.cache import Cache, CachedVideo
+from ytldl2.cache import BaseInfo, Cache, CachedVideo, SongInfo, VideoInfo
 from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.download_queue import (
     DownloadQueue,
@@ -153,9 +153,13 @@ class MusicDownloader:
                 current_item.complete_as_skipped("already in cache")
                 continue
 
+            info: BaseInfo | None = None
             with ydl:
                 try:
-                    ydl.download([current_item.video_id])
+                    raw_info = ydl.extract_info(
+                        current_item.video_id, download=not self._skip_download
+                    )
+                    info = self._raw_info_to_info(raw_info)
                     # complete_as_* will be operated in progress_hook function from now
                 except SongFiltered:
                     current_item.complete_as_filtered("not a song")
@@ -163,6 +167,9 @@ class MusicDownloader:
                     raise
                 except Exception as e:
                     current_item.complete_as_failed(e)
+                finally:
+                    if info:
+                        self._cache.set_info(info)
 
         res = queue.to_result()
         for item in res.downloaded:
@@ -170,3 +177,12 @@ class MusicDownloader:
         for item in res.filtered:
             self._cache.set(CachedVideo(item.videoId, item.filtered_reason))
         return res
+
+    @staticmethod
+    def _raw_info_to_info(info) -> BaseInfo | None:
+        try:
+            return SongInfo(**info)
+        except NotImplementedError:
+            return VideoInfo(**info)
+        except Exception:
+            return None
