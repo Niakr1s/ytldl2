@@ -3,7 +3,9 @@ from typing import TypeVar
 
 import pytest
 from yt_dlp.postprocessor.ffmpeg import FFmpegExtractAudioPP
+from ytldl2.cache import Cache, CachedSongInfo
 from ytldl2.cancellation_tokens import CancellationToken
+from ytldl2.memory_cache import MemoryCache
 from ytldl2.models import VideoId, WithVideoId
 from ytldl2.music_downloader import (
     MusicDownloader,
@@ -86,6 +88,25 @@ class TestMusicDownloader:
         )
 
     @slow_test
+    def test_download__respects_cache(self, ydl_params: YoutubeDlParams):
+        ydl_params.skip_download = True
+        cache = MemoryCache()
+
+        for v in self.VIDEOS:
+            cache.set(CachedSongInfo(v, v, v, None))
+        expected_downloaded = []
+        expected_failed = []
+        expected_skipped = self.VIDEOS[:]
+        self._test_download(
+            ydl_params,
+            self.VIDEOS[:],
+            expected_downloaded,
+            expected_failed,
+            expected_skipped,
+            cache=cache,
+        )
+
+    @slow_test
     def test_download_with_skip_download(self, ydl_params: YoutubeDlParams):
         ydl_params.skip_download = True
         expected_downloaded = []
@@ -110,8 +131,9 @@ class TestMusicDownloader:
         expected_downloaded: list[VideoId],
         expexted_failed: list[VideoId],
         expected_skipped: list[VideoId],
+        cache: Cache = MemoryCache(),
     ):
-        downloader = MusicDownloader(ydl_params=ydl_params)
+        downloader = MusicDownloader(ydl_params=ydl_params, cache=cache)
         res = downloader.download(videos)
 
         assert videos == res.videos

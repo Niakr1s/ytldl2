@@ -6,7 +6,12 @@ from yt_dlp import YoutubeDL
 
 from ytldl2.cache import Cache
 from ytldl2.cancellation_tokens import CancellationToken
-from ytldl2.download_queue import DownloadQueue, DownloadResult, Item
+from ytldl2.download_queue import (
+    DownloadQueue,
+    DownloadQueueHasUncompleteItem,
+    DownloadResult,
+    Item,
+)
 from ytldl2.memory_cache import MemoryCache
 from ytldl2.models import VideoId
 from ytldl2.postprocessors import (
@@ -140,6 +145,10 @@ class MusicDownloader:
                 current_item.return_to_queue()
                 return queue.to_result()
 
+            if current_item.video_id in self._cache:
+                current_item.complete_as_skipped("already in cache")
+                continue
+
             with ydl:
                 try:
                     ydl.download([current_item.video_id])
@@ -148,6 +157,8 @@ class MusicDownloader:
                         current_item.complete_as_skipped("skip_download")
                 except SongFiltered as song_filtered:
                     current_item.complete_as_skipped(str(song_filtered))
+                except DownloadQueueHasUncompleteItem:
+                    raise
                 except Exception as e:
                     current_item.complete_as_failed(e)
 
