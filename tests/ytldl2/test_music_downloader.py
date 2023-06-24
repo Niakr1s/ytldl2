@@ -152,6 +152,8 @@ class TestMusicDownloader:
         cache: Cache = SqliteCache(),
         token: CancellationToken = CancellationToken(),
     ):
+        cache_items_before = {x for x in cache}
+
         downloader = MusicDownloader(ydl_params=ydl_params, cache=cache)
         res = downloader.download(videos, cancellation_token=token)
 
@@ -167,6 +169,9 @@ class TestMusicDownloader:
         assert expected_filtered == got_filtered
         assert expexted_failed == got_failed
         assert expected_skipped == got_skipped
+
+        expected_cache = {*cache_items_before, *expected_downloaded, *expected_filtered}
+        assert expected_cache == {x for x in cache}
 
     WithVideoIdT = TypeVar("WithVideoIdT", bound=WithVideoId)
 
