@@ -60,11 +60,18 @@ class TestSqliteCache:
 
         cache.set(MOCK_VIDEO)
         assert len(cache) == 1
-        assert MOCK_VIDEO.video_id in cache
-        assert cache[MOCK_VIDEO.video_id] == MOCK_VIDEO
 
         cache.set(MOCK_VIDEO)
         assert len(cache) == 1
+
+        new_video = MOCK_VIDEO.copy()
+        new_video.video_id = VideoId("new video id")
+        cache.set(new_video)
+        assert len(cache) == 2
+        assert MOCK_VIDEO.video_id in cache
+        assert cache[MOCK_VIDEO.video_id] == MOCK_VIDEO
+        assert new_video.video_id in cache
+        assert cache[new_video.video_id] == new_video
 
     def test_set_updates(self, cache: SqliteCache):
         cache.set(MOCK_VIDEO)
