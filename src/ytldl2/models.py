@@ -83,3 +83,23 @@ class HomeItems:
             and len(self.playlists) == 0
             and len(self.channels) == 0
         )
+
+    def filtered(
+        self,
+        /,
+        incl_videos: list[Title] | None = None,
+        incl_playlists: list[Title] | None = None,
+        incl_channels: list[Title] | None = None,
+    ) -> "HomeItems":
+        """
+        Filters home items and returns new copy.
+        """
+        incl_videos = incl_videos or []
+        incl_playlists = incl_playlists or []
+        incl_channels = incl_channels or []
+
+        return HomeItems(
+            [x for x in self.videos if x.title in incl_videos],
+            [x for x in self.playlists if x.title in incl_playlists],
+            [x for x in self.channels if x.title in incl_channels],
+        )

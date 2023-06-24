@@ -5,7 +5,7 @@ import tempfile
 from pydantic import BaseModel, Field
 
 from ytldl2.api import YtMusicApi
-from ytldl2.models import HomeItems, Title
+from ytldl2.models import Title
 from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
 from ytldl2.oauth import get_oauth
 from ytldl2.sqlite_cache import SqliteCache
@@ -85,26 +85,7 @@ class MusicLibrary:
         Updates library
         """
         home_items = self._api.get_home_items()
-        home_items = self.filter_home_items(
-            home_items,
-            incl_videos=[],
+        home_items = home_items.filtered(
             incl_playlists=self.config.include_playlists,
             incl_channels=self.config.include_channels,
-        )
-
-    @staticmethod
-    def filter_home_items(
-        home_items: HomeItems,
-        /,
-        incl_videos: list[Title] | None = None,
-        incl_playlists: list[Title] | None = None,
-        incl_channels: list[Title] | None = None,
-    ) -> HomeItems:
-        """
-        Filters home items according to config.
-        """
-        return HomeItems(
-            [x for x in home_items.videos if x.title in (incl_videos or [])],
-            [x for x in home_items.playlists if x.title in (incl_playlists or [])],
-            [x for x in home_items.channels if x.title in (incl_channels or [])],
         )
