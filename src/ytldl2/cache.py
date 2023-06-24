@@ -5,7 +5,7 @@ from ytldl2.models import VideoId
 
 
 @dataclass
-class CachedSongInfo:
+class CachedVideo:
     video_id: VideoId
     filtered_reason: str | None
 
@@ -20,10 +20,10 @@ class Cache(Protocol):
         Should force dump data and close resources.
         """
 
-    def set(self, song: CachedSongInfo) -> None:
+    def set(self, video: CachedVideo) -> None:
         ...
 
-    def __getitem__(self, video_id: VideoId) -> CachedSongInfo | None:
+    def __getitem__(self, video_id: VideoId) -> CachedVideo | None:
         ...
 
     def __len__(self) -> int:

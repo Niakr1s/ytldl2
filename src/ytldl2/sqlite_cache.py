@@ -3,7 +3,7 @@ import sqlite3
 from datetime import datetime
 from typing import Iterator, Literal
 
-from ytldl2.cache import Cache, CachedSongInfo
+from ytldl2.cache import Cache, CachedVideo
 from ytldl2.models import VideoId
 
 SqlCommands = list[str]
@@ -42,6 +42,28 @@ INSERT INTO songs (
                          last_modified
                     FROM sqlitestudio_temp_table;
 DROP TABLE sqlitestudio_temp_table;
+PRAGMA foreign_keys = 1;
+        """.split(
+            ";"
+        ),
+        *r"""
+PRAGMA foreign_keys = 0;
+CREATE TABLE cache (
+    video_id        TEXT PRIMARY KEY ON CONFLICT REPLACE
+                         NOT NULL,
+    filtered_reason TEXT,
+    last_modified   TEXT NOT NULL
+);
+INSERT INTO cache (
+                      video_id,
+                      filtered_reason,
+                      last_modified
+                  )
+                  SELECT video_id,
+                         filtered_reason,
+                         last_modified
+                    FROM songs;
+DROP TABLE songs;
 PRAGMA foreign_keys = 1;
         """.split(
             ";"
@@ -93,9 +115,9 @@ class SqliteCache(Cache):
         self.conn.commit()
         self.conn.close()
 
-    def set(self, song: CachedSongInfo) -> None:
+    def set(self, video: CachedVideo) -> None:
         sql = r"""
-INSERT INTO songs (
+INSERT INTO cache (
                       video_id,
                       filtered_reason,
                       last_modified
@@ -109,29 +131,29 @@ INSERT INTO songs (
         self.conn.cursor().execute(
             sql,
             (
-                song.video_id,
-                song.filtered_reason,
+                video.video_id,
+                video.filtered_reason,
                 str(datetime.now()),
             ),
         )
 
-    def __getitem__(self, video_id: VideoId) -> CachedSongInfo | None:
+    def __getitem__(self, video_id: VideoId) -> CachedVideo | None:
         sql = r"""
 SELECT video_id,
        filtered_reason
-  FROM songs
+  FROM cache
  WHERE video_id = ?;
         """
         cur = self.conn.cursor().execute(sql, (video_id,))
-        if not (song := cur.fetchone()):
+        if not (video := cur.fetchone()):
             return None
-        return CachedSongInfo(VideoId(song[0]), song[1])
+        return CachedVideo(VideoId(video[0]), video[1])
 
     def __len__(self) -> int:
         return len(list(self.__iter__()))
 
     def __iter__(self) -> Iterator[VideoId]:
-        sql = r"""select video_id from songs"""
+        sql = r"""select video_id from cache"""
         fetched = self.conn.cursor().execute(sql).fetchall()
         video_ids = [item[0] for item in fetched]
         return video_ids.__iter__()
@@ -139,7 +161,7 @@ SELECT video_id,
     def last_modified(self, video_id: VideoId) -> datetime:
         fetched = (
             self.conn.cursor()
-            .execute("SELECT last_modified FROM songs WHERE video_id = ?;", (video_id,))
+            .execute("SELECT last_modified FROM cache WHERE video_id = ?;", (video_id,))
             .fetchone()
         )
         if not fetched:

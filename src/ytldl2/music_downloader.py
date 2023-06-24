@@ -4,7 +4,7 @@ from typing import Literal, cast
 
 from yt_dlp import YoutubeDL
 
-from ytldl2.cache import Cache, CachedSongInfo
+from ytldl2.cache import Cache, CachedVideo
 from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.download_queue import (
     DownloadQueue,
@@ -166,7 +166,7 @@ class MusicDownloader:
 
         res = queue.to_result()
         for item in res.downloaded:
-            self._cache.set(CachedSongInfo(item.videoId, None))
+            self._cache.set(CachedVideo(item.videoId, None))
         for item in res.filtered:
-            self._cache.set(CachedSongInfo(item.videoId, item.filtered_reason))
+            self._cache.set(CachedVideo(item.videoId, item.filtered_reason))
         return res

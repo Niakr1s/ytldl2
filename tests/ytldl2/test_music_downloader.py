@@ -3,7 +3,7 @@ from typing import TypeVar
 
 import pytest
 from yt_dlp.postprocessor.ffmpeg import FFmpegExtractAudioPP
-from ytldl2.cache import Cache, CachedSongInfo
+from ytldl2.cache import Cache, CachedVideo
 from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models import VideoId, WithVideoId
 from ytldl2.music_downloader import (
@@ -95,7 +95,7 @@ class TestMusicDownloader:
         cache = SqliteCache()
 
         for v in self.VIDEOS:
-            cache.set(CachedSongInfo(v, None))
+            cache.set(CachedVideo(v, None))
         expected_downloaded = []
         expected_filtered = []
         expected_failed = []
