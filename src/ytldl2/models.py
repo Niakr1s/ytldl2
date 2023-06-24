@@ -14,12 +14,15 @@ class WithVideoId:
 
 
 @dataclass
-class Video(WithVideoId):
+class WithTitle:
+    title: Title
+
+
+@dataclass
+class Video(WithTitle, WithVideoId):
     """
     In raw home data, video is entity, that contains "videoId" field.
     """
-
-    title: Title
 
     def is_valid(self) -> bool:
         return bool(self.title) and bool(self.videoId)
@@ -30,13 +33,12 @@ class Video(WithVideoId):
 
 
 @dataclass
-class Playlist:
+class Playlist(WithTitle):
     """
     In raw home data, playlist is entity,
     that contains "playlistId" field.
     """
 
-    title: Title
     playlistId: PlaylistId
 
     def is_valid(self) -> bool:
@@ -48,13 +50,12 @@ class Playlist:
 
 
 @dataclass
-class Channel:
+class Channel(WithTitle):
     """
     In raw home data, channel is entity,
     that contains "subscribers" and "browseId" fields
     """
 
-    title: Title
     browseId: BrowseId
     """Actually, in raw home data, this represents as "browseId"."""
 
