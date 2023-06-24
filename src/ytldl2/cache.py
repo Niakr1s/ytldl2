@@ -7,8 +7,6 @@ from ytldl2.models import VideoId
 @dataclass
 class CachedSongInfo:
     video_id: VideoId
-    title: str
-    artist: str
     filtered_reason: str | None
 
     @property

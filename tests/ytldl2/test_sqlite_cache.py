@@ -4,16 +4,14 @@ from copy import copy
 from time import sleep
 
 import pytest
-
-from tests.ytldl2 import DATA
 from ytldl2.cache import CachedSongInfo
 from ytldl2.models import VideoId
 from ytldl2.sqlite_cache import SqliteCache
 
+from tests.ytldl2 import DATA
+
 MOCK_SONG = CachedSongInfo(
     VideoId("test_video_id"),
-    "test_title",
-    "test_artist",
     "test_filtered_reason",
 )
 
@@ -75,11 +73,8 @@ class TestSqliteCache:
         cache.set(MOCK_SONG)
 
         updated = copy(MOCK_SONG)
-        updated.artist = "new artist"
         cache.set(updated)
-        assert (
-            updated := cache[MOCK_SONG.video_id]
-        ) and updated.artist == updated.artist
+        assert cache[MOCK_SONG.video_id]
 
     def test_iter(self, cache: SqliteCache):
         cache.set(MOCK_SONG)

@@ -20,6 +20,32 @@ CREATE TABLE songs (
     last_modified   TEXT NOT NULL
 );
         """,
+        # created with sqlite SQLiteStudio 3.4.4
+        *r"""
+PRAGMA foreign_keys = 0;
+CREATE TABLE sqlitestudio_temp_table AS SELECT *
+                                          FROM songs;
+DROP TABLE songs;
+CREATE TABLE songs (
+    video_id        TEXT PRIMARY KEY ON CONFLICT REPLACE
+                         NOT NULL,
+    filtered_reason TEXT,
+    last_modified   TEXT NOT NULL
+);
+INSERT INTO songs (
+                      video_id,
+                      filtered_reason,
+                      last_modified
+                  )
+                  SELECT video_id,
+                         filtered_reason,
+                         last_modified
+                    FROM sqlitestudio_temp_table;
+DROP TABLE sqlitestudio_temp_table;
+PRAGMA foreign_keys = 1;
+        """.split(
+            ";"
+        ),
     ],
 ]
 """
@@ -54,14 +80,10 @@ class SqliteCache(Cache):
         sql = r"""
 INSERT INTO songs (
                       video_id,
-                      title,
-                      artist,
                       filtered_reason,
                       last_modified
                   )
                   VALUES (
-                      ?,
-                      ?,
                       ?,
                       ?,
                       ?
@@ -71,8 +93,6 @@ INSERT INTO songs (
             sql,
             (
                 song.video_id,
-                song.title,
-                song.artist,
                 song.filtered_reason,
                 str(datetime.now()),
             ),
@@ -81,8 +101,6 @@ INSERT INTO songs (
     def __getitem__(self, video_id: VideoId) -> CachedSongInfo | None:
         sql = r"""
 SELECT video_id,
-       title,
-       artist,
        filtered_reason
   FROM songs
  WHERE video_id = ?;
@@ -90,7 +108,7 @@ SELECT video_id,
         cur = self.conn.cursor().execute(sql, (video_id,))
         if not (song := cur.fetchone()):
             return None
-        return CachedSongInfo(VideoId(song[0]), song[1], song[2], song[3])
+        return CachedSongInfo(VideoId(song[0]), song[1])
 
     def __len__(self) -> int:
         return len(list(self.__iter__()))
@@ -116,10 +134,9 @@ SELECT video_id,
             raise MigrationError("db version is < 0")
         elif db_version < len(_migrations):
             # actual work here
-            cur = self.conn.cursor()
             for migration in _migrations[db_version:]:
                 for sql in migration:
-                    cur.execute(sql)
+                    self.conn.cursor().execute(sql)
             self._set_db_version(len(_migrations))
             self.conn.commit()
             # migrations ended

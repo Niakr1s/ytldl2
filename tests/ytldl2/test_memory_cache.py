@@ -1,15 +1,12 @@
 from copy import copy
 
 import pytest
-
 from ytldl2.cache import CachedSongInfo
 from ytldl2.memory_cache import MemoryCache
 from ytldl2.models import VideoId
 
 MOCK_SONG = CachedSongInfo(
     VideoId("test_video_id"),
-    "test_title",
-    "test_artist",
     "test_filtered_reason",
 )
 
@@ -37,11 +34,8 @@ class TestMemoryCache:
         cache.set(MOCK_SONG)
 
         updated = copy(MOCK_SONG)
-        updated.artist = "new artist"
         cache.set(updated)
-        assert (
-            updated := cache[MOCK_SONG.video_id]
-        ) and updated.artist == updated.artist
+        assert cache[MOCK_SONG.video_id]
 
     def test_iter(self, cache: MemoryCache):
         cache.set(MOCK_SONG)

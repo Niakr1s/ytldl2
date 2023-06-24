@@ -95,7 +95,7 @@ class TestMusicDownloader:
         cache = MemoryCache()
 
         for v in self.VIDEOS:
-            cache.set(CachedSongInfo(v, v, v, None))
+            cache.set(CachedSongInfo(v, None))
         expected_downloaded = []
         expected_filtered = []
         expected_failed = []
