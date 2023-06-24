@@ -110,8 +110,8 @@ class MusicDownloader:
         Download songs in best quality in current thread.
         Downloads only songs (e.g skips videos).
         """
-        ydl = self._ydl_builder.build()  # noqa: F841
-        queue = DownloadQueue(videos)  # noqa: F841
+        ydl = self._ydl_builder.build()
+        queue = DownloadQueue(videos)
         current_item: Item | None
 
         class ProgressHookError(Exception):
