@@ -4,8 +4,9 @@ import tempfile
 
 from pydantic import BaseModel, Field
 
-from ytldl2.api import YtMusicApi, get_oauth
+from ytldl2.api import YtMusicApi
 from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
+from ytldl2.oauth import get_oauth
 from ytldl2.sqlite_cache import SqliteCache
 
 
