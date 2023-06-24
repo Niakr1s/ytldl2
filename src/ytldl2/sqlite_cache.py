@@ -158,7 +158,7 @@ SELECT video_id,
         cur = self.conn.cursor().execute(sql, (video_id,))
         if not (video := cur.fetchone()):
             return None
-        return CachedVideo(VideoId(video[0]), video[1])
+        return CachedVideo(video_id=VideoId(video[0]), filtered_reason=video[1])
 
     def __len__(self) -> int:
         return len(list(self.__iter__()))

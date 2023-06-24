@@ -11,8 +11,8 @@ from ytldl2.sqlite_cache import SqliteCache
 from tests.ytldl2 import DATA
 
 MOCK_VIDEO = CachedVideo(
-    VideoId("test_video_id"),
-    "test_filtered_reason",
+    video_id=VideoId("test_video_id"),
+    filtered_reason="test_filtered_reason",
 )
 
 

@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Iterator, Protocol
 
 import pydantic
@@ -6,8 +5,7 @@ import pydantic
 from ytldl2.models import VideoId
 
 
-@dataclass
-class CachedVideo:
+class CachedVideo(pydantic.BaseModel):
     video_id: VideoId
     filtered_reason: str | None
 

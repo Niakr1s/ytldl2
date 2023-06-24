@@ -94,8 +94,8 @@ class TestMusicDownloader:
         ydl_params.skip_download = True
         cache = SqliteCache()
 
-        for v in self.VIDEOS:
-            cache.set(CachedVideo(v, None))
+        for video_id in self.VIDEOS:
+            cache.set(CachedVideo(video_id=video_id, filtered_reason=None))
         expected_downloaded = []
         expected_filtered = []
         expected_failed = []
