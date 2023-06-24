@@ -87,7 +87,9 @@ class TestMusicDownloader:
             expected_filtered,
             expected_failed,
             expected_skipped,
+            cache=(cache := SqliteCache()),
         )
+        assert set(expected_downloaded) == in_cache_info(cache, expected_downloaded)
 
     @slow_test
     def test_download__respects_cache(self, ydl_params: YoutubeDlParams):
@@ -114,11 +116,9 @@ class TestMusicDownloader:
     def test_download_with_skip_download(self, ydl_params: YoutubeDlParams):
         ydl_params.skip_download = True
         expected_downloaded = []
-        expected_filtered = []
-        expected_failed = []
+        expected_filtered = [self.VIDEO]
+        expected_failed = [self.INVALID_VIDEO]
         expected_skipped = [
-            self.INVALID_VIDEO,
-            self.VIDEO,
             self.SONG_WITH_LYRICS,
             self.SONG_WITHOUT_LYRICS,
         ]
@@ -129,7 +129,9 @@ class TestMusicDownloader:
             expected_filtered,
             expected_failed,
             expected_skipped,
+            cache=(cache := SqliteCache()),
         )
+        assert set(expected_skipped) == in_cache_info(cache, expected_skipped)
 
     def test_download__cancellation_token(self, ydl_params: YoutubeDlParams):
         ydl_params.skip_download = True
@@ -173,13 +175,13 @@ class TestMusicDownloader:
         expected_cache = {*cache_items_before, *expected_downloaded, *expected_filtered}
         assert expected_cache == {x for x in cache}
 
-        cached_info = {
-            info.id for x in expected_cache if (info := cache.get_info(x)) is not None
-        }
-        assert expected_cache == cached_info
-
     WithVideoIdT = TypeVar("WithVideoIdT", bound=WithVideoId)
 
     @staticmethod
     def to_video_ids(lst: list[WithVideoIdT]):
         return [x.videoId for x in lst]
+
+
+def in_cache_info(cache: Cache, keys: list[VideoId]) -> set[VideoId]:
+    """Gets all non-none video ids of cached song info."""
+    return {info.id for x in keys if (info := cache.get_info(x)) is not None}
