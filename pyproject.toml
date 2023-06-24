@@ -22,7 +22,10 @@ dependencies = [
 Github = "https://github.com/niakr1s/ytldl2"
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = [
+    "pytest",
+    "pytest-xdist", # pytest -n workers_num
+]
 
 [project.scripts]
 ytldl2 = "ytldl2_cli.cli:main"
