@@ -108,6 +108,9 @@ class MusicDownloader:
         self._ydl_builder = MusicYoutubeDlBuilder(ydl_params)
         self._skip_download = ydl_params.skip_download
 
+        self._current_item: Item | None = None
+        """Item, iterated of queue in download() method."""
+
     def download(
         self, videos: list[VideoId], cancellation_token: CancellationToken | None = None
     ) -> DownloadResult:
@@ -116,58 +119,43 @@ class MusicDownloader:
         Downloads only songs (e.g skips videos).
         """
         ydl = self._ydl_builder.build()
+        ydl.add_progress_hook(self._progress_hook)
+
         queue = DownloadQueue(videos)
-        current_item: Item | None
+        while True:
+            self._current_item = queue.next()
+            if not self._current_item:
+                break
 
-        class ProgressHookError(Exception):
-            pass
-
-        def progress_hook(progress):
-            if not current_item:
-                raise ProgressHookError("called on None current_item")
-            status = cast(
-                Literal["downloading", "error", "finished"], progress["status"]
-            )
-            match status:
-                case "downloading":
-                    pass
-                case "finished":
-                    current_item.complete_as_downloaded(
-                        pathlib.Path(progress["filename"])
-                    )
-                case "error":
-                    current_item.complete_as_failed(ProgressHookError(progress))
-
-        ydl.add_progress_hook(progress_hook)
-
-        while current_item := queue.next():
             if cancellation_token and cancellation_token.kill_requested:
-                current_item.complete_as_skipped("cancelled")
+                self._current_item.complete_as_skipped("cancelled")
                 continue
 
-            if current_item.video_id in self._cache:
-                current_item.complete_as_skipped("already in cache")
+            if self._current_item.video_id in self._cache:
+                self._current_item.complete_as_skipped("already in cache")
                 continue
 
             info: SongInfo | None = None
             with ydl:
                 try:
+                    # complete_as_* will be operated in progress_hook method after this
                     raw_info = ydl.extract_info(
-                        current_item.video_id, download=not self._skip_download
+                        self._current_item.video_id, download=not self._skip_download
                     )
+
                     info = self._raw_info_to_info(raw_info)
                     if self._skip_download:
-                        current_item.complete_as_skipped("skip_download")
-                    # complete_as_* will be operated in progress_hook function from now
+                        self._current_item.complete_as_skipped("skip_download")
                 except SongFiltered:
-                    current_item.complete_as_filtered("not a song")
+                    self._current_item.complete_as_filtered("not a song")
                 except DownloadQueueHasUncompleteItem:
                     raise
                 except Exception as e:
-                    current_item.complete_as_failed(e)
+                    self._current_item.complete_as_failed(e)
                 finally:
                     if info:
                         self._cache.set_info(info)
+        self._current_item = None
 
         res = queue.to_result()
         for item in res.downloaded:
@@ -177,6 +165,25 @@ class MusicDownloader:
                 CachedVideo(video_id=item.videoId, filtered_reason=item.filtered_reason)
             )
         return res
+
+    class ProgressHookError(Exception):
+        pass
+
+    def _progress_hook(self, progress):
+        if not self._current_item:
+            raise MusicDownloader.ProgressHookError("called on None current_item")
+        status = cast(Literal["downloading", "error", "finished"], progress["status"])
+        match status:
+            case "downloading":
+                pass
+            case "finished":
+                self._current_item.complete_as_downloaded(
+                    pathlib.Path(progress["filename"])
+                )
+            case "error":
+                self._current_item.complete_as_failed(
+                    MusicDownloader.ProgressHookError(progress)
+                )
 
     @staticmethod
     def _raw_info_to_info(info) -> SongInfo | None:
