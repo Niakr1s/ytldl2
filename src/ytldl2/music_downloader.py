@@ -87,7 +87,7 @@ class MusicDownloader:
     def __init__(
         self,
         cache: Cache,
-        ydl_params: YoutubeDlParams = YoutubeDlParams(),
+        ydl_params: YoutubeDlParams,
     ) -> None:
         """
         :param cache: Songs, contained in cache, will be skipped.
