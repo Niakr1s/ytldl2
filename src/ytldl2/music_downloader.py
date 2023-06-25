@@ -28,15 +28,9 @@ class YoutubeDlParams:
         self,
         home_dir: pathlib.Path | None = None,
         tmp_dir: pathlib.Path | None = None,
-        progress_hooks: list | None = None,
-        postprocessor_hooks: list | None = None,
-        skip_download: bool = False,
     ) -> None:
         self.home_dir = home_dir
         self.tmp_dir = tmp_dir
-        self.progress_hooks = progress_hooks
-        self.postprocessor_hooks = postprocessor_hooks
-        self.skip_download = skip_download
 
 
 class MusicYoutubeDlBuilder:
@@ -72,17 +66,12 @@ class MusicYoutubeDlBuilder:
             "outtmpl": "%(artist)s - %(title)s [%(id)s].%(ext)s",
             "paths": {},
             "windowsfilenames": True,
-            "skip_download": self._params.skip_download,
         }
         ydl_opts["logger"] = logging.getLogger(__name__ + "." + YoutubeDL.__name__)
         if self._params.home_dir:
             ydl_opts["paths"]["home"] = str(self._params.home_dir)
         if self._params.tmp_dir:
             ydl_opts["paths"]["tmp"] = str(self._params.tmp_dir)
-        if self._params.progress_hooks:
-            ydl_opts["progress_hooks"] = self._params.progress_hooks
-        if self._params.postprocessor_hooks:
-            ydl_opts["postprocessor_hooks"] = self._params.postprocessor_hooks
 
         return ydl_opts
 
@@ -106,20 +95,74 @@ class MusicDownloader:
         """
         self._cache = cache
         self._ydl_builder = MusicYoutubeDlBuilder(ydl_params)
-        self._skip_download = ydl_params.skip_download
-
-        self._current_item: Item | None = None
-        """Item, iterated of queue in download() method."""
 
     def download(
-        self, videos: list[VideoId], cancellation_token: CancellationToken | None = None
+        self,
+        videos: list[VideoId],
+        cancellation_token: CancellationToken | None = None,
+        skip_download: bool = False,
+        progress_hooks: list | None = None,
+        postprocessor_hooks: list | None = None,
     ) -> DownloadResult:
         """
         Download songs in best quality in current thread.
         Downloads only songs (e.g skips videos).
         """
+        executor = _MusicDownloadExecutor(self._cache, self._ydl_builder)
+        return executor.download(
+            videos,
+            cancellation_token,
+            skip_download=skip_download,
+            progress_hooks=progress_hooks,
+            postprocessor_hooks=postprocessor_hooks,
+        )
+
+
+class _ProgressHookError(Exception):
+    pass
+
+
+class _MusicDownloadExecutorError(Exception):
+    """
+    Raises, if _MusicDownloadExecutor.download() called second time.
+    Generally, it should not happen. If it is, it should be a bug.
+    """
+
+
+class _MusicDownloadExecutor:
+    """
+    Class, internally used by MusicDownloader.
+    """
+
+    def __init__(self, cache: Cache, ydl_builder: MusicYoutubeDlBuilder) -> None:
+        self._cache = cache
+        self._ydl_builder = ydl_builder
+        self._current_item: Item | None = None
+        self._exhausted = False
+
+    def download(
+        self,
+        videos: list[VideoId],
+        cancellation_token: CancellationToken | None = None,
+        skip_download: bool = False,
+        progress_hooks: list | None = None,
+        postprocessor_hooks: list | None = None,
+    ) -> DownloadResult:
+        """
+        Download songs in best quality in current thread.
+        Downloads only songs (e.g skips videos).
+        Should be called only once.
+        """
         ydl = self._ydl_builder.build()
         ydl.add_progress_hook(self._progress_hook)
+
+        if progress_hooks:
+            for hook in progress_hooks:
+                ydl.add_progress_hook(hook)
+
+        if postprocessor_hooks:
+            for hook in postprocessor_hooks:
+                ydl.add_postprocessor_hook(hook)
 
         queue = DownloadQueue(videos)
         while True:
@@ -140,11 +183,11 @@ class MusicDownloader:
                 try:
                     # complete_as_* will be operated in progress_hook method after this
                     raw_info = ydl.extract_info(
-                        self._current_item.video_id, download=not self._skip_download
+                        self._current_item.video_id, download=not skip_download
                     )
 
                     info = self._raw_info_to_info(raw_info)
-                    if self._skip_download:
+                    if skip_download:
                         self._current_item.complete_as_skipped("skip_download")
                 except SongFiltered:
                     self._current_item.complete_as_filtered("not a song")
@@ -168,12 +211,14 @@ class MusicDownloader:
             )
         return res
 
-    class ProgressHookError(Exception):
-        pass
+    def _exhaust(self):
+        if self._exhausted:
+            raise _MusicDownloadExecutorError
+        self._exhausted = True
 
     def _progress_hook(self, progress):
         if not self._current_item:
-            raise MusicDownloader.ProgressHookError("called on None current_item")
+            raise _ProgressHookError("called on None current_item")
         status = cast(Literal["downloading", "error", "finished"], progress["status"])
         match status:
             case "downloading":
@@ -183,9 +228,7 @@ class MusicDownloader:
                     pathlib.Path(progress["filename"])
                 )
             case "error":
-                self._current_item.complete_as_failed(
-                    MusicDownloader.ProgressHookError(progress)
-                )
+                self._current_item.complete_as_failed(_ProgressHookError(progress))
 
     @staticmethod
     def _raw_info_to_info(info) -> SongInfo | None:

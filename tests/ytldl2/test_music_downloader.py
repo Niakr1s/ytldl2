@@ -23,9 +23,6 @@ class TestMusicYoutubeDlBuilder:
         params = YoutubeDlParams(
             home_dir=pathlib.Path("~"),
             tmp_dir=pathlib.Path("f:/"),
-            progress_hooks=["progress_hook"],
-            postprocessor_hooks=["postprocessor_hook"],
-            skip_download=True,
         )
 
         builder = MusicYoutubeDlBuilder(params)
@@ -35,9 +32,6 @@ class TestMusicYoutubeDlBuilder:
         ydl_params = ydl.params
         assert str(params.home_dir) == ydl_params["paths"]["home"]
         assert str(params.tmp_dir) == ydl_params["paths"]["tmp"]
-        assert params.progress_hooks == ydl_params["progress_hooks"]
-        assert params.postprocessor_hooks == ydl_params["postprocessor_hooks"]
-        assert params.skip_download == ydl_params["skip_download"]
 
         pre_processes = ydl._pps["pre_process"]
         assert len(pre_processes) == 2
@@ -71,8 +65,6 @@ class TestMusicDownloader:
 
     @slow_test
     def test_download(self, ydl_params: YoutubeDlParams):
-        ydl_params.skip_download = False
-
         expected_downloaded = [
             self.SONG_WITH_LYRICS,
             self.SONG_WITHOUT_LYRICS,
@@ -87,6 +79,7 @@ class TestMusicDownloader:
             expected_filtered,
             expected_failed,
             expected_skipped,
+            skip_download=False,
             cache=(cache := SqliteCache()),
         )
         assert set(expected_downloaded) == set(
@@ -95,7 +88,6 @@ class TestMusicDownloader:
 
     @slow_test
     def test_download__respects_cache(self, ydl_params: YoutubeDlParams):
-        ydl_params.skip_download = True
         cache = SqliteCache()
 
         for video_id in self.VIDEOS:
@@ -111,12 +103,12 @@ class TestMusicDownloader:
             expected_filtered,
             expected_failed,
             expected_skipped,
+            skip_download=True,
             cache=cache,
         )
 
     @slow_test
     def test_download_with_skip_download(self, ydl_params: YoutubeDlParams):
-        ydl_params.skip_download = True
         expected_downloaded = []
         expected_filtered = [self.VIDEO]
         expected_failed = [self.INVALID_VIDEO]
@@ -131,18 +123,24 @@ class TestMusicDownloader:
             expected_filtered,
             expected_failed,
             expected_skipped,
+            skip_download=True,
             cache=(cache := SqliteCache()),
         )
         assert set(expected_skipped) == set(cache.get_infos(expected_skipped).keys())
 
     def test_download__cancellation_token(self, ydl_params: YoutubeDlParams):
-        ydl_params.skip_download = True
-
         token = CancellationToken()
         token.request_kill()
 
         self._test_download(
-            ydl_params, self.VIDEOS, [], [], [], self.VIDEOS[:], token=token
+            ydl_params,
+            self.VIDEOS,
+            [],
+            [],
+            [],
+            self.VIDEOS[:],
+            token=token,
+            skip_download=True,
         )
 
     def _test_download(
@@ -153,13 +151,16 @@ class TestMusicDownloader:
         expected_filtered: list[VideoId],
         expexted_failed: list[VideoId],
         expected_skipped: list[VideoId],
+        skip_download: bool,
         cache: Cache = SqliteCache(),
         token: CancellationToken = CancellationToken(),
     ):
         cache_items_before = {x for x in cache}
 
         downloader = MusicDownloader(ydl_params=ydl_params, cache=cache)
-        res = downloader.download(videos, cancellation_token=token)
+        res = downloader.download(
+            videos, cancellation_token=token, skip_download=skip_download
+        )
 
         assert videos == res.videos
         assert not res.queue

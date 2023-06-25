@@ -82,13 +82,16 @@ class MusicLibrary:
         ydl_params = YoutubeDlParams(
             home_dir=home_dir,
             tmp_dir=tmp_dir,
-            skip_download=skip_download,
         )
 
         cache = SqliteCache(db_path)
         return MusicDownloader(cache=cache, ydl_params=ydl_params)
 
-    def update(self, cancellation_token: CancellationToken = CancellationToken()):
+    def update(
+        self,
+        cancellation_token: CancellationToken = CancellationToken(),
+        skip_download: bool = False,
+    ):
         """
         Updates library
         """
@@ -107,6 +110,8 @@ class MusicLibrary:
         songs = self._user.review_songs(songs)
 
         result = self._downloader.download(
-            videos=[v.video_id for v in videos], cancellation_token=cancellation_token
+            videos=[v.video_id for v in videos],
+            cancellation_token=cancellation_token,
+            skip_download=skip_download,
         )
         self._user.display_result(result)
