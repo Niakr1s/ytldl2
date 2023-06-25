@@ -7,6 +7,7 @@ import pydantic
 from ytldl2.api import YtMusicApi
 from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models.home_items import HomeItemsFilter
+from ytldl2.models.song import Song
 from ytldl2.models.types import Title
 from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
 from ytldl2.music_library_user import MusicLibraryUser, NoLibraryUser
@@ -100,7 +101,10 @@ class MusicLibrary:
         home_items = home_items.filtered(self._config.home_items_filter)
 
         videos = self._api.get_videos(home_items=home_items)
-        videos = self._user.review_videos(videos)
+        songs = [
+            Song(v.video_id, v.title, v.artist) for v in videos if v.artist is not None
+        ]
+        songs = self._user.review_songs(songs)
 
         result = self._downloader.download(
             videos=[v.video_id for v in videos], cancellation_token=cancellation_token
