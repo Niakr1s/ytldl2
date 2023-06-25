@@ -16,6 +16,7 @@
             "type": "python",
             "request": "test",
             "justMyCode": false,
+            // "env": {"ALL": "True"}
         },
     ]
 }
