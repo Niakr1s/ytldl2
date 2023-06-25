@@ -52,11 +52,12 @@ class MusicLibrary:
     ):
         self.home_dir = home_dir
         self.dot_dir = home_dir / ".ytldl2"
+        self.db_path = home_dir / "cache.db"
         self._init_dirs([self.home_dir, self.dot_dir])
 
         self.config = MusicLibraryConfig.load(self.dot_dir / "config.json")
         self._downloader = self._init_downloader(
-            home_dir=home_dir, skip_download=skip_download
+            home_dir=home_dir, db_path=self.db_path, skip_download=skip_download
         )
 
         oauth_json_path = self.dot_dir / "oauth.json"
@@ -69,7 +70,7 @@ class MusicLibrary:
 
     @staticmethod
     def _init_downloader(
-        home_dir: pathlib.Path, skip_download: bool
+        home_dir: pathlib.Path, db_path: pathlib.Path, skip_download: bool
     ) -> MusicDownloader:
         tmp_dir = pathlib.Path(tempfile.mkdtemp(suffix=".ytldl2_"))
         ydl_params = YoutubeDlParams(
@@ -78,7 +79,7 @@ class MusicLibrary:
             skip_download=skip_download,
         )
 
-        cache = SqliteCache(home_dir / "cache.db")
+        cache = SqliteCache(db_path)
         return MusicDownloader(cache=cache, ydl_params=ydl_params)
 
     def update(self, cancellation_token: CancellationToken = CancellationToken()):
