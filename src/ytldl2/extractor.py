@@ -1,3 +1,5 @@
+import logging
+
 from ytldl2.models.channel import Channel
 from ytldl2.models.home_items import HomeItems
 from ytldl2.models.playlist import Playlist
@@ -12,6 +14,8 @@ from ytldl2.models.types import (
     VideoId,
 )
 from ytldl2.models.video import Video
+
+logger = logging.getLogger(__name__)
 
 
 class ExtractError(Exception):
@@ -37,12 +41,12 @@ class Extractor:
 
             # channels
             if content.subscribers and (browse_id := content.browse_id):
-                print(f"Appending channel {title} with browseId: {browse_id}")
+                logger.debug(f"Appending channel {title} with browseId: {browse_id}")
                 res.channels.append(Channel(title=title, browseId=BrowseId(browse_id)))
 
             # videos
             elif video_id := content.video_id:
-                print(f"Appending video {title} with videoId: {video_id}")
+                logger.debug(f"Appending video {title} with videoId: {video_id}")
                 artist = Artist(content.artists[0].name) if content.artists else None
                 res.videos.append(
                     Video(title=title, artist=artist, video_id=VideoId(video_id))
@@ -50,7 +54,9 @@ class Extractor:
 
             # playlists
             elif playlist_id := content.playlist_id:
-                print(f"Appending playlist {title} with playlistId: {playlist_id}")
+                logger.debug(
+                    f"Appending playlist {title} with playlistId: {playlist_id}"
+                )
                 res.playlists.append(
                     Playlist(title=title, playlistId=PlaylistId(playlist_id))
                 )

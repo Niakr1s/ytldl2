@@ -1,4 +1,5 @@
 import json
+import logging
 import pathlib
 import random
 import tempfile
@@ -15,6 +16,8 @@ from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
 from ytldl2.music_library_user import MusicLibraryUser, TerminalMusicLibraryUser
 from ytldl2.oauth import get_oauth
 from ytldl2.sqlite_cache import SqliteCache
+
+logger = logging.getLogger(__name__)
 
 
 def default_home_items_filter() -> HomeItemsFilter:
@@ -43,10 +46,10 @@ class MusicLibraryConfig(pydantic.BaseModel):
             jsn = json.loads(config_path.read_bytes())
             return MusicLibraryConfig(config_path=config_path, **jsn)
         except FileNotFoundError:
-            print(f"file {config_path} not found, creating new config")
+            logger.debug(f"file {config_path} not found, creating new config")
             config = MusicLibraryConfig(config_path=config_path)
             config.save()
-            print(f"created new config at {config_path}")
+            logger.debug(f"created new config at {config_path}")
             return config
 
 

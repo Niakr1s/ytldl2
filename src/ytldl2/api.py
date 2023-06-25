@@ -1,3 +1,4 @@
+import logging
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 
 from ytmusicapi import YTMusic
@@ -9,6 +10,8 @@ from ytldl2.models.raw_home import Home
 from ytldl2.models.raw_playlist import RawPlaylist, RawWatchPlaylist
 from ytldl2.models.types import ChannelId, PlaylistId
 from ytldl2.models.video import Video
+
+logger = logging.getLogger(__name__)
 
 
 class YtMusicApiError(Exception):
@@ -84,8 +87,8 @@ class YtMusicApi:
                 try:
                     videos += future.result()
                 except Exception as e:
-                    print(f"skipping playlist, couldn't extract video ids: {e}")
-        print(f"Extracted {len(videos)} videos")
+                    logger.debug(f"skipping playlist, couldn't extract video ids: {e}")
+        logger.debug(f"Extracted {len(videos)} videos")
         return videos
 
     def get_videos_from_playlist(
