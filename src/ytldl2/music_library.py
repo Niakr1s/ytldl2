@@ -52,9 +52,9 @@ class MusicLibrary:
     def __init__(
         self,
         home_dir: pathlib.Path,
-        user: MusicLibraryUser = TerminalMusicLibraryUser(),
+        user: MusicLibraryUser | None = None,
     ):
-        self._user = user
+        self._user = user if user else TerminalMusicLibraryUser()
         self._home_dir = home_dir
         self._dot_dir = home_dir / ".ytldl2"
         self._db_path = self._dot_dir / "cache.db"

@@ -38,7 +38,7 @@ class TestMusicLibrary:
         self, tmp_path: pathlib.Path, oauth: str, monkeypatch: pytest.MonkeyPatch
     ) -> MusicLibrary:
         monkeypatch.setattr("ytldl2.music_library.get_oauth", lambda *_: oauth)
-        return MusicLibrary(tmp_path / "library", skip_download=True)
+        return MusicLibrary(tmp_path / "library")
 
     def test_init(self, library: MusicLibrary):
         assert library._home_dir.exists()
