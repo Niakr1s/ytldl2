@@ -46,7 +46,7 @@ class MusicYoutubeDlBuilder:
     """
 
     def __init__(self, params: YoutubeDlParams) -> None:
-        self.params = params
+        self._params = params
 
     def build(self) -> YoutubeDL:
         ydl_opts = self._make_youtube_dl_opts()
@@ -72,17 +72,17 @@ class MusicYoutubeDlBuilder:
             "outtmpl": "%(artist)s - %(title)s [%(id)s].%(ext)s",
             "paths": {},
             "windowsfilenames": True,
-            "skip_download": self.params.skip_download,
+            "skip_download": self._params.skip_download,
         }
         ydl_opts["logger"] = logging.getLogger(__name__ + "." + YoutubeDL.__name__)
-        if self.params.home_dir:
-            ydl_opts["paths"]["home"] = str(self.params.home_dir)
-        if self.params.tmp_dir:
-            ydl_opts["paths"]["tmp"] = str(self.params.tmp_dir)
-        if self.params.progress_hooks:
-            ydl_opts["progress_hooks"] = self.params.progress_hooks
-        if self.params.postprocessor_hooks:
-            ydl_opts["postprocessor_hooks"] = self.params.postprocessor_hooks
+        if self._params.home_dir:
+            ydl_opts["paths"]["home"] = str(self._params.home_dir)
+        if self._params.tmp_dir:
+            ydl_opts["paths"]["tmp"] = str(self._params.tmp_dir)
+        if self._params.progress_hooks:
+            ydl_opts["progress_hooks"] = self._params.progress_hooks
+        if self._params.postprocessor_hooks:
+            ydl_opts["postprocessor_hooks"] = self._params.postprocessor_hooks
 
         return ydl_opts
 
