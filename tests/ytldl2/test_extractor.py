@@ -43,14 +43,12 @@ class TestExtractor:
     ):
         videos = extractor.extract_videos_from_playlist(get_playlist)
         assert videos
-        assert all([video.is_valid() for video in videos])
 
     def test_extract_videos_from_playlist__get_watch_playlist(
         self, extractor: Extractor, get_watch_playlist
     ):
         videos = extractor.extract_videos_from_playlist(get_watch_playlist)
         assert videos
-        assert all([video.is_valid() for video in videos])
 
     # extract_playlist_id_from_artist
 

@@ -10,6 +10,3 @@ class Video(WithTitle, WithVideoId):
     """
 
     artist: Artist | None = None
-
-    def is_valid(self) -> bool:
-        return bool(self.title) and bool(self.video_id)
