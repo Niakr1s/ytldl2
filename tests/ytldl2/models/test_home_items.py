@@ -1,15 +1,9 @@
 import pytest
-from ytldl2.models.models import (
-    BrowseId,
-    Channel,
-    HomeItems,
-    HomeItemsFilter,
-    Playlist,
-    PlaylistId,
-    Title,
-    Video,
-    VideoId,
-)
+from ytldl2.models.channel import Channel
+from ytldl2.models.home_items import HomeItems, HomeItemsFilter
+from ytldl2.models.playlist import Playlist
+from ytldl2.models.types import BrowseId, PlaylistId, Title, VideoId
+from ytldl2.models.video import Video
 
 
 class TestHomeItems:

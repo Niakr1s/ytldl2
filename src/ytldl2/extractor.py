@@ -1,15 +1,15 @@
 from typing import Any, cast
 
-from ytldl2.models.models import (
+from ytldl2.models.channel import Channel
+from ytldl2.models.home_items import HomeItems
+from ytldl2.models.playlist import Playlist
+from ytldl2.models.types import (
     BrowseId,
-    Channel,
-    HomeItems,
-    Playlist,
     PlaylistId,
     Title,
-    Video,
     VideoId,
 )
+from ytldl2.models.video import Video
 
 
 class ExtractError(Exception):

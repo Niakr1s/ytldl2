@@ -2,7 +2,9 @@ import json
 
 import pytest
 from ytldl2.extractor import ExtractError, Extractor
-from ytldl2.models.models import Channel, Playlist, Video
+from ytldl2.models.channel import Channel
+from ytldl2.models.playlist import Playlist
+from ytldl2.models.video import Video
 
 from tests.ytldl2 import DATA
 

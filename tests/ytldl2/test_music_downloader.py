@@ -5,7 +5,7 @@ import pytest
 from yt_dlp.postprocessor.ffmpeg import FFmpegExtractAudioPP
 from ytldl2.cache import Cache, CachedVideo
 from ytldl2.cancellation_tokens import CancellationToken
-from ytldl2.models.models import VideoId, WithVideoId
+from ytldl2.models.types import VideoId, WithVideoId
 from ytldl2.music_downloader import (
     MusicDownloader,
     MusicYoutubeDlBuilder,

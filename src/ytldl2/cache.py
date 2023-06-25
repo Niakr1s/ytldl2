@@ -2,7 +2,7 @@ from typing import Iterator, Protocol
 
 import pydantic
 
-from ytldl2.models.models import VideoId
+from ytldl2.models.types import VideoId
 
 
 class CachedVideo(pydantic.BaseModel):
