@@ -18,7 +18,6 @@ class SongInfo(pydantic.BaseModel):
     channel: str | None
     """I'm pretty sure it won't have None, but made optional just in case"""
     artist: str
-    lyrics: str | None
 
 
 class Cache(Protocol):

@@ -103,7 +103,6 @@ class TestSqliteCache:
         duration=3,
         channel="channel",
         artist="artist",
-        lyrics="lyrics",
     )
 
     def test_set_get_song_info(self, cache: SqliteCache):
@@ -128,7 +127,6 @@ class TestSqliteCache:
     def test_set_get_song_info_null_values(self, cache: SqliteCache):
         info = self.SONG_INFO.copy()
         info.channel = None
-        info.lyrics = None
         cache.set_info(info)
         cached_info = cache.get_info(info.id)
         assert info == cached_info

@@ -10,7 +10,6 @@ class TestCache:
         duration=3,
         channel="channel",
         artist="artist",
-        lyrics="lyrics",
     )
 
     def test_get_infos(self):

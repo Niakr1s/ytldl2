@@ -79,6 +79,37 @@ CREATE TABLE song_info (
     lyrics   TEXT
 );
         """,
+        *r"""
+PRAGMA foreign_keys = 0;
+CREATE TABLE sqlitestudio_temp_table AS SELECT *
+                                          FROM song_info;
+DROP TABLE song_info;
+CREATE TABLE song_info (
+    id       TEXT    PRIMARY KEY ON CONFLICT REPLACE
+                     NOT NULL,
+    title    TEXT    NOT NULL,
+    duration INTEGER NOT NULL,
+    channel  TEXT,
+    artist   TEXT    NOT NULL
+);
+INSERT INTO song_info (
+                          id,
+                          title,
+                          duration,
+                          channel,
+                          artist
+                      )
+                      SELECT id,
+                             title,
+                             duration,
+                             channel,
+                             artist
+                        FROM sqlitestudio_temp_table;
+DROP TABLE sqlitestudio_temp_table;
+PRAGMA foreign_keys = 1;
+        """.split(
+            ";"
+        ),
     ],
 ]
 """
@@ -187,10 +218,9 @@ INSERT INTO song_info (
                           title,
                           duration,
                           channel,
-                          artist,
-                          lyrics
+                          artist
                       )
-                      VALUES (?, ?, ?, ?, ?, ?);
+                      VALUES (?, ?, ?, ?, ?);
             """
         self.conn.execute(
             sql,
@@ -200,7 +230,6 @@ INSERT INTO song_info (
                 song_info.duration,
                 song_info.channel,
                 song_info.artist,
-                song_info.lyrics,
             ],
         )
         self.conn.commit()
@@ -211,8 +240,7 @@ SELECT id,
        title,
        duration,
        channel,
-       artist,
-       lyrics
+       artist
   FROM song_info
   WHERE id = ?
         """
@@ -224,7 +252,6 @@ SELECT id,
             duration=info[2],
             channel=info[3],
             artist=info[4],
-            lyrics=info[5],
         )
 
     def _apply_migrations_if_needed(self):
