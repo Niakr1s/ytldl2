@@ -1,6 +1,4 @@
-SqlCommands = list[str]
-
-migrations: list[SqlCommands] = []
+migrations: list[list[str]] = []
 """
 (Index+1) of each migration corresponds to migration version.
 Warning: DON'T EVER REMOVE MIGRATIONS, JUST ADD NEW BELOW.
