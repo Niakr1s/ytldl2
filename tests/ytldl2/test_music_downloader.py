@@ -8,6 +8,7 @@ from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models.types import VideoId, WithVideoId
 from ytldl2.music_downloader import (
     MusicDownloader,
+    MusicDownloadError,
     MusicYoutubeDlBuilder,
     YoutubeDlParams,
 )
@@ -122,6 +123,29 @@ class TestMusicDownloader:
             cache=(cache := SqliteCache()),
         )
         assert set(expected_skipped) == set(cache.get_infos(expected_skipped).keys())
+
+    @slow_test
+    def test_download_with_err(self, ydl_params: YoutubeDlParams):
+        expected_downloaded = []
+        expected_filtered = [self.VIDEO]
+        expected_skipped = [
+            self.SONG_WITH_LYRICS,
+            self.SONG_WITHOUT_LYRICS,
+        ]
+        with pytest.raises(MusicDownloadError) as err:
+            self._test_download(
+                ydl_params,
+                [*self.VIDEOS, self.INVALID_VIDEO],
+                expected_downloaded,
+                expected_filtered,
+                expected_skipped,
+                skip_download=True,
+            )
+        queue = err.value.queue
+        assert len(queue) == 1
+        assert expected_downloaded == self.to_video_ids(queue.downloaded)
+        assert expected_filtered == self.to_video_ids(queue.filtered)
+        assert expected_skipped == self.to_video_ids(queue.skipped)
 
     def test_download__cancellation_token(self, ydl_params: YoutubeDlParams):
         token = CancellationToken()
