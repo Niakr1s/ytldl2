@@ -1,5 +1,6 @@
 import json
 import pathlib
+import random
 import tempfile
 
 import pydantic
@@ -107,8 +108,10 @@ class MusicLibrary:
         songs = [
             Song(v.video_id, v.title, v.artist) for v in videos if v.artist is not None
         ]
+
         songs = self._cache.filter_cached(songs)
         songs = self._user.review_songs(songs)
+        random.shuffle(songs)
 
         result = self._downloader.download(
             videos=[v.video_id for v in songs],
