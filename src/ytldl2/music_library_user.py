@@ -28,7 +28,15 @@ class MusicLibraryUser(Protocol):
 
     def display_result(self, result: DownloadResult):
         """Called by library after download to display download result."""
-        pass
+        print("=== Download result ===")
+        print()
+        print(f"Requested: {len(result.videos)}.")
+        print(f"\tDownloaded: {len(result.downloaded)},")
+        print(f"\tSkipped: {len(result.skipped)},")
+        print(f"\tFailed: {len(result.failed)},")
+        print(f"\tFiltered: {len(result.filtered)}")
+        print()
+        print(f"Remained in queue: {len(result.queue)}")
 
 
 class NoLibraryUser(MusicLibraryUser):
