@@ -16,7 +16,7 @@ class TestExtractor:
 
     @pytest.fixture(scope="session")
     def home(self):
-        with (DATA / "home.json").open(encoding="utf-8") as file:
+        with (DATA / "get_home.json").open(encoding="utf-8") as file:
             return json.load(file)
 
     @pytest.fixture(scope="session")
