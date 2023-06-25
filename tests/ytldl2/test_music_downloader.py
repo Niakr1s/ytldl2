@@ -51,7 +51,7 @@ class TestMusicDownloader:
     SONG_WITHOUT_LYRICS = VideoId("rVryEboMof8")
     VIDEO = VideoId("F7NOovxx3lg")
     VIDEOS = [
-        INVALID_VIDEO,
+        # INVALID_VIDEO,
         VIDEO,
         SONG_WITH_LYRICS,
         SONG_WITHOUT_LYRICS,
@@ -70,14 +70,13 @@ class TestMusicDownloader:
             self.SONG_WITHOUT_LYRICS,
         ]
         expected_filtered = [self.VIDEO]
-        expected_failed = [self.INVALID_VIDEO]
         expected_skipped = []
+
         self._test_download(
             ydl_params,
             self.VIDEOS[:],
             expected_downloaded,
             expected_filtered,
-            expected_failed,
             expected_skipped,
             skip_download=False,
             cache=(cache := SqliteCache()),
@@ -94,14 +93,12 @@ class TestMusicDownloader:
             cache.set(CachedVideo(video_id=video_id, filtered_reason=None))
         expected_downloaded = []
         expected_filtered = []
-        expected_failed = []
         expected_skipped = self.VIDEOS[:]
         self._test_download(
             ydl_params,
             self.VIDEOS[:],
             expected_downloaded,
             expected_filtered,
-            expected_failed,
             expected_skipped,
             skip_download=True,
             cache=cache,
@@ -111,7 +108,6 @@ class TestMusicDownloader:
     def test_download_with_skip_download(self, ydl_params: YoutubeDlParams):
         expected_downloaded = []
         expected_filtered = [self.VIDEO]
-        expected_failed = [self.INVALID_VIDEO]
         expected_skipped = [
             self.SONG_WITH_LYRICS,
             self.SONG_WITHOUT_LYRICS,
@@ -121,7 +117,6 @@ class TestMusicDownloader:
             self.VIDEOS[:],
             expected_downloaded,
             expected_filtered,
-            expected_failed,
             expected_skipped,
             skip_download=True,
             cache=(cache := SqliteCache()),
@@ -137,7 +132,6 @@ class TestMusicDownloader:
             self.VIDEOS,
             [],
             [],
-            [],
             self.VIDEOS[:],
             token=token,
             skip_download=True,
@@ -149,7 +143,6 @@ class TestMusicDownloader:
         videos: list[VideoId],
         expected_downloaded: list[VideoId],
         expected_filtered: list[VideoId],
-        expexted_failed: list[VideoId],
         expected_skipped: list[VideoId],
         skip_download: bool,
         cache: Cache = SqliteCache(),
@@ -163,16 +156,14 @@ class TestMusicDownloader:
         )
 
         assert videos == res.videos
-        assert not res.queue
+        assert len(res) == 0
 
         got_downloaded = self.to_video_ids(res.downloaded)
         got_filtered = self.to_video_ids(res.filtered)
-        got_failed = self.to_video_ids(res.failed)
         got_skipped = self.to_video_ids(res.skipped)
 
         assert expected_downloaded == got_downloaded
         assert expected_filtered == got_filtered
-        assert expexted_failed == got_failed
         assert expected_skipped == got_skipped
 
         expected_cache = {*cache_items_before, *expected_downloaded, *expected_filtered}

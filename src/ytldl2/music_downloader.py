@@ -6,11 +6,7 @@ from yt_dlp import YoutubeDL
 
 from ytldl2.cache import Cache, CachedVideo, SongInfo
 from ytldl2.cancellation_tokens import CancellationToken
-from ytldl2.download_queue import (
-    DownloadQueue,
-    DownloadResult,
-    Item,
-)
+from ytldl2.download_queue import DownloadQueue
 from ytldl2.models.download_hooks import (
     DownloadProgress,
     PostprocessorHook,
@@ -109,7 +105,7 @@ class MusicDownloader:
         skip_download: bool = False,
         progress_hooks: list[ProgressHook] | None = None,
         postprocessor_hooks: list[PostprocessorHook] | None = None,
-    ) -> DownloadResult:
+    ) -> DownloadQueue:
         """
         Download songs in best quality in current thread.
         Downloads only songs (e.g skips videos).
@@ -126,11 +122,10 @@ class MusicDownloader:
         ).download()
 
 
-class MusicDownloadExecutorError(Exception):
-    """
-    Raises, if _MusicDownloadExecutor.download() called second time.
-    Generally, it should not happen. If it is, it should be a bug.
-    """
+class MusicDownloadError(Exception):
+    def __init__(self, queue: DownloadQueue) -> None:
+        super().__init__()
+        self.queue = queue
 
 
 class _MusicDownloadExecutor:
@@ -151,13 +146,11 @@ class _MusicDownloadExecutor:
     ) -> None:
         self._cache = cache
         self._ydl = self._init_ydl(ydl_builder, progress_hooks, postprocessor_hooks)
-        self._videos = videos
         self._cancellation_token = cancellation_token
         self._skip_download = skip_download
 
+        self._queue = DownloadQueue(videos)
         self._limit = limit if limit is not None else len(videos)
-        self._current_item: Item | None = None
-        self._exhausted = False
 
     def _init_ydl(
         self,
@@ -180,79 +173,65 @@ class _MusicDownloadExecutor:
 
     def download(
         self,
-    ) -> DownloadResult:
+    ) -> DownloadQueue:
         """
         Download songs in best quality in current thread.
         Downloads only songs (e.g skips videos).
         Should be called only once.
         """
-        queue = DownloadQueue(self._videos)
-        while True:
-            self._current_item = queue.next()
-            if not self._current_item:
+        for video_id in self._queue:
+            if self._limit <= 0:
                 break
+            try:
+                self._download_video(video_id)
+            except Exception as e:
+                self._dump_queue()
+                self._queue.revert()
+                raise MusicDownloadError(self._queue) from e
 
-            if self._cancellation_token and self._cancellation_token.kill_requested:
-                self._current_item.complete_as_skipped("cancelled")
-                continue
+        self._dump_queue()
+        return self._queue
 
-            if self._current_item.video_id in self._cache:
-                self._current_item.complete_as_skipped("already in cache")
-                continue
+    def _download_video(self, video_id: VideoId) -> None:
+        if self._cancellation_token and self._cancellation_token.kill_requested:
+            self._queue.mark_skipped("cancelled by cancellation token")
+            return
 
-            info: SongInfo | None = None
-            with self._ydl:
-                try:
-                    # complete_as_* will be operated in progress_hook method after this
-                    raw_info = self._ydl.extract_info(
-                        self._current_item.video_id, download=not self._skip_download
-                    )
-                    info = self._raw_info_to_info(raw_info)
+        if video_id in self._cache:
+            self._queue.mark_skipped("already in cache")
+            return
 
-                    if self._skip_download:
-                        self._current_item.complete_as_skipped("skip_download")
+        info: SongInfo | None = None
+        with self._ydl:
+            try:
+                # complete_as_* will be operated in progress_hook method after this
+                raw_info = self._ydl.extract_info(
+                    video_id, download=not self._skip_download
+                )
+                info = SongInfo.parse_obj(raw_info)
 
-                    self._limit -= 1
-                    if self._limit <= 0:
-                        break
-                except SongFiltered:
-                    self._current_item.complete_as_filtered("not a song")
-                except yt_dlp.utils.DownloadError as e:
-                    self._current_item.complete_as_failed(e)
-                finally:
-                    if info:
-                        self._cache.set_info(info)
-        self._current_item = None
+                if self._skip_download:
+                    self._queue.mark_skipped("skip_download")
 
-        res = queue.to_result()
-        for item in res.downloaded:
+                self._limit -= 1
+            except SongFiltered:
+                self._queue.mark_filtered("not a song")
+            finally:
+                if info:
+                    self._cache.set_info(info)
+
+    def _dump_queue(self):
+        for item in self._queue.downloaded:
             self._cache.set(CachedVideo(video_id=item.video_id, filtered_reason=None))
-        for item in res.filtered:
+        for item in self._queue.filtered:
             self._cache.set(
                 CachedVideo(
                     video_id=item.video_id, filtered_reason=item.filtered_reason
                 )
             )
-        return res
-
-    def _exhaust(self):
-        if self._exhausted:
-            raise MusicDownloadExecutorError("exhausted")
-        self._exhausted = True
 
     def _progress_hook(self, progress: DownloadProgress):
-        if not self._current_item:
-            raise RuntimeError("called on None current_item")
         if is_progress_finished(progress):
-            self._current_item.complete_as_downloaded(
-                pathlib.Path(progress["filename"])
-            )
+            self._queue.mark_downloaded(pathlib.Path(progress["filename"]))
         if is_progress_error(progress):
             raise yt_dlp.utils.DownloadError("download error", progress["info_dict"])
-
-    @staticmethod
-    def _raw_info_to_info(info) -> SongInfo | None:
-        try:
-            return SongInfo(**info)
-        except Exception:
-            return None
