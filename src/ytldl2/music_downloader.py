@@ -12,6 +12,11 @@ from ytldl2.download_queue import (
     DownloadResult,
     Item,
 )
+from ytldl2.models.download_hooks import (
+    DownloadProgress,
+    PostprocessorHook,
+    ProgressHook,
+)
 from ytldl2.models.types import VideoId
 from ytldl2.postprocessors import (
     FilterSongPP,
@@ -101,8 +106,8 @@ class MusicDownloader:
         videos: list[VideoId],
         cancellation_token: CancellationToken | None = None,
         skip_download: bool = False,
-        progress_hooks: list | None = None,
-        postprocessor_hooks: list | None = None,
+        progress_hooks: list[ProgressHook] | None = None,
+        postprocessor_hooks: list[PostprocessorHook] | None = None,
     ) -> DownloadResult:
         """
         Download songs in best quality in current thread.
@@ -145,8 +150,8 @@ class _MusicDownloadExecutor:
         videos: list[VideoId],
         cancellation_token: CancellationToken | None = None,
         skip_download: bool = False,
-        progress_hooks: list | None = None,
-        postprocessor_hooks: list | None = None,
+        progress_hooks: list[ProgressHook] | None = None,
+        postprocessor_hooks: list[PostprocessorHook] | None = None,
     ) -> DownloadResult:
         """
         Download songs in best quality in current thread.
@@ -216,7 +221,7 @@ class _MusicDownloadExecutor:
             raise _MusicDownloadExecutorError
         self._exhausted = True
 
-    def _progress_hook(self, progress):
+    def _progress_hook(self, progress: DownloadProgress):
         if not self._current_item:
             raise _ProgressHookError("called on None current_item")
         status = cast(Literal["downloading", "error", "finished"], progress["status"])
