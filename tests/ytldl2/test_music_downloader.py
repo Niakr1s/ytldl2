@@ -3,7 +3,7 @@ from typing import TypeVar
 
 import pytest
 from yt_dlp.postprocessor.ffmpeg import FFmpegExtractAudioPP
-from ytldl2.cache import Cache, CachedVideo
+from ytldl2.cache import CachedVideo
 from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models.types import VideoId, WithVideoId
 from ytldl2.music_downloader import (
@@ -66,6 +66,8 @@ class TestMusicDownloader:
 
     @slow_test
     def test_download(self, ydl_params: YoutubeDlParams):
+        cache = SqliteCache()
+
         expected_downloaded = [
             self.SONG_WITH_LYRICS,
             self.SONG_WITHOUT_LYRICS,
@@ -74,13 +76,12 @@ class TestMusicDownloader:
         expected_skipped = []
 
         self._test_download(
-            ydl_params,
+            MusicDownloader(cache, ydl_params),
             self.VIDEOS[:],
             expected_downloaded,
             expected_filtered,
             expected_skipped,
             skip_download=False,
-            cache=(cache := SqliteCache()),
         )
         assert set(expected_downloaded) == set(
             cache.get_infos(expected_downloaded).keys()
@@ -95,14 +96,14 @@ class TestMusicDownloader:
         expected_downloaded = []
         expected_filtered = []
         expected_skipped = self.VIDEOS[:]
+
         self._test_download(
-            ydl_params,
+            MusicDownloader(cache, ydl_params),
             self.VIDEOS[:],
             expected_downloaded,
             expected_filtered,
             expected_skipped,
             skip_download=True,
-            cache=cache,
         )
 
     @slow_test
@@ -113,14 +114,15 @@ class TestMusicDownloader:
             self.SONG_WITH_LYRICS,
             self.SONG_WITHOUT_LYRICS,
         ]
+
+        cache = SqliteCache()
         self._test_download(
-            ydl_params,
+            MusicDownloader(cache, ydl_params),
             self.VIDEOS[:],
             expected_downloaded,
             expected_filtered,
             expected_skipped,
             skip_download=True,
-            cache=(cache := SqliteCache()),
         )
         assert set(expected_skipped) == set(cache.get_infos(expected_skipped).keys())
 
@@ -134,7 +136,7 @@ class TestMusicDownloader:
         ]
         with pytest.raises(MusicDownloadError) as err:
             self._test_download(
-                ydl_params,
+                MusicDownloader(SqliteCache(), ydl_params),
                 [*self.VIDEOS, self.INVALID_VIDEO],
                 expected_downloaded,
                 expected_filtered,
@@ -152,7 +154,7 @@ class TestMusicDownloader:
         token.request_kill()
 
         self._test_download(
-            ydl_params,
+            MusicDownloader(SqliteCache(), ydl_params),
             self.VIDEOS,
             [],
             [],
@@ -163,18 +165,15 @@ class TestMusicDownloader:
 
     def _test_download(
         self,
-        ydl_params: YoutubeDlParams,
+        downloader: MusicDownloader,
         videos: list[VideoId],
         expected_downloaded: list[VideoId],
         expected_filtered: list[VideoId],
         expected_skipped: list[VideoId],
         skip_download: bool,
-        cache: Cache = SqliteCache(),
         token: CancellationToken = CancellationToken(),
     ):
-        cache_items_before = {x for x in cache}
-
-        downloader = MusicDownloader(ydl_params=ydl_params, cache=cache)
+        cache_items_before = {x for x in downloader._cache}
         res = downloader.download(
             videos, cancellation_token=token, skip_download=skip_download
         )
@@ -191,7 +190,7 @@ class TestMusicDownloader:
         assert expected_skipped == got_skipped
 
         expected_cache = {*cache_items_before, *expected_downloaded, *expected_filtered}
-        assert expected_cache == {x for x in cache}
+        assert expected_cache == {x for x in downloader._cache}
 
     WithVideoIdT = TypeVar("WithVideoIdT", bound=WithVideoId)
 
