@@ -52,7 +52,7 @@ class MusicLibrary:
     ):
         self._home_dir = home_dir
         self._dot_dir = home_dir / ".ytldl2"
-        self._db_path = home_dir / "cache.db"
+        self._db_path = self._dot_dir / "cache.db"
         self._init_dirs([self._home_dir, self._dot_dir])
 
         self.config = MusicLibraryConfig.load(self._dot_dir / "config.json")
