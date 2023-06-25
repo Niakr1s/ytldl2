@@ -45,7 +45,7 @@ class Extractor:
                 print(f"Appending video {title} with videoId: {video_id}")
                 artist = Artist(content.artists[0].name) if content.artists else None
                 res.videos.append(
-                    Video(title=title, artist=artist, videoId=VideoId(video_id))
+                    Video(title=title, artist=artist, video_id=VideoId(video_id))
                 )
 
             # playlists
@@ -73,7 +73,7 @@ class Extractor:
             Video(
                 title=Title(track.title),
                 artist=get_artist(track),
-                videoId=VideoId(track.video_id),
+                video_id=VideoId(track.video_id),
             )
             for track in tracks
         ]

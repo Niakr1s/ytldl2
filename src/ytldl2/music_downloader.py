@@ -159,10 +159,12 @@ class MusicDownloader:
 
         res = queue.to_result()
         for item in res.downloaded:
-            self._cache.set(CachedVideo(video_id=item.videoId, filtered_reason=None))
+            self._cache.set(CachedVideo(video_id=item.video_id, filtered_reason=None))
         for item in res.filtered:
             self._cache.set(
-                CachedVideo(video_id=item.videoId, filtered_reason=item.filtered_reason)
+                CachedVideo(
+                    video_id=item.video_id, filtered_reason=item.filtered_reason
+                )
             )
         return res
 

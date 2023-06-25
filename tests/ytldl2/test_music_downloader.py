@@ -181,4 +181,4 @@ class TestMusicDownloader:
 
     @staticmethod
     def to_video_ids(lst: list[WithVideoIdT]):
-        return [x.videoId for x in lst]
+        return [x.video_id for x in lst]

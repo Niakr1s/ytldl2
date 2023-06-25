@@ -16,7 +16,7 @@ class TestHomeItems:
         return HomeItems(
             videos=[
                 Video(
-                    videoId=VideoId(str(id)),
+                    video_id=VideoId(str(id)),
                     title=Title(title),
                 )
                 for id, title in enumerate(self.VIDEO_TITLES)

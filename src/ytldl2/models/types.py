@@ -16,4 +16,4 @@ class WithTitle:
 
 @dataclass
 class WithVideoId:
-    videoId: VideoId
+    video_id: VideoId

@@ -103,6 +103,6 @@ class MusicLibrary:
         videos = self._user.review_videos(videos)
 
         result = self._downloader.download(
-            videos=[v.videoId for v in videos], cancellation_token=cancellation_token
+            videos=[v.video_id for v in videos], cancellation_token=cancellation_token
         )
         print(result)
