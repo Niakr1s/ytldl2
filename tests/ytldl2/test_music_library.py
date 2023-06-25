@@ -39,7 +39,7 @@ class TestMusicLibrary:
         return MusicLibrary(tmp_path / "library", skip_download=True)
 
     def test_init(self, library: MusicLibrary):
-        assert library.home_dir.exists()
-        assert library.dot_dir.exists()
+        assert library._home_dir.exists()
+        assert library._dot_dir.exists()
         assert (config_path := library.config.config_path).exists()
         assert config_path.read_text()

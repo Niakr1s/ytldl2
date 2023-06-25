@@ -50,17 +50,17 @@ class MusicLibrary:
         home_dir: pathlib.Path,
         skip_download: bool = False,
     ):
-        self.home_dir = home_dir
-        self.dot_dir = home_dir / ".ytldl2"
-        self.db_path = home_dir / "cache.db"
-        self._init_dirs([self.home_dir, self.dot_dir])
+        self._home_dir = home_dir
+        self._dot_dir = home_dir / ".ytldl2"
+        self._db_path = home_dir / "cache.db"
+        self._init_dirs([self._home_dir, self._dot_dir])
 
-        self.config = MusicLibraryConfig.load(self.dot_dir / "config.json")
+        self.config = MusicLibraryConfig.load(self._dot_dir / "config.json")
         self._downloader = self._init_downloader(
-            home_dir=home_dir, db_path=self.db_path, skip_download=skip_download
+            home_dir=home_dir, db_path=self._db_path, skip_download=skip_download
         )
 
-        oauth_json_path = self.dot_dir / "oauth.json"
+        oauth_json_path = self._dot_dir / "oauth.json"
         self._api = YtMusicApi(get_oauth(oauth_json_path))
 
     @staticmethod
