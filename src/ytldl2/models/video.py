@@ -13,7 +13,3 @@ class Video(WithTitle, WithVideoId):
 
     def is_valid(self) -> bool:
         return bool(self.title) and bool(self.video_id)
-
-    @property
-    def youtube_music_url(self) -> str:
-        return f"https://music.youtube.com/watch?v={self.video_id}"

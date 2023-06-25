@@ -17,3 +17,11 @@ class WithTitle:
 @dataclass
 class WithVideoId:
     video_id: VideoId
+
+    @property
+    def youtube_url(self) -> str:
+        return f"https://www.youtube.com/watch?v={self.video_id}"
+
+    @property
+    def youtube_music_url(self) -> str:
+        return f"https://music.youtube.com/watch?v={self.video_id}"

@@ -10,13 +10,9 @@ class CachedVideo(pydantic.BaseModel):
 
     # TODO: add title and artist
     # title: Title
-    # artist: Artist
+    # artist: Artist | None
 
     filtered_reason: str | None
-
-    @property
-    def url(self) -> str:
-        return f"https://www.youtube.com/watch?v={self.video_id}"
 
 
 class SongInfo(pydantic.BaseModel):
