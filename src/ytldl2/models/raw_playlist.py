@@ -20,3 +20,8 @@ class RawPlaylist(BaseModel):
     id: str
     title: str
     tracks: List[Track]
+
+
+class RawWatchPlaylist(BaseModel):
+    playlist_id: str = Field(..., alias="playlistId")
+    tracks: List[Track]

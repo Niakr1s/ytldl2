@@ -6,8 +6,7 @@ from ytldl2.extractor import ExtractError, Extractor
 from ytldl2.models.home_items import HomeItems
 from ytldl2.models.raw_artist import RawArtist
 from ytldl2.models.raw_home import Home
-from ytldl2.models.raw_playlist import RawPlaylist
-from ytldl2.models.raw_watch_playlist import RawWatchPlaylist
+from ytldl2.models.raw_playlist import RawPlaylist, RawWatchPlaylist
 from ytldl2.models.types import ChannelId, PlaylistId
 from ytldl2.models.video import Video
 

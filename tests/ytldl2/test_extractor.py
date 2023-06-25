@@ -2,8 +2,7 @@ import pytest
 from ytldl2.extractor import Extractor
 from ytldl2.models.raw_artist import RawArtist
 from ytldl2.models.raw_home import Home
-from ytldl2.models.raw_playlist import RawPlaylist
-from ytldl2.models.raw_watch_playlist import RawWatchPlaylist
+from ytldl2.models.raw_playlist import RawPlaylist, RawWatchPlaylist
 
 from tests.ytldl2 import DATA
 
