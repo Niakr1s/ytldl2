@@ -19,9 +19,13 @@ CREATE TABLE songs (
     filtered_reason TEXT,
     last_modified   TEXT NOT NULL
 );
-        """,
-        # created with sqlite SQLiteStudio 3.4.4
-        *r"""
+        """
+    ]
+]
+# created with sqlite SQLiteStudio 3.4.4
+
+_migrations.append(
+    r"""
 PRAGMA foreign_keys = 0;
 CREATE TABLE sqlitestudio_temp_table AS SELECT *
                                           FROM songs;
@@ -44,9 +48,11 @@ INSERT INTO songs (
 DROP TABLE sqlitestudio_temp_table;
 PRAGMA foreign_keys = 1;
         """.split(
-            ";"
-        ),
-        *r"""
+        ";"
+    )
+)
+_migrations.append(
+    r"""
 PRAGMA foreign_keys = 0;
 CREATE TABLE cache (
     video_id        TEXT PRIMARY KEY ON CONFLICT REPLACE
@@ -66,8 +72,11 @@ INSERT INTO cache (
 DROP TABLE songs;
 PRAGMA foreign_keys = 1;
         """.split(
-            ";"
-        ),
+        ";"
+    )
+)
+_migrations.append(
+    [
         r"""
 CREATE TABLE song_info (
     id       TEXT    PRIMARY KEY ON CONFLICT REPLACE
@@ -78,8 +87,11 @@ CREATE TABLE song_info (
     artist   TEXT    NOT NULL,
     lyrics   TEXT
 );
-        """,
-        *r"""
+        """
+    ]
+)
+_migrations.append(
+    r"""
 PRAGMA foreign_keys = 0;
 CREATE TABLE sqlitestudio_temp_table AS SELECT *
                                           FROM song_info;
@@ -108,10 +120,9 @@ INSERT INTO song_info (
 DROP TABLE sqlitestudio_temp_table;
 PRAGMA foreign_keys = 1;
         """.split(
-            ";"
-        ),
-    ],
-]
+        ";"
+    )
+)
 """
 (Index+1) of each migration corresponds to migration version.
 Warning: DON'T EVER REMOVE MIGRATIONS, JUST ADD NEW.
