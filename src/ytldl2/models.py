@@ -1,6 +1,8 @@
 import dataclasses
 from dataclasses import dataclass
-from typing import NewType, TypeVar, Literal
+from typing import Literal, NewType, TypeVar
+
+import pydantic
 
 Title = NewType("Title", str)
 VideoId = NewType("VideoId", str)
@@ -75,8 +77,7 @@ class Channel(WithTitle):
 _TitleFilter = list[Title] | Literal["retain_all"]
 
 
-@dataclass
-class HomeItemsFilter:
+class HomeItemsFilter(pydantic.BaseModel):
     """
     Class, used in HomeItems.filtered() method.
     """
@@ -94,9 +95,9 @@ class HomeItems:
 
     def is_empty(self) -> bool:
         return (
-                len(self.videos) == 0
-                and len(self.playlists) == 0
-                and len(self.channels) == 0
+            len(self.videos) == 0
+            and len(self.playlists) == 0
+            and len(self.channels) == 0
         )
 
     def filtered(self, filter: HomeItemsFilter) -> "HomeItems":
@@ -113,8 +114,8 @@ class HomeItems:
 
     @staticmethod
     def _filter(
-            items: list[WithTitleT],
-            filter: _TitleFilter,
+        items: list[WithTitleT],
+        filter: _TitleFilter,
     ) -> list[WithTitleT]:
         if filter == "retain_all":
             return items[:]

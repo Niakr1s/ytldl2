@@ -7,7 +7,6 @@ from ytldl2.models import (
 from ytldl2.music_library import (
     MusicLibrary,
     MusicLibraryConfig,
-    default_include_playlists,
 )
 
 
@@ -19,11 +18,14 @@ class TestMusicLibraryConfig:
     def test_save_load(self, config_path: pathlib.Path):
         config = MusicLibraryConfig.load(config_path=config_path)
         assert config.config_path == config_path
-        assert config.include_playlists == default_include_playlists()
-        assert config.include_channels is not None
+        assert (
+            isinstance(pf := config.home_items_filter.playlists, list) and len(pf) > 0
+        )
+        assert config.home_items_filter.videos == "retain_all"
+        assert config.home_items_filter.channels == "retain_all"
 
         include_channels = [Title("1"), Title("2"), Title("3")]
-        config.include_channels = include_channels
+        config.home_items_filter.channels = include_channels
         config.save()
 
         same_config = MusicLibraryConfig.load(config_path=config_path)

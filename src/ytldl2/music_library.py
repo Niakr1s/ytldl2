@@ -2,7 +2,7 @@ import json
 import pathlib
 import tempfile
 
-from pydantic import BaseModel, Field
+import pydantic
 
 from ytldl2.api import YtMusicApi
 from ytldl2.cancellation_tokens import CancellationToken
@@ -12,15 +12,16 @@ from ytldl2.oauth import get_oauth
 from ytldl2.sqlite_cache import SqliteCache
 
 
-def default_include_playlists() -> list[Title]:
+def default_home_items_filter() -> HomeItemsFilter:
     my_mixes = (f"My Mix {i}" for i in range(1, 7))
-    return [Title(x) for x in ["My Supermix", *my_mixes]]
+    return HomeItemsFilter(playlists=[Title(x) for x in ["My Supermix", *my_mixes]])
 
 
-class MusicLibraryConfig(BaseModel):
+class MusicLibraryConfig(pydantic.BaseModel):
     config_path: pathlib.Path
-    include_playlists: list[Title] = Field(default_factory=default_include_playlists)
-    include_channels: list[Title] = []
+    home_items_filter: HomeItemsFilter = pydantic.Field(
+        default_factory=default_home_items_filter
+    )
 
     def save(self):
         """Saves config to config_path."""
@@ -87,12 +88,7 @@ class MusicLibrary:
         Updates library
         """
         home_items = self._api.get_home_items()
-        home_items = home_items.filtered(
-            HomeItemsFilter(
-                playlists=self._config.include_playlists,
-                channels=self._config.include_channels,
-            )
-        )
+        home_items = home_items.filtered(self._config.home_items_filter)
 
         videos = self._api.get_videos(home_items=home_items)
         result = self._downloader.download(
