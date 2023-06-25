@@ -59,5 +59,5 @@ class MusicLibraryUser(Protocol):
                 print(f"Error: {filename}: {progress}")
 
 
-class NoLibraryUser(MusicLibraryUser):
+class TerminalMusicLibraryUser(MusicLibraryUser):
     pass
