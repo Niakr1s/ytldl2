@@ -1,7 +1,7 @@
 import logging
 import pathlib
-from typing import Literal, cast
 
+import yt_dlp
 from yt_dlp import YoutubeDL
 
 from ytldl2.cache import Cache, CachedVideo, SongInfo
@@ -15,6 +15,8 @@ from ytldl2.models.download_hooks import (
     DownloadProgress,
     PostprocessorHook,
     ProgressHook,
+    is_progress_error,
+    is_progress_finished,
 )
 from ytldl2.models.types import VideoId
 from ytldl2.postprocessors import (
@@ -123,10 +125,6 @@ class MusicDownloader:
         )
 
 
-class _ProgressHookError(Exception):
-    pass
-
-
 class _MusicDownloadExecutorError(Exception):
     """
     Raises, if _MusicDownloadExecutor.download() called second time.
@@ -198,10 +196,12 @@ class _MusicDownloadExecutor:
                     if skip_download:
                         self._current_item.complete_as_skipped("skip_download")
 
-                    if (limit := limit -1) <= 0:
+                    if (limit := limit - 1) <= 0:
                         break
                 except SongFiltered:
                     self._current_item.complete_as_filtered("not a song")
+                except yt_dlp.utils.DownloadError as e:
+                    self._current_item.complete_as_failed(e)
                 finally:
                     if info:
                         self._cache.set_info(info)
@@ -225,17 +225,13 @@ class _MusicDownloadExecutor:
 
     def _progress_hook(self, progress: DownloadProgress):
         if not self._current_item:
-            raise _ProgressHookError("called on None current_item")
-        status = cast(Literal["downloading", "error", "finished"], progress["status"])
-        match status:
-            case "downloading":
-                pass
-            case "finished":
-                self._current_item.complete_as_downloaded(
-                    pathlib.Path(progress["filename"])
-                )
-            case "error":
-                self._current_item.complete_as_failed(_ProgressHookError(progress))
+            raise RuntimeError("called on None current_item")
+        if is_progress_finished(progress):
+            self._current_item.complete_as_downloaded(
+                pathlib.Path(progress["filename"])
+            )
+        if is_progress_error(progress):
+            raise yt_dlp.utils.DownloadError("download error", progress["info_dict"])
 
     @staticmethod
     def _raw_info_to_info(info) -> SongInfo | None:
