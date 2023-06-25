@@ -2,158 +2,70 @@ import pathlib
 
 import pytest
 from ytldl2.download_queue import (
-    Downloaded,
     DownloadQueue,
-    DownloadQueueHasUncompleteItem,
-    Failed,
-    Filtered,
-    Item,
-    ItemModifyNotAllowed,
-    ItemNotCompletedError,
-    Skipped,
+    QueueError,
 )
 from ytldl2.models.types import VideoId
 
 
 class TestDownloadQueue:
     @pytest.fixture
-    def queue(self) -> DownloadQueue:
-        return DownloadQueue([VideoId("a"), VideoId("b")])
+    def videos(self) -> list[VideoId]:
+        return [VideoId("a"), VideoId("b"), VideoId("c")]
 
-    def test_next(self, queue: DownloadQueue):
-        item = queue.next()
-        assert item
-        assert "a" == item.video_id
-        with pytest.raises(ItemNotCompletedError):
-            queue.next()
-        item.complete_as_downloaded(pathlib.Path())
+    def test_next_downloaded(self, videos: list[VideoId]):
+        queue = DownloadQueue(videos)
 
-        item = queue.next()
-        assert item
-        assert "b" == item.video_id
-        item.complete_as_downloaded(pathlib.Path())
+        for i, item in enumerate(queue):
+            assert videos[i] == item
+            if i < len(videos) - 1:
+                with pytest.raises(QueueError, match="has item, pending mark"):
+                    queue.__next__()
+            queue.mark_downloaded(pathlib.Path())
+        assert len(queue) == 0
+        assert videos == [v.video_id for v in queue.downloaded]
+        assert all(v.path for v in queue.downloaded)
+        assert not queue.skipped
+        assert not queue.filtered
+        self._test_after(queue)
 
-        assert not queue.next()
+    def test_next_skipped(self, videos: list[VideoId]):
+        queue = DownloadQueue(videos)
 
-    def item_can_not_be_completed_twice(self, item: Item):
-        with pytest.raises(ItemModifyNotAllowed):
-            item.complete_as_downloaded(pathlib.Path())
-        with pytest.raises(ItemModifyNotAllowed):
-            item.complete_as_failed(Exception())
-        with pytest.raises(ItemModifyNotAllowed):
-            item.complete_as_skipped("")
-        with pytest.raises(ItemModifyNotAllowed):
-            item.complete_as_filtered("")
+        for i, item in enumerate(queue):
+            assert videos[i] == item
+            if i < len(videos) - 1:
+                with pytest.raises(QueueError, match="has item, pending mark"):
+                    queue.__next__()
+            queue.mark_skipped("skipped")
+        assert len(queue) == 0
+        assert videos == [v.video_id for v in queue.skipped]
+        assert all(v.reason for v in queue.skipped)
+        assert not queue.downloaded
+        assert not queue.filtered
+        self._test_after(queue)
 
-    def test_item__complete_as_downloaded(self, queue: DownloadQueue):
-        item = queue.next()
-        assert item
-        path = pathlib.Path()
-        item.complete_as_downloaded(path)
-        self.item_can_not_be_completed_twice(item)
+    def test_next_filtered(self, videos: list[VideoId]):
+        queue = DownloadQueue(videos)
 
-        video_id = item.video_id
-        expected = Downloaded(item.video_id, path)
-        res = queue.to_result()
+        for i, item in enumerate(queue):
+            assert videos[i] == item
+            if i < len(videos) - 1:
+                with pytest.raises(QueueError, match="has item, pending mark"):
+                    queue.__next__()
+            queue.mark_filtered("filtered")
+        assert len(queue) == 0
+        assert videos == [v.video_id for v in queue.filtered]
+        assert all(v.filtered_reason for v in queue.filtered)
+        assert not queue.skipped
+        assert not queue.downloaded
+        self._test_after(queue)
 
-        assert video_id not in res.queue
-        assert expected in res.downloaded
-        assert not res.failed
-        assert not res.skipped
+    def _test_after(self, queue: DownloadQueue):
+        with pytest.raises(StopIteration):
+            queue.__next__()
 
-    def test_item__complete_as_filtered(self, queue: DownloadQueue):
-        item = queue.next()
-        assert item
-        item.complete_as_filtered("filtered")
-        self.item_can_not_be_completed_twice(item)
-
-        video_id = item.video_id
-        expected = Filtered(item.video_id, "filtered")
-        res = queue.to_result()
-
-        assert video_id not in res.queue
-        assert not res.downloaded
-        assert expected in res.filtered
-        assert not res.failed
-        assert not res.skipped
-
-    def test_item__complete_as_failed(self, queue: DownloadQueue):
-        item = queue.next()
-        assert item
-        err = Exception("some error")
-        item.complete_as_failed(err)
-        self.item_can_not_be_completed_twice(item)
-
-        video_id = item.video_id
-        expected = Failed(item.video_id, err)
-        res = queue.to_result()
-
-        assert video_id not in res.queue
-        assert not res.downloaded
-        assert not res.filtered
-        assert expected in res.failed
-        assert not res.skipped
-
-    def test_item__complete_as_skipped(self, queue: DownloadQueue):
-        item = queue.next()
-        assert item
-        reason = "some reason"
-        item.complete_as_skipped(reason)
-        self.item_can_not_be_completed_twice(item)
-
-        video_id = item.video_id
-        expected = Skipped(item.video_id, reason)
-        res = queue.to_result()
-
-        assert video_id not in res.queue
-        assert not res.downloaded
-        assert not res.filtered
-        assert not res.failed
-        assert expected in res.skipped
-
-    def test_item__return_to_queue(self, queue: DownloadQueue):
-        item = queue.next()
-        assert item
-        video_id = item.video_id
-
-        item.return_to_queue()
-        res = queue.to_result()
-        assert video_id == res.queue[-1]
-        assert not res.filtered
-        assert not res.downloaded
-        assert not res.failed
-        assert not res.skipped
-
-        same_item = queue.next()
-        assert same_item
-        assert video_id == same_item.video_id
-
-    def test_to_result(self, queue: DownloadQueue):
-        res = queue.to_result()
-        videos = ["a", "b"]
-        assert videos == res.videos
-        assert list(reversed(videos)) == res.queue
-        assert not res.downloaded
-        assert not res.failed
-        assert not res.skipped
-        assert not res.filtered
-
-    def test_to_result__with_incompleted_item(self, queue: DownloadQueue):
-        assert queue.next()
-        with pytest.raises(DownloadQueueHasUncompleteItem):
-            queue.to_result()
-
-    def test_to_result_in_loop(self, queue: DownloadQueue):
-        while item := queue.next():
-            item.complete_as_downloaded(pathlib.Path())
-            res = queue.to_result()
-            assert ["a", "b"] == res.videos
-            assert res.downloaded
-            assert not res.filtered
-            assert not res.failed
-            assert not res.skipped
-
-    def test_to_result__item_uncompleted(self, queue: DownloadQueue):
-        queue.next()
-        with pytest.raises(DownloadQueueHasUncompleteItem):
-            queue.to_result()
+        with pytest.raises(QueueError, match="no item, pending mark"):
+            queue.mark_downloaded(pathlib.Path())
+            queue.mark_filtered("reason")
+            queue.mark_skipped("reason")

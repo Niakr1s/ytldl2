@@ -1,7 +1,7 @@
 import pathlib
 from typing import Protocol
 
-from ytldl2.download_queue import DownloadResult
+from ytldl2.download_queue import DownloadQueue
 from ytldl2.models.download_hooks import (
     DownloadProgress,
     is_progress_downloading,
@@ -37,21 +37,20 @@ class MusicLibraryUser(Protocol):
         print(f"Total: {len(songs)} songs.")
         return songs
 
-    def display_result(self, result: DownloadResult):
+    def display_result(self, queue: DownloadQueue):
         """Called by library after download to display download result."""
         title = "====== Download result ======"
 
         print()
         print(title)
         print()
-        print(f"Requested: {len(result.videos)}.")
+        print(f"Requested: {len(queue.videos)}.")
         print()
-        print(f"Downloaded: {len(result.downloaded)},")
-        print(f"Skipped: {len(result.skipped)},")
-        print(f"Failed: {len(result.failed)},")
-        print(f"Filtered: {len(result.filtered)}.")
+        print(f"Downloaded: {len(queue.downloaded)},")
+        print(f"Skipped: {len(queue.skipped)},")
+        print(f"Filtered: {len(queue.filtered)}.")
         print()
-        print(f"Remained in queue: {len(result.queue)}.")
+        print(f"Remained in queue: {len(queue)}.")
         print()
         print("=" * len(title))
 
