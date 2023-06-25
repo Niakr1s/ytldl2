@@ -1,12 +1,10 @@
 import json
 import pathlib
-import random
 import tempfile
 
 import pydantic
 
 from ytldl2.api import YtMusicApi
-from ytldl2.cache import Cache
 from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models.home_items import HomeItemsFilter
 from ytldl2.models.song import Song
@@ -54,7 +52,6 @@ class MusicLibrary:
     def __init__(
         self,
         home_dir: pathlib.Path,
-        cache: Cache,
         user: MusicLibraryUser | None = None,
     ):
         self._user = user if user else TerminalMusicLibraryUser()
@@ -64,9 +61,8 @@ class MusicLibrary:
         self._init_dirs([self._home_dir, self._dot_dir])
 
         self._config = MusicLibraryConfig.load(self._dot_dir / "config.json")
-        self._cache = cache
         self._downloader = self._init_downloader(
-            home_dir=home_dir, db_path=self._db_path, cache=self._cache
+            home_dir=home_dir, db_path=self._db_path
         )
 
         oauth_json_path = self._dot_dir / "oauth.json"
@@ -79,9 +75,7 @@ class MusicLibrary:
 
     @staticmethod
     def _init_downloader(
-        home_dir: pathlib.Path,
-        db_path: pathlib.Path,
-        cache: Cache,
+        home_dir: pathlib.Path, db_path: pathlib.Path
     ) -> MusicDownloader:
         tmp_dir = pathlib.Path(tempfile.mkdtemp(suffix=".ytldl2_"))
         ydl_params = YoutubeDlParams(
@@ -94,7 +88,6 @@ class MusicLibrary:
 
     def update(
         self,
-        limit: int = 100,
         cancellation_token: CancellationToken = CancellationToken(),
         skip_download: bool = False,
     ):
@@ -113,12 +106,10 @@ class MusicLibrary:
         songs = [
             Song(v.video_id, v.title, v.artist) for v in videos if v.artist is not None
         ]
-        songs = self._cache.filter_cached(songs)
-        songs = random.sample(songs, limit)
         songs = self._user.review_songs(songs)
 
         result = self._downloader.download(
-            videos=[v.video_id for v in songs],
+            videos=[v.video_id for v in videos],
             cancellation_token=cancellation_token,
             skip_download=skip_download,
             progress_hooks=[self._user.on_progress],

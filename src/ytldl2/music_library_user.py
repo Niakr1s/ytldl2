@@ -4,9 +4,9 @@ from typing import Protocol
 from ytldl2.download_queue import DownloadResult
 from ytldl2.models.download_hooks import (
     DownloadProgress,
-    is_progress_downloading,
-    is_progress_error,
-    is_progress_finished,
+    DownloadProgressDownloading,
+    DownloadProgressError,
+    DownloadProgressFinished,
 )
 from ytldl2.models.home_items import HomeItems, HomeItemsFilter
 from ytldl2.models.song import Song
@@ -26,46 +26,37 @@ class MusicLibraryUser(Protocol):
         """
         return filter
 
-    def review_songs(self, songs: list[Song]) -> list[Song]:
+    def review_songs(self, videos: list[Song]) -> list[Song]:
         """
         Called by library to ask user to review songs.
         :return: Reviewed songs, that is intended to be downloaded.
         """
-        print(f"{len(songs)} songs will be downloaded:")
-        for song in songs:
-            print(f"{song.artist} - {song.title}")
-        print(f"Total: {len(songs)} songs.")
-        return songs
+        return videos
 
     def display_result(self, result: DownloadResult):
         """Called by library after download to display download result."""
-        title = "====== Download result ======"
-
-        print()
-        print(title)
+        print("=== Download result ===")
         print()
         print(f"Requested: {len(result.videos)}.")
+        print(f"\tDownloaded: {len(result.downloaded)},")
+        print(f"\tSkipped: {len(result.skipped)},")
+        print(f"\tFailed: {len(result.failed)},")
+        print(f"\tFiltered: {len(result.filtered)}")
         print()
-        print(f"Downloaded: {len(result.downloaded)},")
-        print(f"Skipped: {len(result.skipped)},")
-        print(f"Failed: {len(result.failed)},")
-        print(f"Filtered: {len(result.filtered)}.")
-        print()
-        print(f"Remained in queue: {len(result.queue)}.")
-        print()
-        print("=" * len(title))
+        print(f"Remained in queue: {len(result.queue)}")
 
     def on_progress(self, progress: DownloadProgress) -> None:
         filename = pathlib.Path(progress["filename"]).name
-        if is_progress_downloading(progress):
-            print(
-                f"Downloading: {filename}: {progress['downloaded_bytes']} of \
-                    {progress['total_bytes']} bytes"
-            )
-        if is_progress_finished(progress):
-            print(f"Finished: {filename}: {progress['total_bytes']} bytes")
-        if is_progress_error(progress):
-            print(f"Error: {filename}: {progress}")
+        match progress:
+            case DownloadProgressDownloading():
+                print(
+                    f"Downloading: {filename}: {progress['downloaded_bytes']} of \
+                        {progress['total_bytes_estimate']} bytes"
+                )
+            case DownloadProgressFinished():
+                print(f"Finished: {filename}: {progress['total_bytes']} bytes")
+            case DownloadProgressError():
+                print(f"Error: {filename}: {progress}")
 
 
 class TerminalMusicLibraryUser(MusicLibraryUser):

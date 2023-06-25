@@ -1,4 +1,4 @@
-from typing import Callable, Literal, TypedDict, TypeGuard
+from typing import Callable, Literal, TypedDict
 
 Status = Literal["downloading", "error", "finished"]
 
@@ -11,11 +11,10 @@ class DownloadProgressBase(TypedDict):
 
 class DownloadProgressDownloading(DownloadProgressBase):
     downloaded_bytes: int
-    total_bytes: int
+    total_bytes_estimate: float
 
 
 class DownloadProgressFinished(DownloadProgressBase):
-    downloaded_bytes: int
     total_bytes: int
 
 
@@ -43,36 +42,6 @@ class PostprocessorProgressFinished(PostprocessorProgressBase):
 
 
 PostprocessorProgress = PostprocessorProgressStarted | PostprocessorProgressFinished
-
-
-def is_progress_downloading(
-    progress: DownloadProgress,
-) -> TypeGuard[DownloadProgressDownloading]:
-    return progress["status"] == "downloading"
-
-
-def is_progress_finished(
-    progress: DownloadProgress,
-) -> TypeGuard[DownloadProgressFinished]:
-    return progress["status"] == "finished"
-
-
-def is_progress_error(
-    progress: DownloadProgress,
-) -> TypeGuard[DownloadProgressError]:
-    return progress["status"] == "error"
-
-
-def is_postprocessor_started(
-    postprocessor_progress: PostprocessorProgress,
-) -> TypeGuard[PostprocessorProgressStarted]:
-    return postprocessor_progress["status"] == "started"
-
-
-def is_postprocessor_finished(
-    postprocessor_progress: PostprocessorProgress,
-) -> TypeGuard[PostprocessorProgressFinished]:
-    return postprocessor_progress["status"] == "finished"
 
 
 ProgressHook = Callable[[DownloadProgress], None]
