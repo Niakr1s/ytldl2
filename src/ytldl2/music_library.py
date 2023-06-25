@@ -55,7 +55,7 @@ class MusicLibrary:
         self._db_path = self._dot_dir / "cache.db"
         self._init_dirs([self._home_dir, self._dot_dir])
 
-        self.config = MusicLibraryConfig.load(self._dot_dir / "config.json")
+        self._config = MusicLibraryConfig.load(self._dot_dir / "config.json")
         self._downloader = self._init_downloader(
             home_dir=home_dir, db_path=self._db_path, skip_download=skip_download
         )
@@ -89,8 +89,8 @@ class MusicLibrary:
         home_items = self._api.get_home_items()
         home_items = home_items.filtered(
             incl_videos=None,
-            incl_playlists=self.config.include_playlists,
-            incl_channels=self.config.include_channels,
+            incl_playlists=self._config.include_playlists,
+            incl_channels=self._config.include_channels,
         )
 
         videos = self._api.get_videos(home_items=home_items)

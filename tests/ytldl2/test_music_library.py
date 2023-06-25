@@ -41,5 +41,5 @@ class TestMusicLibrary:
     def test_init(self, library: MusicLibrary):
         assert library._home_dir.exists()
         assert library._dot_dir.exists()
-        assert (config_path := library.config.config_path).exists()
+        assert (config_path := library._config.config_path).exists()
         assert config_path.read_text()
