@@ -1,5 +1,6 @@
 from typing import Protocol
 
+from ytldl2.download_queue import DownloadResult
 from ytldl2.models.home_items import HomeItems, HomeItemsFilter
 from ytldl2.models.song import Song
 
@@ -24,6 +25,10 @@ class MusicLibraryUser(Protocol):
         :return: Reviewed songs, that is intended to be downloaded.
         """
         return videos
+
+    def display_result(self, result: DownloadResult):
+        """Called by library after download to display download result."""
+        pass
 
 
 class NoLibraryUser(MusicLibraryUser):
