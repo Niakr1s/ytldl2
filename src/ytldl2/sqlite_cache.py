@@ -5,128 +5,7 @@ from typing import Iterator, Literal
 
 from ytldl2.cache import Cache, CachedVideo, SongInfo
 from ytldl2.models.types import VideoId
-
-SqlCommands = list[str]
-
-_migrations: list[SqlCommands] = [
-    [
-        r"""
-CREATE TABLE songs (
-    video_id        TEXT PRIMARY KEY ON CONFLICT REPLACE
-                         NOT NULL,
-    title           TEXT NOT NULL,
-    artist          TEXT NOT NULL,
-    filtered_reason TEXT,
-    last_modified   TEXT NOT NULL
-);
-        """
-    ]
-]
-# created with sqlite SQLiteStudio 3.4.4
-
-_migrations.append(
-    r"""
-PRAGMA foreign_keys = 0;
-CREATE TABLE sqlitestudio_temp_table AS SELECT *
-                                          FROM songs;
-DROP TABLE songs;
-CREATE TABLE songs (
-    video_id        TEXT PRIMARY KEY ON CONFLICT REPLACE
-                         NOT NULL,
-    filtered_reason TEXT,
-    last_modified   TEXT NOT NULL
-);
-INSERT INTO songs (
-                      video_id,
-                      filtered_reason,
-                      last_modified
-                  )
-                  SELECT video_id,
-                         filtered_reason,
-                         last_modified
-                    FROM sqlitestudio_temp_table;
-DROP TABLE sqlitestudio_temp_table;
-PRAGMA foreign_keys = 1;
-        """.split(
-        ";"
-    )
-)
-_migrations.append(
-    r"""
-PRAGMA foreign_keys = 0;
-CREATE TABLE cache (
-    video_id        TEXT PRIMARY KEY ON CONFLICT REPLACE
-                         NOT NULL,
-    filtered_reason TEXT,
-    last_modified   TEXT NOT NULL
-);
-INSERT INTO cache (
-                      video_id,
-                      filtered_reason,
-                      last_modified
-                  )
-                  SELECT video_id,
-                         filtered_reason,
-                         last_modified
-                    FROM songs;
-DROP TABLE songs;
-PRAGMA foreign_keys = 1;
-        """.split(
-        ";"
-    )
-)
-_migrations.append(
-    [
-        r"""
-CREATE TABLE song_info (
-    id       TEXT    PRIMARY KEY ON CONFLICT REPLACE
-                     NOT NULL,
-    title    TEXT    NOT NULL,
-    duration INTEGER NOT NULL,
-    channel  TEXT,
-    artist   TEXT    NOT NULL,
-    lyrics   TEXT
-);
-        """
-    ]
-)
-_migrations.append(
-    r"""
-PRAGMA foreign_keys = 0;
-CREATE TABLE sqlitestudio_temp_table AS SELECT *
-                                          FROM song_info;
-DROP TABLE song_info;
-CREATE TABLE song_info (
-    id       TEXT    PRIMARY KEY ON CONFLICT REPLACE
-                     NOT NULL,
-    title    TEXT    NOT NULL,
-    duration INTEGER NOT NULL,
-    channel  TEXT,
-    artist   TEXT    NOT NULL
-);
-INSERT INTO song_info (
-                          id,
-                          title,
-                          duration,
-                          channel,
-                          artist
-                      )
-                      SELECT id,
-                             title,
-                             duration,
-                             channel,
-                             artist
-                        FROM sqlitestudio_temp_table;
-DROP TABLE sqlitestudio_temp_table;
-PRAGMA foreign_keys = 1;
-        """.split(
-        ";"
-    )
-)
-"""
-(Index+1) of each migration corresponds to migration version.
-Warning: DON'T EVER REMOVE MIGRATIONS, JUST ADD NEW.
-"""
+from ytldl2.sqlite_cache_migrations import migrations
 
 
 class MigrationError(Exception):
@@ -268,15 +147,15 @@ SELECT id,
     def _apply_migrations_if_needed(self):
         if (db_version := self.db_version) < 0:
             raise MigrationError("db version is < 0")
-        elif db_version < len(_migrations):
+        elif db_version < len(migrations):
             # actual work here
-            for migration in _migrations[db_version:]:
+            for migration in migrations[db_version:]:
                 for sql in migration:
                     self.conn.cursor().execute(sql)
-            self._set_db_version(len(_migrations))
+            self._set_db_version(len(migrations))
             self.conn.commit()
             # migrations ended
-        elif db_version == len(_migrations):
+        elif db_version == len(migrations):
             return
         else:
             raise MigrationError("db version exeeds available migrations")
