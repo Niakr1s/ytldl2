@@ -1,7 +1,7 @@
 import pathlib
 from dataclasses import dataclass
 
-from ytldl2.models import VideoId, WithVideoId
+from ytldl2.models.models import VideoId, WithVideoId
 
 
 @dataclass

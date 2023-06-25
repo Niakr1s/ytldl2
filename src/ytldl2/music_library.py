@@ -6,7 +6,7 @@ import pydantic
 
 from ytldl2.api import YtMusicApi
 from ytldl2.cancellation_tokens import CancellationToken
-from ytldl2.models import HomeItemsFilter, Title
+from ytldl2.models.models import HomeItemsFilter, Title
 from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
 from ytldl2.music_library_user import MusicLibraryUser, NoLibraryUser
 from ytldl2.oauth import get_oauth

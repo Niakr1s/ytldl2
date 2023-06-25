@@ -1,6 +1,6 @@
 import pytest
 from ytldl2.api import YtMusicApi
-from ytldl2.models import ChannelId, HomeItems, PlaylistId
+from ytldl2.models.models import ChannelId, HomeItems, PlaylistId
 
 from tests.ytldl2 import marks
 

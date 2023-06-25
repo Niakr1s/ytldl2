@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from ytldl2.models import HomeItems, HomeItemsFilter, Video
+from ytldl2.models.models import HomeItems, HomeItemsFilter, Video
 
 
 class MusicLibraryUser(Protocol):

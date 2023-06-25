@@ -1,6 +1,6 @@
 from typing import Any, cast
 
-from ytldl2.models import (
+from ytldl2.models.models import (
     BrowseId,
     Channel,
     HomeItems,

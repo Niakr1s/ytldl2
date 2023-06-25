@@ -1,7 +1,7 @@
 import pathlib
 
 import pytest
-from ytldl2.models import (
+from ytldl2.models.models import (
     Title,
 )
 from ytldl2.music_library import (

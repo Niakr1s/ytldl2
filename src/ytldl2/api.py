@@ -3,7 +3,7 @@ from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from ytmusicapi import YTMusic
 
 from ytldl2.extractor import ExtractError, Extractor
-from ytldl2.models import ChannelId, HomeItems, PlaylistId, Video
+from ytldl2.models.models import ChannelId, HomeItems, PlaylistId, Video
 
 
 class YtMusicApiError(Exception):

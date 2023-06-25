@@ -12,7 +12,7 @@ from ytldl2.download_queue import (
     ItemNotCompletedError,
     Skipped,
 )
-from ytldl2.models import VideoId
+from ytldl2.models.models import VideoId
 
 
 class TestDownloadQueue:

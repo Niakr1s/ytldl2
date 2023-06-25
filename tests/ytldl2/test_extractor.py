@@ -1,10 +1,10 @@
 import json
 
 import pytest
+from ytldl2.extractor import ExtractError, Extractor
+from ytldl2.models.models import Channel, Playlist, Video
 
 from tests.ytldl2 import DATA
-from ytldl2.extractor import ExtractError, Extractor
-from ytldl2.models import Channel, Playlist, Video
 
 
 class TestExtractor:

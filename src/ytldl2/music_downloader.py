@@ -12,7 +12,7 @@ from ytldl2.download_queue import (
     DownloadResult,
     Item,
 )
-from ytldl2.models import VideoId
+from ytldl2.models.models import VideoId
 from ytldl2.postprocessors import (
     FilterSongPP,
     LyricsPP,

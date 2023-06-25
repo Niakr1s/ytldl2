@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Iterator, Literal
 
 from ytldl2.cache import Cache, CachedVideo, SongInfo
-from ytldl2.models import VideoId
+from ytldl2.models.models import VideoId
 
 SqlCommands = list[str]
 

@@ -1,5 +1,5 @@
 import pytest
-from ytldl2.models import (
+from ytldl2.models.models import (
     BrowseId,
     Channel,
     HomeItems,
