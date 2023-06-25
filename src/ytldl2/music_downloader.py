@@ -102,6 +102,7 @@ class MusicDownloader:
     def download(
         self,
         videos: list[VideoId],
+        limit: int | None = None,
         cancellation_token: CancellationToken | None = None,
         skip_download: bool = False,
         progress_hooks: list[ProgressHook] | None = None,
@@ -114,7 +115,8 @@ class MusicDownloader:
         executor = _MusicDownloadExecutor(self._cache, self._ydl_builder)
         return executor.download(
             videos,
-            cancellation_token,
+            limit=limit,
+            cancellation_token=cancellation_token,
             skip_download=skip_download,
             progress_hooks=progress_hooks,
             postprocessor_hooks=postprocessor_hooks,
@@ -146,6 +148,7 @@ class _MusicDownloadExecutor:
     def download(
         self,
         videos: list[VideoId],
+        limit: int | None = None,
         cancellation_token: CancellationToken | None = None,
         skip_download: bool = False,
         progress_hooks: list[ProgressHook] | None = None,
@@ -156,6 +159,8 @@ class _MusicDownloadExecutor:
         Downloads only songs (e.g skips videos).
         Should be called only once.
         """
+        limit = limit if limit is not None else len(videos)
+
         ydl = self._ydl_builder.build()
         ydl.add_progress_hook(self._progress_hook)
 
@@ -188,10 +193,13 @@ class _MusicDownloadExecutor:
                     raw_info = ydl.extract_info(
                         self._current_item.video_id, download=not skip_download
                     )
-
                     info = self._raw_info_to_info(raw_info)
+
                     if skip_download:
                         self._current_item.complete_as_skipped("skip_download")
+
+                    if (limit := limit -1) <= 0:
+                        break
                 except SongFiltered:
                     self._current_item.complete_as_filtered("not a song")
                 finally:
