@@ -8,10 +8,6 @@ from ytldl2.models.types import VideoId
 class CachedVideo(pydantic.BaseModel):
     video_id: VideoId
 
-    # TODO: add title and artist
-    # title: Title
-    # artist: Artist | None
-
     filtered_reason: str | None
 
 
