@@ -8,6 +8,7 @@ from ytldl2.api import YtMusicApi
 from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models import HomeItemsFilter, Title
 from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
+from ytldl2.music_library_user import MusicLibraryUser, NoLibraryUser
 from ytldl2.oauth import get_oauth
 from ytldl2.sqlite_cache import SqliteCache
 
@@ -49,8 +50,10 @@ class MusicLibrary:
     def __init__(
         self,
         home_dir: pathlib.Path,
+        user: MusicLibraryUser = NoLibraryUser(),
         skip_download: bool = False,
     ):
+        self._user = user
         self._home_dir = home_dir
         self._dot_dir = home_dir / ".ytldl2"
         self._db_path = self._dot_dir / "cache.db"
@@ -88,9 +91,16 @@ class MusicLibrary:
         Updates library
         """
         home_items = self._api.get_home_items()
+
+        self._config.home_items_filter = self._user.review_filter(
+            home_items, self._config.home_items_filter
+        )
+        self._config.save()
         home_items = home_items.filtered(self._config.home_items_filter)
 
         videos = self._api.get_videos(home_items=home_items)
+        videos = self._user.review_videos(videos)
+
         result = self._downloader.download(
             videos=[v.videoId for v in videos], cancellation_token=cancellation_token
         )
