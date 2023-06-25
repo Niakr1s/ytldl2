@@ -147,6 +147,7 @@ INSERT INTO cache (
                 str(datetime.now()),
             ),
         )
+        self.conn.commit()
 
     def __getitem__(self, video_id: VideoId) -> CachedVideo | None:
         sql = r"""
@@ -202,6 +203,7 @@ INSERT INTO song_info (
                 song_info.lyrics,
             ],
         )
+        self.conn.commit()
 
     def get_info(self, video_id: VideoId) -> SongInfo | None:
         sql = r"""
