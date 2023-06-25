@@ -48,7 +48,7 @@ class HomeItem(BaseModel):
     contents: List[Content]
 
 
-class RawHome(BaseModel):
+class Home(BaseModel):
     __root__: List[HomeItem]
 
     def __iter__(self) -> Iterator[HomeItem]:

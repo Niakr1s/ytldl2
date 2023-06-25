@@ -1,7 +1,7 @@
 import pytest
 from ytldl2.extractor import Extractor
 from ytldl2.models.raw_artist import RawArtist
-from ytldl2.models.raw_home import RawHome
+from ytldl2.models.raw_home import Home
 from ytldl2.models.raw_playlist import RawPlaylist
 from ytldl2.models.raw_watch_playlist import RawWatchPlaylist
 
@@ -14,8 +14,8 @@ class TestExtractor:
         return Extractor()
 
     @pytest.fixture(scope="session")
-    def home(self) -> RawHome:
-        return RawHome.parse_raw((DATA / "home.json").read_bytes())
+    def home(self) -> Home:
+        return Home.parse_raw((DATA / "home.json").read_bytes())
 
     @pytest.fixture(scope="session")
     def get_playlist(self) -> RawPlaylist:

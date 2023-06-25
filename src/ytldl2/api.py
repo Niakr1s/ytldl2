@@ -5,7 +5,7 @@ from ytmusicapi import YTMusic
 from ytldl2.extractor import ExtractError, Extractor
 from ytldl2.models.home_items import HomeItems
 from ytldl2.models.raw_artist import RawArtist
-from ytldl2.models.raw_home import RawHome
+from ytldl2.models.raw_home import Home
 from ytldl2.models.raw_playlist import RawPlaylist
 from ytldl2.models.raw_watch_playlist import RawWatchPlaylist
 from ytldl2.models.types import ChannelId, PlaylistId
@@ -32,7 +32,7 @@ class YtMusicApi:
         """
         try:
             home_raw: list = self._yt.get_home(limit=home_limit)
-            home = RawHome.parse_obj(home_raw)
+            home = Home.parse_obj(home_raw)
             return self._extractor.parse_home(home)
         except ExtractError:
             raise

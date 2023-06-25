@@ -2,7 +2,7 @@ from ytldl2.models.channel import Channel
 from ytldl2.models.home_items import HomeItems
 from ytldl2.models.playlist import Playlist
 from ytldl2.models.raw_artist import RawArtist
-from ytldl2.models.raw_home import RawHome
+from ytldl2.models.raw_home import Home
 from ytldl2.models.raw_playlist import RawPlaylist
 from ytldl2.models.raw_watch_playlist import RawWatchPlaylist
 from ytldl2.models.types import (
@@ -24,7 +24,7 @@ class Extractor:
     It's a helper class, that helps extract data from raw data, got by YtMusicApi.
     """
 
-    def parse_home(self, home: RawHome) -> HomeItems:
+    def parse_home(self, home: Home) -> HomeItems:
         """
         Parses home data, got by YtMusic.get_home() call.
         :param home: Home raw data, got by YtMusic.get_home().
