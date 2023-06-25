@@ -272,6 +272,7 @@ SELECT id,
 
     def _set_db_version(self, v: int):
         self.conn.cursor().execute(f"PRAGMA user_version = {v}")
+        self.conn.commit()
 
     @property
     def db_version(self) -> int:

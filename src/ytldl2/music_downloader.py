@@ -25,7 +25,6 @@ from ytldl2.postprocessors import (
     RetainMainArtistPP,
     SongFiltered,
 )
-from ytldl2.sqlite_cache import SqliteCache
 
 
 class YoutubeDlParams:
@@ -90,7 +89,7 @@ class MusicDownloader:
 
     def __init__(
         self,
-        cache: Cache = SqliteCache(),
+        cache: Cache,
         ydl_params: YoutubeDlParams = YoutubeDlParams(),
     ) -> None:
         """

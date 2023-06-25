@@ -54,7 +54,6 @@ class MusicLibrary:
     def __init__(
         self,
         home_dir: pathlib.Path,
-        cache: Cache,
         user: MusicLibraryUser | None = None,
     ):
         self._user = user if user else TerminalMusicLibraryUser()
@@ -64,10 +63,8 @@ class MusicLibrary:
         self._init_dirs([self._home_dir, self._dot_dir])
 
         self._config = MusicLibraryConfig.load(self._dot_dir / "config.json")
-        self._cache = cache
-        self._downloader = self._init_downloader(
-            home_dir=home_dir, db_path=self._db_path, cache=self._cache
-        )
+        self._cache = SqliteCache(self._db_path)
+        self._downloader = self._init_downloader(home_dir=home_dir, cache=self._cache)
 
         oauth_json_path = self._dot_dir / "oauth.json"
         self._api = YtMusicApi(get_oauth(oauth_json_path))
@@ -80,7 +77,6 @@ class MusicLibrary:
     @staticmethod
     def _init_downloader(
         home_dir: pathlib.Path,
-        db_path: pathlib.Path,
         cache: Cache,
     ) -> MusicDownloader:
         tmp_dir = pathlib.Path(tempfile.mkdtemp(suffix=".ytldl2_"))
@@ -89,7 +85,6 @@ class MusicLibrary:
             tmp_dir=tmp_dir,
         )
 
-        cache = SqliteCache(db_path)
         return MusicDownloader(cache=cache, ydl_params=ydl_params)
 
     def update(
