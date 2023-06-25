@@ -114,15 +114,16 @@ class MusicDownloader:
         Download songs in best quality in current thread.
         Downloads only songs (e.g skips videos).
         """
-        executor = _MusicDownloadExecutor(self._cache, self._ydl_builder)
-        return executor.download(
+        return _MusicDownloadExecutor(
+            self._cache,
+            self._ydl_builder,
             videos,
             limit=limit,
             cancellation_token=cancellation_token,
             skip_download=skip_download,
             progress_hooks=progress_hooks,
             postprocessor_hooks=postprocessor_hooks,
-        )
+        ).download()
 
 
 class _MusicDownloadExecutorError(Exception):
@@ -137,29 +138,34 @@ class _MusicDownloadExecutor:
     Class, internally used by MusicDownloader.
     """
 
-    def __init__(self, cache: Cache, ydl_builder: MusicYoutubeDlBuilder) -> None:
-        self._cache = cache
-        self._ydl_builder = ydl_builder
-        self._current_item: Item | None = None
-        self._exhausted = False
-
-    def download(
+    def __init__(
         self,
+        cache: Cache,
+        ydl_builder: MusicYoutubeDlBuilder,
         videos: list[VideoId],
         limit: int | None = None,
         cancellation_token: CancellationToken | None = None,
         skip_download: bool = False,
         progress_hooks: list[ProgressHook] | None = None,
         postprocessor_hooks: list[PostprocessorHook] | None = None,
-    ) -> DownloadResult:
-        """
-        Download songs in best quality in current thread.
-        Downloads only songs (e.g skips videos).
-        Should be called only once.
-        """
-        limit = limit if limit is not None else len(videos)
+    ) -> None:
+        self._cache = cache
+        self._ydl = self._init_ydl(ydl_builder, progress_hooks, postprocessor_hooks)
+        self._videos = videos
+        self._cancellation_token = cancellation_token
+        self._skip_download = skip_download
 
-        ydl = self._ydl_builder.build()
+        self._limit = limit if limit is not None else len(videos)
+        self._current_item: Item | None = None
+        self._exhausted = False
+
+    def _init_ydl(
+        self,
+        ydl_builder: MusicYoutubeDlBuilder,
+        progress_hooks: list[ProgressHook] | None,
+        postprocessor_hooks: list[PostprocessorHook] | None,
+    ) -> YoutubeDL:
+        ydl = ydl_builder.build()
         ydl.add_progress_hook(self._progress_hook)
 
         if progress_hooks:
@@ -170,13 +176,23 @@ class _MusicDownloadExecutor:
             for hook in postprocessor_hooks:
                 ydl.add_postprocessor_hook(hook)
 
-        queue = DownloadQueue(videos)
+        return ydl
+
+    def download(
+        self,
+    ) -> DownloadResult:
+        """
+        Download songs in best quality in current thread.
+        Downloads only songs (e.g skips videos).
+        Should be called only once.
+        """
+        queue = DownloadQueue(self._videos)
         while True:
             self._current_item = queue.next()
             if not self._current_item:
                 break
 
-            if cancellation_token and cancellation_token.kill_requested:
+            if self._cancellation_token and self._cancellation_token.kill_requested:
                 self._current_item.complete_as_skipped("cancelled")
                 continue
 
@@ -185,18 +201,19 @@ class _MusicDownloadExecutor:
                 continue
 
             info: SongInfo | None = None
-            with ydl:
+            with self._ydl:
                 try:
                     # complete_as_* will be operated in progress_hook method after this
-                    raw_info = ydl.extract_info(
-                        self._current_item.video_id, download=not skip_download
+                    raw_info = self._ydl.extract_info(
+                        self._current_item.video_id, download=not self._skip_download
                     )
                     info = self._raw_info_to_info(raw_info)
 
-                    if skip_download:
+                    if self._skip_download:
                         self._current_item.complete_as_skipped("skip_download")
 
-                    if (limit := limit - 1) <= 0:
+                    self._limit -= 1
+                    if self._limit <= 0:
                         break
                 except SongFiltered:
                     self._current_item.complete_as_filtered("not a song")
