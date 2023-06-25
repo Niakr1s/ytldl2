@@ -1,6 +1,6 @@
 import dataclasses
 from dataclasses import dataclass
-from typing import NewType, TypeVar
+from typing import NewType, TypeVar, Literal
 
 Title = NewType("Title", str)
 VideoId = NewType("VideoId", str)
@@ -72,20 +72,18 @@ class Channel(WithTitle):
         return f"https://music.youtube.com/browse/{self.channelId}"
 
 
+_TitleFilter = list[Title] | Literal["retain_all"]
+
+
 @dataclass
 class HomeItemsFilter:
     """
     Class, used in HomeItems.filtered() method.
-    Attention: None means none items will be filtered,
-    [ ] list means, that all items will be filtered.
     """
 
-    videos: list[Title] | None = None
-    """None - none will be filtered, [ ] - all will be filtered."""
-    playlists: list[Title] | None = None
-    """None - none will be filtered, [ ] - all will be filtered."""
-    channels: list[Title] | None = None
-    """None - none will be filtered, [ ] - all will be filtered."""
+    videos: _TitleFilter = "retain_all"
+    playlists: _TitleFilter = "retain_all"
+    channels: _TitleFilter = "retain_all"
 
 
 @dataclass
@@ -101,16 +99,10 @@ class HomeItems:
                 and len(self.channels) == 0
         )
 
-    def filtered(self, filter: HomeItemsFilter | None = None) -> "HomeItems":
+    def filtered(self, filter: HomeItemsFilter) -> "HomeItems":
         """
         Filters home items and returns new copy.
-        :param filter: None means, result returned empty.
-        filter.videos: None - none will be filtered, [ ] - all will be filtered.
-        filter.playlists: None - none will be filtered, [ ] - all will be filtered.
-        filter.channels: None - none will be filtered, [ ] - all will be filtered.
         """
-        if not filter:
-            return HomeItems(videos=[], playlists=[], channels=[])
         return HomeItems(
             videos=self._filter(self.videos, filter.videos),
             playlists=self._filter(self.playlists, filter.playlists),
@@ -121,9 +113,9 @@ class HomeItems:
 
     @staticmethod
     def _filter(
-        items: list[WithTitleT],
-        filter: list[Title] | None = None,
+            items: list[WithTitleT],
+            filter: _TitleFilter,
     ) -> list[WithTitleT]:
-        if filter is None:
+        if filter == "retain_all":
             return items[:]
         return [x for x in items if x.title in filter]

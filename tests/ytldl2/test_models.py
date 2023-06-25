@@ -1,5 +1,4 @@
 import pytest
-
 from ytldl2.models import (
     BrowseId,
     Channel,
@@ -34,9 +33,6 @@ class TestHomeItems:
                 for id, title in enumerate(self.CHANNEL_TITLES)
             ],
         )
-
-    def test_filtered__empty(self, home_items: HomeItems):
-        assert home_items.filtered().is_empty()
 
     def test_filtered__unknown_titles(self, home_items: HomeItems):
         home_items = home_items.filtered(
@@ -80,7 +76,7 @@ class TestHomeItems:
         assert len(filtered.channels) == 1
         assert channel_title == filtered.channels[0].title
 
-    def test_filtered__makes_copy(self, home_items: HomeItems):
+    def test_filtered__default_filter(self, home_items: HomeItems):
         filtered = home_items.filtered(HomeItemsFilter())
         assert home_items.videos is not filtered.videos
         assert home_items.playlists is not filtered.playlists

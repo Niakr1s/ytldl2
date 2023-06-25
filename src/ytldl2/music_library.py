@@ -89,7 +89,6 @@ class MusicLibrary:
         home_items = self._api.get_home_items()
         home_items = home_items.filtered(
             HomeItemsFilter(
-                videos=[],
                 playlists=self._config.include_playlists,
                 channels=self._config.include_channels,
             )
