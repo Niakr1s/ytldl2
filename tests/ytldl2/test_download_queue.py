@@ -17,6 +17,7 @@ class TestDownloadQueue:
         queue = DownloadQueue(videos)
 
         for i, item in enumerate(queue):
+            assert len(queue) == len(videos) - i - 1
             assert videos[i] == item
             if i < len(videos) - 1:
                 with pytest.raises(QueueError, match="has item, pending mark"):
@@ -33,6 +34,7 @@ class TestDownloadQueue:
         queue = DownloadQueue(videos)
 
         for i, item in enumerate(queue):
+            assert len(queue) == len(videos) - i - 1
             assert videos[i] == item
             if i < len(videos) - 1:
                 with pytest.raises(QueueError, match="has item, pending mark"):
@@ -49,6 +51,7 @@ class TestDownloadQueue:
         queue = DownloadQueue(videos)
 
         for i, item in enumerate(queue):
+            assert len(queue) == len(videos) - i - 1
             assert videos[i] == item
             if i < len(videos) - 1:
                 with pytest.raises(QueueError, match="has item, pending mark"):
