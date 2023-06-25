@@ -8,7 +8,7 @@ logger = logging.getLogger()
 
 
 def main():
-    home_dir = pathlib.Path("d:/!YT")
+    home_dir = pathlib.Path("d:/") / "!YT"
     log_path = home_dir / ".logs" / "main.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     log_path.touch()
