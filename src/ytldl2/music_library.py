@@ -113,5 +113,6 @@ class MusicLibrary:
             videos=[v.video_id for v in videos],
             cancellation_token=cancellation_token,
             skip_download=skip_download,
+            progress_hooks=[self._user.on_progress],
         )
         self._user.display_result(result)
