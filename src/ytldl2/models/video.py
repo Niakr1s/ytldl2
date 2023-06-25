@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from ytldl2.models.types import WithTitle, WithVideoId
+from ytldl2.models.types import Artist, WithTitle, WithVideoId
 
 
 @dataclass
@@ -8,6 +8,8 @@ class Video(WithTitle, WithVideoId):
     """
     In raw home data, video is entity, that contains "videoId" field.
     """
+
+    artist: Artist | None = None
 
     def is_valid(self) -> bool:
         return bool(self.title) and bool(self.videoId)

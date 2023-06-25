@@ -15,7 +15,10 @@ class TestHomeItems:
     def home_items(self) -> HomeItems:
         return HomeItems(
             videos=[
-                Video(videoId=VideoId(str(id)), title=Title(title))
+                Video(
+                    videoId=VideoId(str(id)),
+                    title=Title(title),
+                )
                 for id, title in enumerate(self.VIDEO_TITLES)
             ],
             playlists=[

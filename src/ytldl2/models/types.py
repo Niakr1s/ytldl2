@@ -6,6 +6,7 @@ VideoId = NewType("VideoId", str)
 PlaylistId = NewType("PlaylistId", str)
 ChannelId = NewType("ChannelId", str)
 BrowseId = NewType("BrowseId", str)
+Artist = NewType("Artist", str)
 
 
 @dataclass

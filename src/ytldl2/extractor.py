@@ -6,6 +6,7 @@ from ytldl2.models.raw_home import RawHome
 from ytldl2.models.raw_playlist import RawPlaylist
 from ytldl2.models.raw_watch_playlist import RawWatchPlaylist
 from ytldl2.models.types import (
+    Artist,
     BrowseId,
     PlaylistId,
     Title,
@@ -43,7 +44,10 @@ class Extractor:
             # videos
             elif video_id := content.video_id:
                 print(f"Appending video {title} with videoId: {video_id}")
-                res.videos.append(Video(title=title, videoId=VideoId(video_id)))
+                artist = Artist(content.artists[0].name) if content.artists else None
+                res.videos.append(
+                    Video(title=title, artist=artist, videoId=VideoId(video_id))
+                )
 
             # playlists
             elif playlist_id := content.playlist_id:
@@ -61,9 +65,18 @@ class Extractor:
         :param playlist: Raw playlist dict,
         got from YtMusic.get_watch_playlist() or YtMusic.get_playlist() call.
         """
-        tracks: list = playlist.tracks
+        tracks = playlist.tracks
+
+        def get_artist(track) -> Artist | None:
+            # return track.artists[0].name if track.artists else None
+            return None  # TODO: fix this
+
         return [
-            Video(title=Title(track.title), videoId=VideoId(track.video_id))
+            Video(
+                title=Title(track.title),
+                artist=get_artist(track),
+                videoId=VideoId(track.video_id),
+            )
             for track in tracks
         ]
 
