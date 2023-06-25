@@ -124,3 +124,18 @@ class MusicLibrary:
             progress_hooks=[self._user.on_progress],
         )
         self._user.display_result(result)
+
+    def _clean_home_dir(self):
+        """Cleans home directory: removes *.part files."""
+        for path in self._home_dir.glob("*.part"):
+            try:
+                path.unlink()
+            except Exception:
+                pass
+
+    def __enter__(self):
+        self._clean_home_dir()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._clean_home_dir()
+        return False
