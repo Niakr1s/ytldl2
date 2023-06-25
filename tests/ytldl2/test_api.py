@@ -37,4 +37,3 @@ class TestYtMusicApi:
             ChannelId("UCpFgEr3XUXk_8wK8H9Dn6Cg")
         )
         assert videos
-        assert videos

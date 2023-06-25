@@ -4,6 +4,10 @@ from ytmusicapi import YTMusic
 
 from ytldl2.extractor import ExtractError, Extractor
 from ytldl2.models.home_items import HomeItems
+from ytldl2.models.raw_artist import RawArtist
+from ytldl2.models.raw_home import RawHome
+from ytldl2.models.raw_playlist import RawPlaylist
+from ytldl2.models.raw_watch_playlist import RawWatchPlaylist
 from ytldl2.models.types import ChannelId, PlaylistId
 from ytldl2.models.video import Video
 
@@ -27,7 +31,8 @@ class YtMusicApi:
         Better to leave default.
         """
         try:
-            home = self._yt.get_home(limit=home_limit)
+            home_raw: list = self._yt.get_home(limit=home_limit)
+            home = RawHome.parse_obj(home_raw)
             return self._extractor.parse_home(home)
         except ExtractError:
             raise
@@ -90,10 +95,24 @@ class YtMusicApi:
         """
         Extracts videoIds from playlist.
         """
+        contents = RawPlaylist | RawWatchPlaylist
+        is_watch = False
+
         try:
             contents = self._yt.get_playlist(playlistId=playlist_id, limit=limit)
         except Exception:
-            contents = self._yt.get_watch_playlist(playlistId=playlist_id, limit=limit)
+            try:
+                contents = self._yt.get_watch_playlist(
+                    playlistId=playlist_id, limit=limit
+                )
+                is_watch = True
+            except Exception:
+                raise
+        contents = (
+            RawWatchPlaylist.parse_obj(contents)
+            if is_watch
+            else RawPlaylist.parse_obj(contents)
+        )
         return self._extractor.extract_videos_from_playlist(contents)
 
     def get_videos_from_channel(
@@ -102,7 +121,8 @@ class YtMusicApi:
         """
         Extracts videoIds from channel.
         """
-        artist = self._yt.get_artist(channelId=channel_id)
+        raw_artist = self._yt.get_artist(channelId=channel_id)
+        artist = RawArtist.parse_obj(raw_artist)
         return self.get_videos_from_playlist(
             self._extractor.extract_playlist_id_from_artist(artist), limit=limit
         )
