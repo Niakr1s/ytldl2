@@ -53,7 +53,6 @@ class MusicLibrary:
         self,
         home_dir: pathlib.Path,
         user: MusicLibraryUser = NoLibraryUser(),
-        skip_download: bool = False,
     ):
         self._user = user
         self._home_dir = home_dir
@@ -63,7 +62,7 @@ class MusicLibrary:
 
         self._config = MusicLibraryConfig.load(self._dot_dir / "config.json")
         self._downloader = self._init_downloader(
-            home_dir=home_dir, db_path=self._db_path, skip_download=skip_download
+            home_dir=home_dir, db_path=self._db_path
         )
 
         oauth_json_path = self._dot_dir / "oauth.json"
@@ -76,7 +75,7 @@ class MusicLibrary:
 
     @staticmethod
     def _init_downloader(
-        home_dir: pathlib.Path, db_path: pathlib.Path, skip_download: bool
+        home_dir: pathlib.Path, db_path: pathlib.Path
     ) -> MusicDownloader:
         tmp_dir = pathlib.Path(tempfile.mkdtemp(suffix=".ytldl2_"))
         ydl_params = YoutubeDlParams(
