@@ -8,7 +8,6 @@ from ytldl2.cache import Cache, CachedVideo, SongInfo
 from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.download_queue import (
     DownloadQueue,
-    DownloadQueueHasUncompleteItem,
     DownloadResult,
     Item,
 )
@@ -195,10 +194,6 @@ class _MusicDownloadExecutor:
                         self._current_item.complete_as_skipped("skip_download")
                 except SongFiltered:
                     self._current_item.complete_as_filtered("not a song")
-                except DownloadQueueHasUncompleteItem:
-                    raise
-                except Exception as e:
-                    self._current_item.complete_as_failed(e)
                 finally:
                     if info:
                         self._cache.set_info(info)
