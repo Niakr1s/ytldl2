@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import NewType
+from typing import NewType, TypeVar
 
 Title = NewType("Title", str)
 VideoId = NewType("VideoId", str)
@@ -25,3 +25,6 @@ class WithVideoId:
     @property
     def youtube_music_url(self) -> str:
         return f"https://music.youtube.com/watch?v={self.video_id}"
+
+
+WithVideoIdT = TypeVar("WithVideoIdT", bound=WithVideoId)

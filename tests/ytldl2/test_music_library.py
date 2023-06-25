@@ -8,6 +8,7 @@ from ytldl2.music_library import (
     MusicLibrary,
     MusicLibraryConfig,
 )
+from ytldl2.sqlite_cache import SqliteCache
 
 
 class TestMusicLibraryConfig:
@@ -38,7 +39,7 @@ class TestMusicLibrary:
         self, tmp_path: pathlib.Path, oauth: str, monkeypatch: pytest.MonkeyPatch
     ) -> MusicLibrary:
         monkeypatch.setattr("ytldl2.music_library.get_oauth", lambda *_: oauth)
-        return MusicLibrary(tmp_path / "library")
+        return MusicLibrary(tmp_path / "library", cache=SqliteCache())
 
     def test_init(self, library: MusicLibrary):
         assert library._home_dir.exists()
