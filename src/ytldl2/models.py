@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import NewType
+from typing import NewType, TypeVar
 
 Title = NewType("Title", str)
 VideoId = NewType("VideoId", str)
@@ -72,6 +72,22 @@ class Channel(WithTitle):
 
 
 @dataclass
+class HomeItemsFilter:
+    """
+    Class, used in HomeItems.filtered() method.
+    Attention: None means none items will be filtered,
+    [ ] list means, that all items will be filtered.
+    """
+
+    videos: list[Title] | None = None
+    """None - none will be filtered, [ ] - all will be filtered."""
+    playlists: list[Title] | None = None
+    """None - none will be filtered, [ ] - all will be filtered."""
+    channels: list[Title] | None = None
+    """None - none will be filtered, [ ] - all will be filtered."""
+
+
+@dataclass
 class HomeItems:
     videos: list[Video]
     playlists: list[Playlist]
@@ -84,22 +100,29 @@ class HomeItems:
             and len(self.channels) == 0
         )
 
-    def filtered(
-        self,
-        /,
-        incl_videos: list[Title] | None = None,
-        incl_playlists: list[Title] | None = None,
-        incl_channels: list[Title] | None = None,
-    ) -> "HomeItems":
+    def filtered(self, filter: HomeItemsFilter | None = None) -> "HomeItems":
         """
         Filters home items and returns new copy.
+        :param filter: None means, result returned empty.
+        filter.videos: None - none will be filtered, [ ] - all will be filtered.
+        filter.playlists: None - none will be filtered, [ ] - all will be filtered.
+        filter.channels: None - none will be filtered, [ ] - all will be filtered.
         """
-        incl_videos = incl_videos or []
-        incl_playlists = incl_playlists or []
-        incl_channels = incl_channels or []
-
+        if not filter:
+            return HomeItems(videos=[], playlists=[], channels=[])
         return HomeItems(
-            [x for x in self.videos if x.title in incl_videos],
-            [x for x in self.playlists if x.title in incl_playlists],
-            [x for x in self.channels if x.title in incl_channels],
+            videos=self._filter(self.videos, filter.videos),
+            playlists=self._filter(self.playlists, filter.playlists),
+            channels=self._filter(self.channels, filter.channels),
         )
+
+    WithTitleT = TypeVar("WithTitleT", bound=WithTitle)
+
+    @staticmethod
+    def _filter(
+        items: list[WithTitleT],
+        filter: list[Title] | None = None,
+    ) -> list[WithTitleT]:
+        if filter is None:
+            return items[:]
+        return [x for x in items if x.title in filter]

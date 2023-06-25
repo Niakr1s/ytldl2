@@ -3,6 +3,7 @@ from ytldl2.models import (
     BrowseId,
     Channel,
     HomeItems,
+    HomeItemsFilter,
     Playlist,
     PlaylistId,
     Title,
@@ -38,37 +39,45 @@ class TestHomeItems:
 
     def test_filtered__unknown_titles(self, home_items: HomeItems):
         home_items = home_items.filtered(
-            incl_videos=[Title("another video")],
-            incl_playlists=[Title("unknown playlist")],
-            incl_channels=[Title("unknown channel")],
+            HomeItemsFilter(
+                videos=[Title("another video")],
+                playlists=[Title("unknown playlist")],
+                channels=[Title("unknown channel")],
+            )
         )
         assert not home_items.videos
         assert not home_items.playlists
         assert not home_items.channels
 
     def test_filtered__videos(self, home_items: HomeItems):
-        incl = Title(self.VIDEO_TITLES[0])
-        filtered = home_items.filtered(incl_videos=[incl])
+        video_title = Title(self.VIDEO_TITLES[0])
+        filtered = home_items.filtered(
+            HomeItemsFilter(videos=[video_title], playlists=[], channels=[])
+        )
         assert len(filtered.videos) == 1
         assert len(filtered.playlists) == 0
         assert len(filtered.channels) == 0
-        assert incl == filtered.videos[0].title
+        assert video_title == filtered.videos[0].title
 
     def test_filtered__playlists(self, home_items: HomeItems):
-        incl = Title(self.PLAYLIST_TITLES[0])
-        filtered = home_items.filtered(incl_playlists=[incl])
+        playlist_title = Title(self.PLAYLIST_TITLES[0])
+        filtered = home_items.filtered(
+            HomeItemsFilter(videos=[], playlists=[playlist_title], channels=[])
+        )
         assert len(filtered.videos) == 0
         assert len(filtered.playlists) == 1
         assert len(filtered.channels) == 0
-        assert incl == filtered.playlists[0].title
+        assert playlist_title == filtered.playlists[0].title
 
     def test_filtered__channels(self, home_items: HomeItems):
-        incl = Title(self.CHANNEL_TITLES[0])
-        filtered = home_items.filtered(incl_channels=[incl])
+        channel_title = Title(self.CHANNEL_TITLES[0])
+        filtered = home_items.filtered(
+            HomeItemsFilter(videos=[], playlists=[], channels=[channel_title])
+        )
         assert len(filtered.videos) == 0
         assert len(filtered.playlists) == 0
         assert len(filtered.channels) == 1
-        assert incl == filtered.channels[0].title
+        assert channel_title == filtered.channels[0].title
 
     def test_filtered__makes_copy(self, home_items: HomeItems):
         filtered = home_items.filtered()

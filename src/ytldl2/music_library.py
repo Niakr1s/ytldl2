@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 from ytldl2.api import YtMusicApi
 from ytldl2.cancellation_tokens import CancellationToken
-from ytldl2.models import Title
+from ytldl2.models import HomeItemsFilter, Title
 from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
 from ytldl2.oauth import get_oauth
 from ytldl2.sqlite_cache import SqliteCache
@@ -88,9 +88,11 @@ class MusicLibrary:
         """
         home_items = self._api.get_home_items()
         home_items = home_items.filtered(
-            incl_videos=None,
-            incl_playlists=self._config.include_playlists,
-            incl_channels=self._config.include_channels,
+            HomeItemsFilter(
+                videos=[],
+                playlists=self._config.include_playlists,
+                channels=self._config.include_channels,
+            )
         )
 
         videos = self._api.get_videos(home_items=home_items)
