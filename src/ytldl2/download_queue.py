@@ -54,6 +54,13 @@ class DownloadQueue:
     def pending_mark(self) -> VideoId | None:
         return self._pending_mark
 
+    def revert(self) -> None:
+        """Simply returns pending mark back to queue."""
+        if self._pending_mark is None:
+            raise QueueError.no_pending()
+        self._pending_mark = None
+        self._current_index -= 1
+
     def mark_downloaded(self, path: pathlib.Path) -> None:
         if self._pending_mark is None:
             raise QueueError.no_pending()

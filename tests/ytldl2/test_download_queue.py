@@ -69,3 +69,14 @@ class TestDownloadQueue:
             queue.mark_downloaded(pathlib.Path())
             queue.mark_filtered("reason")
             queue.mark_skipped("reason")
+
+    def test_revert(self, videos: list[VideoId]):
+        queue = DownloadQueue(videos)
+        with pytest.raises(QueueError, match="no item"):
+            queue.revert()
+        first = queue.__next__()
+        queue.revert()
+        with pytest.raises(QueueError, match="no item"):
+            queue.revert()
+        second = queue.__next__()
+        assert first == second
