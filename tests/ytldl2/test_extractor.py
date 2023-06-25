@@ -15,17 +15,15 @@ class TestExtractor:
 
     @pytest.fixture(scope="session")
     def home(self) -> RawHome:
-        return RawHome.parse_raw((DATA / "get_home.json").read_bytes())
+        return RawHome.parse_raw((DATA / "home.json").read_bytes())
 
     @pytest.fixture(scope="session")
     def get_playlist(self) -> RawPlaylist:
-        return RawPlaylist.parse_raw((DATA / "get_playlist.json").read_bytes())
+        return RawPlaylist.parse_raw((DATA / "playlist.json").read_bytes())
 
     @pytest.fixture(scope="session")
     def get_watch_playlist(self) -> RawWatchPlaylist:
-        return RawWatchPlaylist.parse_raw(
-            (DATA / "get_watch_playlist.json").read_bytes()
-        )
+        return RawWatchPlaylist.parse_raw((DATA / "watch_playlist.json").read_bytes())
 
     @pytest.fixture(scope="session")
     def artist(self) -> RawArtist:
