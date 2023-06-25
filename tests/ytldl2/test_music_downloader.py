@@ -86,6 +86,7 @@ class TestMusicDownloader:
         assert set(expected_downloaded) == set(
             cache.get_infos(expected_downloaded).keys()
         )
+        assert set(expected_filtered) == set(cache.get_infos(expected_filtered).keys())
 
     @slow_test
     def test_download__respects_cache(self, ydl_params: YoutubeDlParams):
