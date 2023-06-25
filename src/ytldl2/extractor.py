@@ -3,8 +3,7 @@ from ytldl2.models.home_items import HomeItems
 from ytldl2.models.playlist import Playlist
 from ytldl2.models.raw_artist import RawArtist
 from ytldl2.models.raw_home import Home
-from ytldl2.models.raw_playlist import RawPlaylist
-from ytldl2.models.raw_watch_playlist import RawWatchPlaylist
+from ytldl2.models.raw_playlist import RawPlaylist, RawWatchPlaylist, Track
 from ytldl2.models.types import (
     Artist,
     BrowseId,
@@ -67,9 +66,8 @@ class Extractor:
         """
         tracks = playlist.tracks
 
-        def get_artist(track) -> Artist | None:
-            # return track.artists[0].name if track.artists else None
-            return None  # TODO: fix this
+        def get_artist(track: Track) -> Artist | None:
+            return Artist(track.artists[0].name) if track.artists else None
 
         return [
             Video(
