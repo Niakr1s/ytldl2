@@ -126,7 +126,7 @@ class MusicDownloader:
         ).download()
 
 
-class _MusicDownloadExecutorError(Exception):
+class MusicDownloadExecutorError(Exception):
     """
     Raises, if _MusicDownloadExecutor.download() called second time.
     Generally, it should not happen. If it is, it should be a bug.
@@ -237,7 +237,7 @@ class _MusicDownloadExecutor:
 
     def _exhaust(self):
         if self._exhausted:
-            raise _MusicDownloadExecutorError
+            raise MusicDownloadExecutorError("exhausted")
         self._exhausted = True
 
     def _progress_hook(self, progress: DownloadProgress):
