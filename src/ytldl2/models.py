@@ -1,3 +1,4 @@
+import dataclasses
 from dataclasses import dataclass
 from typing import NewType, TypeVar
 
@@ -89,15 +90,15 @@ class HomeItemsFilter:
 
 @dataclass
 class HomeItems:
-    videos: list[Video]
-    playlists: list[Playlist]
-    channels: list[Channel]
+    videos: list[Video] = dataclasses.field(default_factory=list)
+    playlists: list[Playlist] = dataclasses.field(default_factory=list)
+    channels: list[Channel] = dataclasses.field(default_factory=list)
 
     def is_empty(self) -> bool:
         return (
-            len(self.videos) == 0
-            and len(self.playlists) == 0
-            and len(self.channels) == 0
+                len(self.videos) == 0
+                and len(self.playlists) == 0
+                and len(self.channels) == 0
         )
 
     def filtered(self, filter: HomeItemsFilter | None = None) -> "HomeItems":
