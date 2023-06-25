@@ -69,3 +69,9 @@ class TestHomeItems:
         assert len(filtered.playlists) == 0
         assert len(filtered.channels) == 1
         assert incl == filtered.channels[0].title
+
+    def test_filtered__makes_copy(self, home_items: HomeItems):
+        filtered = home_items.filtered()
+        assert home_items.videos is not filtered.videos
+        assert home_items.playlists is not filtered.playlists
+        assert home_items.channels is not filtered.channels
