@@ -1,5 +1,6 @@
 import logging
 import pathlib
+from typing import Protocol, TypeGuard
 
 import yt_dlp
 from yt_dlp import YoutubeDL
@@ -128,6 +129,40 @@ class MusicDownloadError(Exception):
         self.queue = queue
 
 
+class MusicDownloadTracker(Protocol):
+    def on_download_start(self, video: VideoId) -> None:
+        """Called when a new video is started."""
+
+    def on_download_finish(self, video: VideoId) -> None:
+        """Called when a video is finished, after all postprocessors are done."""
+
+    def on_video_skipped(self, video: VideoId, reason: str) -> None:
+        """Called when a video is skipped."""
+
+    def on_video_filtered(self, video: VideoId, filtered_reason: str) -> None:
+        """Called when a video is filtered."""
+
+    def on_download_progress(self, video: VideoId, progress: DownloadProgress) -> None:
+        """Called on download progress."""
+
+
+class _NoMusicDownloadTracker(MusicDownloadTracker):
+    def on_download_start(self, video: VideoId) -> None:
+        pass
+
+    def on_download_finish(self, video: VideoId) -> None:
+        pass
+
+    def on_video_skipped(self, video: VideoId, reason: str) -> None:
+        pass
+
+    def on_video_filtered(self, video: VideoId, filtered_reason: str) -> None:
+        pass
+
+    def on_download_progress(self, video: VideoId, progress: DownloadProgress) -> None:
+        pass
+
+
 class _MusicDownloadExecutor:
     """
     Class, internally used by MusicDownloader.
@@ -141,35 +176,36 @@ class _MusicDownloadExecutor:
         limit: int | None = None,
         cancellation_token: CancellationToken | None = None,
         skip_download: bool = False,
+        tracker: MusicDownloadTracker | None = None,
         progress_hooks: list[ProgressHook] | None = None,
         postprocessor_hooks: list[PostprocessorHook] | None = None,
     ) -> None:
         self._cache = cache
-        self._ydl = self._init_ydl(ydl_builder, progress_hooks, postprocessor_hooks)
+        self._ydl = self._init_ydl(ydl_builder)
         self._cancellation_token = cancellation_token
         self._skip_download = skip_download
+        self._tracker = tracker if tracker is not None else _NoMusicDownloadTracker()
 
         self._queue = DownloadQueue(videos)
+        """
+        Don't call self._queue.mark_as* methods directly, use self._mark_as* instead to
+        also call self._tracker methods.
+        """
         self._limit = limit if limit is not None else len(videos)
 
     def _init_ydl(
         self,
         ydl_builder: MusicYoutubeDlBuilder,
-        progress_hooks: list[ProgressHook] | None,
-        postprocessor_hooks: list[PostprocessorHook] | None,
     ) -> YoutubeDL:
         ydl = ydl_builder.build()
         ydl.add_progress_hook(self._progress_hook)
 
-        if progress_hooks:
-            for hook in progress_hooks:
-                ydl.add_progress_hook(hook)
-
-        if postprocessor_hooks:
-            for hook in postprocessor_hooks:
-                ydl.add_postprocessor_hook(hook)
-
         return ydl
+
+    class VideoSkipped(Exception):
+        def __init__(self, skip_reason: str) -> None:
+            super().__init__()
+            self.skip_reason = skip_reason
 
     def download(
         self,
@@ -183,23 +219,33 @@ class _MusicDownloadExecutor:
             if self._limit <= 0:
                 break
             try:
+                self._tracker.on_download_start(video_id)
                 self._download_video(video_id)
+                self._limit -= 1
+            except self.VideoSkipped as e:
+                self._queue.mark_skipped("cancelled by cancellation token")
+                self._tracker.on_video_skipped(video_id, e.skip_reason)
+                self._limit -= 1
+            except SongFiltered as e:
+                filter_reason = str(e)
+                self._queue.mark_filtered(filter_reason)
+                self._tracker.on_video_filtered(video_id, filter_reason)
             except Exception as e:
                 self._dump_queue()
                 self._queue.revert()
                 raise MusicDownloadError(self._queue) from e
+            finally:
+                self._tracker.on_download_finish(video_id)
 
         self._dump_queue()
         return self._queue
 
     def _download_video(self, video_id: VideoId) -> None:
         if self._cancellation_token and self._cancellation_token.kill_requested:
-            self._queue.mark_skipped("cancelled by cancellation token")
-            return
+            raise self.VideoSkipped("cancellation requested")
 
         if video_id in self._cache:
-            self._queue.mark_skipped("already in cache")
-            return
+            raise self.VideoSkipped("already in cache")
 
         info: SongInfo | None = None
         with self._ydl:
@@ -211,11 +257,7 @@ class _MusicDownloadExecutor:
                 info = SongInfo.parse_obj(raw_info)
 
                 if self._skip_download:
-                    self._queue.mark_skipped("skip_download")
-
-                self._limit -= 1
-            except SongFiltered:
-                self._queue.mark_filtered("not a song")
+                    raise self.VideoSkipped("skip_download")
             finally:
                 if info:
                     self._cache.set_info(info)
@@ -231,7 +273,16 @@ class _MusicDownloadExecutor:
             )
 
     def _progress_hook(self, progress: DownloadProgress):
+        if self._queue_current_not_none_check(current := self._queue.current):
+            self._tracker.on_download_progress(current, progress)
         if is_progress_finished(progress):
-            self._queue.mark_downloaded(pathlib.Path(progress["filename"]))
+            path = pathlib.Path(progress["filename"])
+            self._queue.mark_downloaded(path)
         if is_progress_error(progress):
             raise yt_dlp.utils.DownloadError("download error", progress["info_dict"])
+
+    @staticmethod
+    def _queue_current_not_none_check(current: VideoId | None) -> TypeGuard[VideoId]:
+        if not current:
+            raise RuntimeError("no current video in queue")
+        return True
