@@ -1,5 +1,5 @@
 import pathlib
-from typing import Protocol, TypeGuard
+from typing import Protocol
 
 from tqdm import tqdm
 
@@ -92,21 +92,9 @@ class DownloadProgressBar:
         self._last_file = None
 
 
-class PostprocessorProgressBar:
-    def __init__(self) -> None:
-        self._pbar = tqdm(leave=False)
-
-    def on_postprocessor_start(self, name: str) -> None:
-        self._set_description(name)
-
-    def on_postprocessor_finish(self, name: str) -> None:
-        self._pbar.update()
-
-    def close(self):
-        self._pbar.close()
-
-    def _set_description(self, name: str) -> None:
-        self._pbar.set_description("Postprocessor: " + name)
+class PostprocessorProgressBar(tqdm):
+    def __init__(self, name: str) -> None:
+        super().__init__(leave=False, desc=name)
 
 
 class TerminalMusicDownloadTracker(MusicDownloadTracker):
@@ -118,13 +106,10 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
 
     def on_download_start(self, video: VideoId) -> None:
         print(f"Starting download {video}...")
-        self._postprocessor_pbar = PostprocessorProgressBar()
 
     def on_download_finish(self, video: VideoId) -> None:
         """Called when a video is finished, after all postprocessors are done."""
         self._download_pbar.close()
-        if self._is_postprocessor_bar_not_none(self._postprocessor_pbar):
-            self._postprocessor_pbar.close()
         print(self._end_str)
         self._end_str = ""
         print()
@@ -155,20 +140,19 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
             self._end_str = f"Error: {filename}: {progress}"
             # print(f"Error: {filename}: {progress}")
 
-    @staticmethod
-    def _is_postprocessor_bar_not_none(
-        bar: PostprocessorProgressBar | None,
-    ) -> TypeGuard[PostprocessorProgressBar]:
-        if bar is None:
-            raise RuntimeError("no postprocessor bar")
-        return True
+    def _close_postprocessor_bar(self) -> None:
+        if self._postprocessor_pbar is not None:
+            self._postprocessor_pbar.close()
+            self._postprocessor_pbar = None
 
     def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
-        if self._is_postprocessor_bar_not_none(pbar := self._postprocessor_pbar):
-            if is_postprocessor_started(progress):
-                pbar.on_postprocessor_start(progress["postprocessor"])
-            if is_postprocessor_finished(progress):
-                pbar.on_postprocessor_finish(progress["postprocessor"])
+        if is_postprocessor_started(progress):
+            self._close_postprocessor_bar()
+            self._postprocessor_pbar = PostprocessorProgressBar(
+                progress["postprocessor"]
+            )
+        if is_postprocessor_finished(progress):
+            self._close_postprocessor_bar()
 
 
 class TerminalMusicLibraryUser(MusicLibraryUser):
