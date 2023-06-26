@@ -10,6 +10,7 @@ from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.download_queue import DownloadQueue
 from ytldl2.models.download_hooks import (
     DownloadProgress,
+    PostprocessorProgress,
     is_progress_error,
     is_progress_finished,
 )
@@ -142,6 +143,9 @@ class _NoMusicDownloadTracker(MusicDownloadTracker):
     def on_download_progress(self, video: VideoId, progress: DownloadProgress) -> None:
         pass
 
+    def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
+        pass
+
 
 class _MusicDownloadExecutor:
     """
@@ -177,7 +181,7 @@ class _MusicDownloadExecutor:
     ) -> YoutubeDL:
         ydl = ydl_builder.build()
         ydl.add_progress_hook(self._progress_hook)
-
+        ydl.add_postprocessor_hook(self._postprocessor_hook)
         return ydl
 
     class VideoSkipped(Exception):
@@ -258,6 +262,9 @@ class _MusicDownloadExecutor:
             self._queue.mark_downloaded(path)
         if is_progress_error(progress):
             raise yt_dlp.utils.DownloadError("download error", progress["info_dict"])
+
+    def _postprocessor_hook(self, progress: PostprocessorProgress):
+        self._tracker.on_postprocessor_progress(progress)
 
     @staticmethod
     def _queue_current_not_none_check(current: VideoId | None) -> TypeGuard[VideoId]:

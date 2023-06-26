@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from ytldl2.models.download_hooks import DownloadProgress
+from ytldl2.models.download_hooks import DownloadProgress, PostprocessorProgress
 from ytldl2.models.types import VideoId
 
 
@@ -19,3 +19,6 @@ class MusicDownloadTracker(Protocol):
 
     def on_download_progress(self, video: VideoId, progress: DownloadProgress) -> None:
         """Called on download progress."""
+
+    def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
+        """Called on postprocessor progress."""
