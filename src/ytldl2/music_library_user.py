@@ -218,17 +218,3 @@ class TerminalMusicLibraryUser(MusicLibraryUser):
     @property
     def music_download_tracker(self) -> MusicDownloadTracker:
         return TerminalMusicDownloadTracker()
-
-    def on_progress(self, progress: DownloadProgress) -> None:
-        filename = pathlib.Path(progress["filename"]).name
-
-        if is_progress_downloading(progress):
-            downloaded_bytes = progress["downloaded_bytes"]
-            total_bytes = progress["total_bytes"]
-            self._pbar.on_download(filename, total_bytes, downloaded_bytes)
-        if is_progress_finished(progress):
-            self._pbar.on_download_finish()
-            # print(f"Finished: {filename}: {progress['total_bytes']} bytes")
-        if is_progress_error(progress):
-            self._pbar.on_download_error()
-            # print(f"Error: {filename}: {progress}")
