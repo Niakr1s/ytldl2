@@ -12,6 +12,7 @@ from ytldl2.models.download_hooks import (
 )
 from ytldl2.models.home_items import HomeItems, HomeItemsFilter
 from ytldl2.models.song import Song
+from ytldl2.music_download_tracker import MusicDownloadTracker
 
 
 class MusicLibraryUser(Protocol):
@@ -39,7 +40,8 @@ class MusicLibraryUser(Protocol):
         """Called by library after download to display download result."""
         ...
 
-    def on_progress(self, progress: DownloadProgress) -> None:
+    @property
+    def music_download_tracker(self) -> MusicDownloadTracker:
         ...
 
 
@@ -126,6 +128,10 @@ class TerminalMusicLibraryUser(MusicLibraryUser):
         print(f"Remained in queue: {len(queue)}.")
         print()
         print("=" * len(title))
+
+    @property
+    def music_download_tracker(self) -> MusicDownloadTracker:
+        ...  # TODO
 
     def on_progress(self, progress: DownloadProgress) -> None:
         filename = pathlib.Path(progress["filename"]).name
