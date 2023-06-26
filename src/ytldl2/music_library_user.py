@@ -12,6 +12,7 @@ from ytldl2.models.download_hooks import (
 )
 from ytldl2.models.home_items import HomeItems, HomeItemsFilter
 from ytldl2.models.song import Song
+from ytldl2.models.types import VideoId
 from ytldl2.music_download_tracker import MusicDownloadTracker
 
 
@@ -85,6 +86,43 @@ class DownloadProgressBar:
         self._last_file = None
 
 
+class TerminalMusicDownloadTracker(MusicDownloadTracker):
+    def __init__(self) -> None:
+        self._download_pbar = DownloadProgressBar()
+        self._current_video: VideoId | None = None
+
+    def on_download_start(self, video: VideoId) -> None:
+        print(f"Starting download {video}...")
+
+    def on_download_finish(self, video: VideoId) -> None:
+        """Called when a video is finished, after all postprocessors are done."""
+        print(f"Finished download {video}.")
+        print()
+
+    def on_video_skipped(self, video: VideoId, reason: str) -> None:
+        """Called when a video is skipped."""
+        print(f"Skipped download {video}: {reason}.")
+
+    def on_video_filtered(self, video: VideoId, filtered_reason: str) -> None:
+        """Called when a video is filtered."""
+        print(f"Filtered download {video}: {filtered_reason}.")
+
+    def on_download_progress(self, video: VideoId, progress: DownloadProgress) -> None:
+        """Called on download progress."""
+        filename = pathlib.Path(progress["filename"]).name
+
+        if is_progress_downloading(progress):
+            downloaded_bytes = progress["downloaded_bytes"]
+            total_bytes = progress["total_bytes"]
+            self._download_pbar.on_download(filename, total_bytes, downloaded_bytes)
+        if is_progress_finished(progress):
+            self._download_pbar.on_download_finish()
+            # print(f"Finished: {filename}: {progress['total_bytes']} bytes")
+        if is_progress_error(progress):
+            self._download_pbar.on_download_error()
+            # print(f"Error: {filename}: {progress}")
+
+
 class TerminalMusicLibraryUser(MusicLibraryUser):
     def __init__(self) -> None:
         self._pbar = DownloadProgressBar()
@@ -131,7 +169,7 @@ class TerminalMusicLibraryUser(MusicLibraryUser):
 
     @property
     def music_download_tracker(self) -> MusicDownloadTracker:
-        ...  # TODO
+        return TerminalMusicDownloadTracker()
 
     def on_progress(self, progress: DownloadProgress) -> None:
         filename = pathlib.Path(progress["filename"]).name
