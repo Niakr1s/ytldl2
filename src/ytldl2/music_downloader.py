@@ -1,6 +1,6 @@
 import logging
 import pathlib
-from typing import Protocol, TypeGuard
+from typing import TypeGuard
 
 import yt_dlp
 from yt_dlp import YoutubeDL
@@ -10,12 +10,11 @@ from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.download_queue import DownloadQueue
 from ytldl2.models.download_hooks import (
     DownloadProgress,
-    PostprocessorHook,
-    ProgressHook,
     is_progress_error,
     is_progress_finished,
 )
 from ytldl2.models.types import VideoId
+from ytldl2.music_download_tracker import MusicDownloadTracker
 from ytldl2.postprocessors import (
     FilterSongPP,
     LyricsPP,
@@ -104,8 +103,7 @@ class MusicDownloader:
         limit: int | None = None,
         cancellation_token: CancellationToken | None = None,
         skip_download: bool = False,
-        progress_hooks: list[ProgressHook] | None = None,
-        postprocessor_hooks: list[PostprocessorHook] | None = None,
+        tracker: MusicDownloadTracker | None = None,
     ) -> DownloadQueue:
         """
         Download songs in best quality in current thread.
@@ -118,8 +116,7 @@ class MusicDownloader:
             limit=limit,
             cancellation_token=cancellation_token,
             skip_download=skip_download,
-            progress_hooks=progress_hooks,
-            postprocessor_hooks=postprocessor_hooks,
+            tracker=tracker,
         ).download()
 
 
@@ -127,23 +124,6 @@ class MusicDownloadError(Exception):
     def __init__(self, queue: DownloadQueue) -> None:
         super().__init__()
         self.queue = queue
-
-
-class MusicDownloadTracker(Protocol):
-    def on_download_start(self, video: VideoId) -> None:
-        """Called when a new video is started."""
-
-    def on_download_finish(self, video: VideoId) -> None:
-        """Called when a video is finished, after all postprocessors are done."""
-
-    def on_video_skipped(self, video: VideoId, reason: str) -> None:
-        """Called when a video is skipped."""
-
-    def on_video_filtered(self, video: VideoId, filtered_reason: str) -> None:
-        """Called when a video is filtered."""
-
-    def on_download_progress(self, video: VideoId, progress: DownloadProgress) -> None:
-        """Called on download progress."""
 
 
 class _NoMusicDownloadTracker(MusicDownloadTracker):
@@ -177,8 +157,6 @@ class _MusicDownloadExecutor:
         cancellation_token: CancellationToken | None = None,
         skip_download: bool = False,
         tracker: MusicDownloadTracker | None = None,
-        progress_hooks: list[ProgressHook] | None = None,
-        postprocessor_hooks: list[PostprocessorHook] | None = None,
     ) -> None:
         self._cache = cache
         self._ydl = self._init_ydl(ydl_builder)
