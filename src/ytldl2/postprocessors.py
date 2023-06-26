@@ -98,7 +98,9 @@ class MetadataPP(PostProcessor):
 
 
 class SongFiltered(Exception):
-    pass
+    def __init__(self, message: str, info: dict[str, Any]):
+        super().__init__(message)
+        self.info = info
 
 
 class FilterSongPP(PostProcessor):
