@@ -18,7 +18,7 @@ def main():
     cancellation_token = GracefulKiller()
     lib = MusicLibrary(home_dir)
     with lib:
-        lib.update(limit=10, cancellation_token=cancellation_token)
+        lib.update(limit=100, cancellation_token=cancellation_token)
 
 
 if __name__ == "__main__":
