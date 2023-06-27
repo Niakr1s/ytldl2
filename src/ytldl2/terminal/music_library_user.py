@@ -27,7 +27,6 @@ class DownloadProgressBar:
         )
         self._pbar.set_description(filename)
         self._last_file = filename
-        # print(f"on download start: {self._last_file} ({total} bytes)")
 
     def on_download(self, filename: str, total: int, downloaded: int) -> None:
         if self._last_file != filename:
@@ -36,19 +35,8 @@ class DownloadProgressBar:
             if self._pbar is None:
                 raise RuntimeError("no progress bar to update")
             self._pbar.update(downloaded - self._pbar.n)
-            # print(f"on download: {self._last_file} ({downloaded} bytes)")
-
-    def on_download_finish(self) -> None:
-        self._on_finish()
-
-    def on_download_error(self) -> None:
-        self._on_finish()
 
     def close(self) -> None:
-        self._on_finish()
-
-    def _on_finish(self) -> None:
-        # print("on download finish")
         if self._pbar is not None:
             self._pbar.close()
         self._pbar = None
