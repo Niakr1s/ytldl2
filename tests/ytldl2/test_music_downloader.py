@@ -3,7 +3,6 @@ from typing import TypeVar
 
 import pytest
 from yt_dlp.postprocessor.ffmpeg import FFmpegExtractAudioPP
-from ytldl2.cache import CachedVideo
 from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models.types import VideoId, WithVideoId
 from ytldl2.music_downloader import (
@@ -13,6 +12,7 @@ from ytldl2.music_downloader import (
     YoutubeDlParams,
 )
 from ytldl2.postprocessors import FilterSongPP, LyricsPP, MetadataPP, RetainMainArtistPP
+from ytldl2.protocols.cache import CachedVideo
 from ytldl2.sqlite_cache import SqliteCache
 
 from tests.ytldl2.marks import slow_test

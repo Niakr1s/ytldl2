@@ -5,7 +5,6 @@ from typing import TypeGuard
 import yt_dlp
 from yt_dlp import YoutubeDL
 
-from ytldl2.cache import Cache, CachedVideo, SongInfo
 from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.download_queue import DownloadQueue
 from ytldl2.models.download_hooks import (
@@ -15,7 +14,6 @@ from ytldl2.models.download_hooks import (
     is_progress_finished,
 )
 from ytldl2.models.types import VideoId
-from ytldl2.music_download_tracker import MusicDownloadTracker
 from ytldl2.postprocessors import (
     FilterSongPP,
     LyricsPP,
@@ -23,6 +21,8 @@ from ytldl2.postprocessors import (
     RetainMainArtistPP,
     SongFiltered,
 )
+from ytldl2.protocols.cache import Cache, CachedVideo, SongInfo
+from ytldl2.protocols.music_download_tracker import MusicDownloadTracker
 
 
 class YoutubeDlParams:

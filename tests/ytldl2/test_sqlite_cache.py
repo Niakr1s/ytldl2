@@ -4,8 +4,8 @@ from copy import copy
 from time import sleep
 
 import pytest
-from ytldl2.cache import CachedVideo, SongInfo
 from ytldl2.models.types import VideoId
+from ytldl2.protocols.cache import CachedVideo, SongInfo
 from ytldl2.sqlite_cache import SqliteCache
 
 from tests.ytldl2 import DATA

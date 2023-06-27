@@ -7,14 +7,15 @@ import tempfile
 import pydantic
 
 from ytldl2.api import YtMusicApi
-from ytldl2.cache import Cache
 from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models.home_items import HomeItemsFilter
 from ytldl2.models.song import Song
 from ytldl2.models.types import Title
 from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
-from ytldl2.music_library_user import MusicLibraryUser, TerminalMusicLibraryUser
+from ytldl2.music_library_user import TerminalMusicLibraryUser
 from ytldl2.oauth import get_oauth
+from ytldl2.protocols.cache import Cache
+from ytldl2.protocols.music_library_user import MusicLibraryUser
 from ytldl2.sqlite_cache import SqliteCache
 
 logger = logging.getLogger(__name__)
