@@ -1,134 +1,90 @@
-import pathlib
-
-from tqdm import tqdm
-
+from rich.progress import Progress, TaskID
 from ytldl2.download_queue import DownloadQueue
 from ytldl2.models.download_hooks import (
-    DownloadProgress,
     PostprocessorProgress,
     is_postprocessor_finished,
     is_postprocessor_started,
-    is_progress_downloading,
-    is_progress_error,
-    is_progress_finished,
 )
 from ytldl2.models.home_items import HomeItems, HomeItemsFilter
 from ytldl2.models.song import Song
 from ytldl2.models.types import VideoId
 from ytldl2.protocols.music_download_tracker import MusicDownloadTracker
 from ytldl2.protocols.music_library_user import MusicLibraryUser
-
-
-class DownloadProgressBar:
-    def __init__(self) -> None:
-        self._pbar: tqdm | None = None
-        self._last_file: str | None = None
-
-    def _on_download_start(self, filename: str, total: int, downloaded: int) -> None:
-        self._pbar = tqdm(
-            total=total,
-            initial=downloaded,
-            unit="B",
-            unit_scale=True,
-            unit_divisor=1024,
-        )
-        self._pbar.set_description(filename)
-        self._last_file = filename
-        # print(f"on download start: {self._last_file} ({total} bytes)")
-
-    def on_download(self, filename: str, total: int, downloaded: int) -> None:
-        if self._last_file != filename:
-            self._on_download_start(filename, total, downloaded)
-        else:
-            if self._pbar is None:
-                raise RuntimeError("no progress bar to update")
-            self._pbar.update(downloaded - self._pbar.n)
-            # print(f"on download: {self._last_file} ({downloaded} bytes)")
-
-    def on_download_finish(self) -> None:
-        self._on_finish()
-
-    def on_download_error(self) -> None:
-        self._on_finish()
-
-    def close(self) -> None:
-        self._on_finish()
-
-    def _on_finish(self) -> None:
-        # print("on download finish")
-        if self._pbar is not None:
-            self._pbar.close()
-        self._pbar = None
-        self._last_file = None
-
-
-class PostprocessorProgressBar(tqdm):
-    def __init__(self, name: str) -> None:
-        super().__init__(leave=False, desc=name)
+from ytldl2.util.console import clear_last_line
 
 
 class TerminalMusicDownloadTracker(MusicDownloadTracker):
-    def __init__(self) -> None:
-        self._download_pbar = DownloadProgressBar()
-        self._postprocessor_pbar: PostprocessorProgressBar | None = None
-        self._current_video: VideoId | None = None
-        self._end_str = ""
+    def __init__(
+        self,
+    ) -> None:
+        self._progress = Progress(expand=True)
+        self._dl: TaskID | None = None
+        self._pp: dict[str, TaskID] = {}
+        self._close_str = ""
 
-    def on_download_start(self, video: VideoId) -> None:
-        print(f"Starting download {video}...")
+    def new(self, video: VideoId) -> None:
+        self._clean()
+        print(f"Starting download {video}...", end="\r")
 
-    def on_download_finish(self, video: VideoId) -> None:
+        self._progress.start()
+        self._dl = self._progress.add_task(video, total=None)
+
+    def close(self, video: VideoId) -> None:
         """Called when a video is finished, after all postprocessors are done."""
-        self._download_pbar.close()
-        print(self._end_str)
-        self._end_str = ""
-        print()
+        self._clean()
+        self._progress.stop()
+
+        clear_last_line(1)
+        print(self._close_str)
+
+    def _clean(self) -> None:
+        if self._dl is not None:
+            self._progress.remove_task(self._dl)
+            self._dl = None
+        if self._pp:
+            for pp in self._pp.values():
+                self._progress.remove_task(pp)
+            self._pp = {}
 
     def on_video_skipped(self, video: VideoId, reason: str) -> None:
         """Called when a video is skipped."""
-        self._end_str = f"Skipped download {video}: {reason}."
+        self._close_str = f"Skipped download {video}: {reason}."
 
     def on_video_filtered(self, video: VideoId, filtered_reason: str) -> None:
         """Called when a video is filtered."""
-        self._end_str = f"Filtered download {video}: {filtered_reason}."
+        self._close_str = f"Filtered download {video}: {filtered_reason}."
 
-    def on_download_progress(self, video: VideoId, progress: DownloadProgress) -> None:
+    def on_download_progress(
+        self,
+        video: VideoId,
+        filename: str,
+        *,
+        total_bytes: int,
+        downloaded_bytes: int,
+    ) -> None:
         """Called on download progress."""
-        filename = pathlib.Path(progress["filename"]).name
+        self._progress.update(
+            self._dl,  # type: ignore
+            description=filename,
+            total=total_bytes,
+            completed=downloaded_bytes,
+        )
+        if downloaded_bytes >= total_bytes:
+            self._on_download_finished(video, filename)
 
-        if is_progress_downloading(progress):
-            downloaded_bytes = progress["downloaded_bytes"]
-            total_bytes = progress["total_bytes"]
-            self._download_pbar.on_download(filename, total_bytes, downloaded_bytes)
-        if is_progress_finished(progress):
-            self._download_pbar.on_download_finish()
-            self._end_str = f"Finished download {video}."
-
-            # print(f"Finished: {filename}: {progress['total_bytes']} bytes")
-        if is_progress_error(progress):
-            self._download_pbar.on_download_error()
-            self._end_str = f"Error: {filename}: {progress}"
-            # print(f"Error: {filename}: {progress}")
-
-    def _close_postprocessor_bar(self) -> None:
-        if self._postprocessor_pbar is not None:
-            self._postprocessor_pbar.close()
-            self._postprocessor_pbar = None
+    def _on_download_finished(self, video: VideoId, filename: str) -> None:
+        self._close_str = f"Finished download {video} as {filename}."
 
     def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
+        pp = progress["postprocessor"]
         if is_postprocessor_started(progress):
-            self._close_postprocessor_bar()
-            self._postprocessor_pbar = PostprocessorProgressBar(
-                progress["postprocessor"]
-            )
+            self._pp[pp] = self._progress.add_task(f"\t{pp}", total=None)
         if is_postprocessor_finished(progress):
-            self._close_postprocessor_bar()
+            self._progress.remove_task(self._pp[pp])
+            del self._pp[pp]
 
 
 class TerminalMusicLibraryUser(MusicLibraryUser):
-    def __init__(self) -> None:
-        self._pbar = DownloadProgressBar()
-
     def review_filter(
         self,
         home_items: HomeItems,

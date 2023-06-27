@@ -10,6 +10,7 @@ from ytldl2.download_queue import DownloadQueue
 from ytldl2.models.download_hooks import (
     DownloadProgress,
     PostprocessorProgress,
+    is_progress_downloading,
     is_progress_error,
     is_progress_finished,
 )
@@ -22,7 +23,10 @@ from ytldl2.postprocessors import (
     SongFiltered,
 )
 from ytldl2.protocols.cache import Cache, CachedVideo, SongInfo
-from ytldl2.protocols.music_download_tracker import MusicDownloadTracker
+from ytldl2.protocols.music_download_tracker import (
+    MusicDownloadTracker,
+    NoMusicDownloadTracker,
+)
 
 
 class YoutubeDlParams:
@@ -127,26 +131,6 @@ class MusicDownloadError(Exception):
         self.queue = queue
 
 
-class _NoMusicDownloadTracker(MusicDownloadTracker):
-    def on_download_start(self, video: VideoId) -> None:
-        pass
-
-    def on_download_finish(self, video: VideoId) -> None:
-        pass
-
-    def on_video_skipped(self, video: VideoId, reason: str) -> None:
-        pass
-
-    def on_video_filtered(self, video: VideoId, filtered_reason: str) -> None:
-        pass
-
-    def on_download_progress(self, video: VideoId, progress: DownloadProgress) -> None:
-        pass
-
-    def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
-        pass
-
-
 class _MusicDownloadExecutor:
     """
     Class, internally used by MusicDownloader.
@@ -166,7 +150,7 @@ class _MusicDownloadExecutor:
         self._ydl = self._init_ydl(ydl_builder)
         self._cancellation_token = cancellation_token
         self._skip_download = skip_download
-        self._tracker = tracker if tracker is not None else _NoMusicDownloadTracker()
+        self._tracker = tracker if tracker is not None else NoMusicDownloadTracker()
 
         self._queue = DownloadQueue(videos)
         """
@@ -201,7 +185,7 @@ class _MusicDownloadExecutor:
             if self._limit <= 0:
                 break
             try:
-                self._tracker.on_download_start(video_id)
+                self._tracker.new(video_id)
                 self._download_video(video_id)
                 self._limit -= 1
             except self.VideoSkipped as e:
@@ -217,7 +201,7 @@ class _MusicDownloadExecutor:
                 self._queue.revert()
                 raise MusicDownloadError(self._queue) from e
             finally:
-                self._tracker.on_download_finish(video_id)
+                self._tracker.close(video_id)
 
         self._dump_queue()
         return self._queue
@@ -255,11 +239,19 @@ class _MusicDownloadExecutor:
             )
 
     def _progress_hook(self, progress: DownloadProgress):
+        filename = progress["filename"]
+
         if self._queue_current_not_none_check(current := self._queue.current):
-            self._tracker.on_download_progress(current, progress)
-        if is_progress_finished(progress):
-            path = pathlib.Path(progress["filename"])
-            self._queue.mark_downloaded(path)
+            if is_progress_downloading(progress) or is_progress_finished(progress):
+                self._tracker.on_download_progress(
+                    current,
+                    filename,
+                    total_bytes=progress["total_bytes"],
+                    downloaded_bytes=progress["downloaded_bytes"],
+                )
+            if is_progress_finished(progress):
+                path = pathlib.Path(filename)
+                self._queue.mark_downloaded(path)
         if is_progress_error(progress):
             raise yt_dlp.utils.DownloadError("download error", progress["info_dict"])
 

@@ -5,13 +5,22 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Module",
+            "name": "TerminalLibraryUserManualTest",
+            "type": "python",
+            "request": "launch",
+            // "program": "${workspaceFolder}/manual_tests/terminal_music_library_user.py",
+            "justMyCode": true,
+            "console": "integratedTerminal",
+            "module": "manual_tests.terminal_music_library_user"
+        },
+        {
+            "name": "cli",
             "type": "python",
             "request": "launch",
             "module": "ytldl2_cli.cli",
             "justMyCode": false
         },
-		{
+        {
             "name": "Debug Unit Test",
             "type": "python",
             "request": "test",
