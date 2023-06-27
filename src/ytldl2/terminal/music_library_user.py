@@ -1,6 +1,4 @@
-from typing import Protocol
-
-from tqdm import tqdm
+from rich.progress import Progress, TaskID
 from ytldl2.download_queue import DownloadQueue
 from ytldl2.models.download_hooks import (
     PostprocessorProgress,
@@ -12,91 +10,35 @@ from ytldl2.models.song import Song
 from ytldl2.models.types import VideoId
 from ytldl2.protocols.music_download_tracker import MusicDownloadTracker
 from ytldl2.protocols.music_library_user import MusicLibraryUser
-
-
-class DownlodProgressBar(Protocol):
-    def update(self, filename: str, total: int, downloaded: int) -> None:
-        ...
-
-
-class TqdmDownloadProgressBar(DownlodProgressBar):
-    def __init__(self) -> None:
-        self._pbars: dict[str, tqdm] = {}
-
-    def update(self, filename: str, total: int, downloaded: int) -> None:
-        if filename not in self._pbars:
-            self._start(filename, total)
-        self._pbars[filename].update(downloaded - self._pbars[filename].n)
-        if total == downloaded:
-            self._close(filename)
-
-    def _start(self, filename: str, total: int) -> None:
-        self._pbars[filename] = tqdm(
-            total=total,
-            unit="B",
-            unit_scale=True,
-            unit_divisor=1024,
-        )
-        self._pbars[filename].set_description(filename)
-        self._last_file = filename
-
-    def _close(self, filename: str) -> None:
-        self._pbars[filename].close()
-        del self._pbars[filename]
-
-
-class PostprocessorProgressBar(Protocol):
-    def start(self, name: str) -> None:
-        ...
-
-    def close(self, name: str) -> None:
-        ...
-
-
-class TqdmPostprocessorProgressBar(PostprocessorProgressBar):
-    def __init__(self) -> None:
-        self._bars = {}
-
-    def start(self, name: str) -> None:
-        self._bars[name] = tqdm(leave=False, desc=name)
-
-    def close(self, name: str) -> None:
-        self._bars[name].close()
-        del self._bars[name]
+from ytldl2.util.console import clear_last_line
 
 
 class TerminalMusicDownloadTracker(MusicDownloadTracker):
     def __init__(
         self,
-        download_pbar: DownlodProgressBar | None = None,
-        pp_pbar: PostprocessorProgressBar | None = None,
     ) -> None:
-        self._download_pbar = (
-            download_pbar if download_pbar is not None else TqdmDownloadProgressBar()
-        )
-        self._pp_pbar = (
-            pp_pbar if pp_pbar is not None else TqdmPostprocessorProgressBar()
-        )
-        self._current_video: VideoId | None = None
-        self._end_str = ""
+        self._progress = Progress()
+        self._dl: dict[VideoId, TaskID] = {}
+        self._pp: dict[str, TaskID] = {}
+        self._close_str = ""
 
     def new(self, video: VideoId) -> None:
-        print(f"Starting download {video}...")
-        self._end_str = ""
+        print(f"Starting download {video}...", end="\r")
+        self._progress.start()
 
     def close(self, video: VideoId) -> None:
         """Called when a video is finished, after all postprocessors are done."""
-        print(self._end_str + "\n")
-        self._current_video = None
-        self._end_str = ""
+        self._progress.stop()
+        clear_last_line(1)
+        print(self._close_str)
 
     def on_video_skipped(self, video: VideoId, reason: str) -> None:
         """Called when a video is skipped."""
-        self._end_str = f"Skipped download {video}: {reason}."
+        self._close_str = f"Skipped download {video}: {reason}."
 
     def on_video_filtered(self, video: VideoId, filtered_reason: str) -> None:
         """Called when a video is filtered."""
-        self._end_str = f"Filtered download {video}: {filtered_reason}."
+        self._close_str = f"Filtered download {video}: {filtered_reason}."
 
     def on_download_progress(
         self,
@@ -107,14 +49,24 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
         downloaded_bytes: int,
     ) -> None:
         """Called on download progress."""
-        self._download_pbar.update(filename, total_bytes, downloaded_bytes)
-        self._end_str = f"Finished download {video}."
+        if video not in self._dl:
+            self._dl[video] = self._progress.add_task(f"{filename}", total=total_bytes)
+        self._progress.update(self._dl[video], completed=downloaded_bytes)
+        if downloaded_bytes >= total_bytes:
+            self._on_download_finished(video, filename)
+
+    def _on_download_finished(self, video: VideoId, filename: str) -> None:
+        self._progress.remove_task(self._dl[video])
+        del self._dl[video]
+        self._close_str = f"Finished download {video} as {filename}."
 
     def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
+        pp = progress["postprocessor"]
         if is_postprocessor_started(progress):
-            self._pp_pbar.start(progress["postprocessor"])
+            self._pp[pp] = self._progress.add_task(pp, total=None)
         if is_postprocessor_finished(progress):
-            self._pp_pbar.close(progress["postprocessor"])
+            self._progress.remove_task(self._pp[pp])
+            del self._pp[pp]
 
 
 class TerminalMusicLibraryUser(MusicLibraryUser):

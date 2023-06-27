@@ -66,7 +66,8 @@ def main():
     tracker = user.music_download_tracker
 
     videos: list[tuple[VideoId, ExpectedResult]] = [
-        (VideoId("finished_video"), "finished"),
+        (VideoId("finished_video1"), "finished"),
+        (VideoId("finished_video2"), "finished"),
         (VideoId("skipped_video"), "skipped"),
         (VideoId("filtered_video"), "filtered"),
     ]
