@@ -10,6 +10,7 @@ from ytldl2.download_queue import DownloadQueue
 from ytldl2.models.download_hooks import (
     DownloadProgress,
     PostprocessorProgress,
+    is_progress_downloading,
     is_progress_error,
     is_progress_finished,
 )
@@ -140,7 +141,14 @@ class _NoMusicDownloadTracker(MusicDownloadTracker):
     def on_video_filtered(self, video: VideoId, filtered_reason: str) -> None:
         pass
 
-    def on_download_progress(self, video: VideoId, progress: DownloadProgress) -> None:
+    def on_download_progress(
+        self,
+        video: VideoId,
+        filename: str,
+        *,
+        total_bytes: int,
+        downloaded_bytes: int,
+    ) -> None:
         pass
 
     def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
@@ -255,11 +263,19 @@ class _MusicDownloadExecutor:
             )
 
     def _progress_hook(self, progress: DownloadProgress):
+        filename = progress["filename"]
+
         if self._queue_current_not_none_check(current := self._queue.current):
-            self._tracker.on_download_progress(current, progress)
-        if is_progress_finished(progress):
-            path = pathlib.Path(progress["filename"])
-            self._queue.mark_downloaded(path)
+            if is_progress_downloading(progress) or is_progress_finished(progress):
+                self._tracker.on_download_progress(
+                    current,
+                    filename,
+                    total_bytes=progress["total_bytes"],
+                    downloaded_bytes=progress["downloaded_bytes"],
+                )
+            if is_progress_finished(progress):
+                path = pathlib.Path(filename)
+                self._queue.mark_downloaded(path)
         if is_progress_error(progress):
             raise yt_dlp.utils.DownloadError("download error", progress["info_dict"])
 

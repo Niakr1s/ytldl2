@@ -1,16 +1,9 @@
-import pathlib
-
 from tqdm import tqdm
-
 from ytldl2.download_queue import DownloadQueue
 from ytldl2.models.download_hooks import (
-    DownloadProgress,
     PostprocessorProgress,
     is_postprocessor_finished,
     is_postprocessor_started,
-    is_progress_downloading,
-    is_progress_error,
-    is_progress_finished,
 )
 from ytldl2.models.home_items import HomeItems, HomeItemsFilter
 from ytldl2.models.song import Song
@@ -92,23 +85,16 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
         """Called when a video is filtered."""
         self._end_str = f"Filtered download {video}: {filtered_reason}."
 
-    def on_download_progress(self, video: VideoId, progress: DownloadProgress) -> None:
+    def on_download_progress(
+        self,
+        video: VideoId,
+        filename: str,
+        *,
+        total_bytes: int,
+        downloaded_bytes: int,
+    ) -> None:
         """Called on download progress."""
-        filename = pathlib.Path(progress["filename"]).name
-
-        if is_progress_downloading(progress):
-            downloaded_bytes = progress["downloaded_bytes"]
-            total_bytes = progress["total_bytes"]
-            self._download_pbar.on_download(filename, total_bytes, downloaded_bytes)
-        if is_progress_finished(progress):
-            self._download_pbar.on_download_finish()
-            self._end_str = f"Finished download {video}."
-
-            # print(f"Finished: {filename}: {progress['total_bytes']} bytes")
-        if is_progress_error(progress):
-            self._download_pbar.on_download_error()
-            self._end_str = f"Error: {filename}: {progress}"
-            # print(f"Error: {filename}: {progress}")
+        self._download_pbar.on_download(filename, total_bytes, downloaded_bytes)
 
     def _close_postprocessor_bar(self) -> None:
         if self._postprocessor_pbar is not None:
