@@ -5,10 +5,10 @@ from ytldl2.models.types import VideoId
 
 
 class MusicDownloadTracker(Protocol):
-    def on_download_start(self, video: VideoId) -> None:
+    def new(self, video: VideoId) -> None:
         """Called when a new video is started."""
 
-    def on_download_finish(self, video: VideoId) -> None:
+    def close(self, video: VideoId) -> None:
         """Called when a video is finished, after all postprocessors are done."""
 
     def on_video_skipped(self, video: VideoId, reason: str) -> None:

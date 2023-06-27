@@ -129,10 +129,10 @@ class MusicDownloadError(Exception):
 
 
 class _NoMusicDownloadTracker(MusicDownloadTracker):
-    def on_download_start(self, video: VideoId) -> None:
+    def new(self, video: VideoId) -> None:
         pass
 
-    def on_download_finish(self, video: VideoId) -> None:
+    def close(self, video: VideoId) -> None:
         pass
 
     def on_video_skipped(self, video: VideoId, reason: str) -> None:
@@ -209,7 +209,7 @@ class _MusicDownloadExecutor:
             if self._limit <= 0:
                 break
             try:
-                self._tracker.on_download_start(video_id)
+                self._tracker.new(video_id)
                 self._download_video(video_id)
                 self._limit -= 1
             except self.VideoSkipped as e:
@@ -225,7 +225,7 @@ class _MusicDownloadExecutor:
                 self._queue.revert()
                 raise MusicDownloadError(self._queue) from e
             finally:
-                self._tracker.on_download_finish(video_id)
+                self._tracker.close(video_id)
 
         self._dump_queue()
         return self._queue

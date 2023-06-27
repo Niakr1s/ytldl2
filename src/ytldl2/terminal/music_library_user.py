@@ -67,10 +67,10 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
         self._current_video: VideoId | None = None
         self._end_str = ""
 
-    def on_download_start(self, video: VideoId) -> None:
+    def new(self, video: VideoId) -> None:
         print(f"Starting download {video}...")
 
-    def on_download_finish(self, video: VideoId) -> None:
+    def close(self, video: VideoId) -> None:
         """Called when a video is finished, after all postprocessors are done."""
         self._download_pbar.close()
         print(self._end_str)

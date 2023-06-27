@@ -2,6 +2,8 @@ import time
 from typing import Literal
 
 from ytldl2.models.download_hooks import (
+    DownloadProgressDownloading,
+    DownloadProgressFinished,
     PostprocessorProgressStarted,
 )
 from ytldl2.models.types import VideoId
@@ -32,15 +34,31 @@ def downloader_loop(
     tracker.new(video)
     match typ:
         case "finished":
-            total_bytes = 10
-            for i in range(total_bytes + 1):
+            total_bytes = 1_000_000
+            for i in range(1000, 1_000_000, 100_000):
+                if i >= total_bytes:
+                    break
                 time.sleep(0.1)
                 tracker.on_download_progress(
                     video,
-                    f"{VideoId}.m4a",
-                    downloaded_bytes=i,
-                    total_bytes=total_bytes,
+                    DownloadProgressDownloading(
+                        filename=f"{VideoId}.m4a",
+                        status="downloading",
+                        info_dict={},
+                        downloaded_bytes=i,
+                        total_bytes=total_bytes,
+                    ),
                 )
+            tracker.on_download_progress(
+                video,
+                DownloadProgressFinished(
+                    filename=f"{VideoId}.m4a",
+                    status="downloading",
+                    info_dict={},
+                    downloaded_bytes=total_bytes,
+                    total_bytes=total_bytes,
+                ),
+            )
         case "filtered":
             tracker.on_video_filtered(video, "filtered")
         case "skipped":
