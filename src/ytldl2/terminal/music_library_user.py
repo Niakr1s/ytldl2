@@ -15,42 +15,34 @@ from ytldl2.protocols.music_library_user import MusicLibraryUser
 
 
 class DownlodProgressBar(Protocol):
-    def on_download(self, filename: str, total: int, downloaded: int) -> None:
-        ...
-
-    def close(self) -> None:
+    def update(self, filename: str, total: int, downloaded: int) -> None:
         ...
 
 
-class TqdmDownloadProgressBar:
+class TqdmDownloadProgressBar(DownlodProgressBar):
     def __init__(self) -> None:
-        self._pbar: tqdm | None = None
-        self._last_file: str | None = None
+        self._pbars: dict[str, tqdm] = {}
 
-    def _on_download_start(self, filename: str, total: int, downloaded: int) -> None:
-        self._pbar = tqdm(
+    def update(self, filename: str, total: int, downloaded: int) -> None:
+        if filename not in self._pbars:
+            self._start(filename, total)
+        self._pbars[filename].update(downloaded - self._pbars[filename].n)
+        if total == downloaded:
+            self._close(filename)
+
+    def _start(self, filename: str, total: int) -> None:
+        self._pbars[filename] = tqdm(
             total=total,
-            initial=downloaded,
             unit="B",
             unit_scale=True,
             unit_divisor=1024,
         )
-        self._pbar.set_description(filename)
+        self._pbars[filename].set_description(filename)
         self._last_file = filename
 
-    def on_download(self, filename: str, total: int, downloaded: int) -> None:
-        if self._last_file != filename:
-            self._on_download_start(filename, total, downloaded)
-        else:
-            if self._pbar is None:
-                raise RuntimeError("no progress bar to update")
-            self._pbar.update(downloaded - self._pbar.n)
-
-    def close(self) -> None:
-        if self._pbar is not None:
-            self._pbar.close()
-        self._pbar = None
-        self._last_file = None
+    def _close(self, filename: str) -> None:
+        self._pbars[filename].close()
+        del self._pbars[filename]
 
 
 class PostprocessorProgressBar(Protocol):
@@ -94,7 +86,6 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
 
     def close(self, video: VideoId) -> None:
         """Called when a video is finished, after all postprocessors are done."""
-        self._download_pbar.close()
         print(self._end_str + "\n")
         self._current_video = None
         self._end_str = ""
@@ -116,7 +107,7 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
         downloaded_bytes: int,
     ) -> None:
         """Called on download progress."""
-        self._download_pbar.on_download(filename, total_bytes, downloaded_bytes)
+        self._download_pbar.update(filename, total_bytes, downloaded_bytes)
         self._end_str = f"Finished download {video}."
 
     def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
