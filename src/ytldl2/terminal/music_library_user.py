@@ -69,13 +69,14 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
 
     def new(self, video: VideoId) -> None:
         print(f"Starting download {video}...")
+        self._end_str = ""
 
     def close(self, video: VideoId) -> None:
         """Called when a video is finished, after all postprocessors are done."""
         self._download_pbar.close()
-        print(self._end_str)
+        print(self._end_str + "\n")
+        self._current_video = None
         self._end_str = ""
-        print()
 
     def on_video_skipped(self, video: VideoId, reason: str) -> None:
         """Called when a video is skipped."""
@@ -95,6 +96,7 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
     ) -> None:
         """Called on download progress."""
         self._download_pbar.on_download(filename, total_bytes, downloaded_bytes)
+        self._end_str = f"Finished download {video}."
 
     def _close_postprocessor_bar(self) -> None:
         if self._postprocessor_pbar is not None:
