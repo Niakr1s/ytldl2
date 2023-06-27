@@ -25,10 +25,8 @@ def postprocessor_loop(tracker: MusicDownloadTracker, preprocessors: list[str]):
 
 
 def downloader_loop(tracker: MusicDownloadTracker, video: VideoId):
-    total_bytes = 1_000_000
-    for i in range(1000, 1_000_000, 100_000):
-        if i >= total_bytes:
-            break
+    total_bytes = 10
+    for i in range(1, total_bytes + 1):
         time.sleep(0.1)
         tracker.on_download_progress(
             video,
