@@ -2,8 +2,6 @@ import time
 from typing import Literal
 
 from ytldl2.models.download_hooks import (
-    DownloadProgressDownloading,
-    DownloadProgressFinished,
     PostprocessorProgressStarted,
 )
 from ytldl2.models.types import VideoId
@@ -26,55 +24,62 @@ def postprocessor_loop(tracker: MusicDownloadTracker, preprocessors: list[str]):
         )
 
 
-def downloader_loop(
+def downloader_loop(tracker: MusicDownloadTracker, video: VideoId):
+    total_bytes = 1_000_000
+    for i in range(1000, 1_000_000, 100_000):
+        if i >= total_bytes:
+            break
+        time.sleep(0.1)
+        tracker.on_download_progress(
+            video,
+            filename=f"{video}.m4a",
+            downloaded_bytes=i,
+            total_bytes=total_bytes,
+        )
+
+
+ExpectedResult = Literal["filtered", "skipped", "finished"]
+
+
+def imitate_music_downloader(
     tracker: MusicDownloadTracker,
     video: VideoId,
-    typ: Literal["filtered", "skipped", "finished"],
+    preprocessors: list[str],
+    postprocessors: list[str],
+    expected_result: ExpectedResult,
 ):
     tracker.new(video)
-    match typ:
+
+    postprocessor_loop(tracker, preprocessors)
+    match expected_result:
         case "finished":
-            total_bytes = 1_000_000
-            for i in range(1000, 1_000_000, 100_000):
-                if i >= total_bytes:
-                    break
-                time.sleep(0.1)
-                tracker.on_download_progress(
-                    video,
-                    DownloadProgressDownloading(
-                        filename=f"{VideoId}.m4a",
-                        status="downloading",
-                        info_dict={},
-                        downloaded_bytes=i,
-                        total_bytes=total_bytes,
-                    ),
-                )
-            tracker.on_download_progress(
-                video,
-                DownloadProgressFinished(
-                    filename=f"{VideoId}.m4a",
-                    status="downloading",
-                    info_dict={},
-                    downloaded_bytes=total_bytes,
-                    total_bytes=total_bytes,
-                ),
-            )
+            downloader_loop(tracker, video)
+            postprocessor_loop(tracker, postprocessors)
         case "filtered":
             tracker.on_video_filtered(video, "filtered")
         case "skipped":
             tracker.on_video_skipped(video, "skipped")
+
     tracker.close(video)
 
 
 def main():
     user = TerminalMusicLibraryUser()
-    tracker: MusicDownloadTracker = user.music_download_tracker
-    preprocessors = ["Preprocessor 1", "Preprocessor 2"]
-    postprocessors = ["Postprocessor 1", "Postprocessor 2", "Postprocessor 3"]
+    tracker = user.music_download_tracker
 
-    postprocessor_loop(tracker, preprocessors)
-    downloader_loop(tracker, VideoId("video"), "finished")
-    postprocessor_loop(tracker, postprocessors)
+    videos: list[tuple[VideoId, ExpectedResult]] = [
+        (VideoId("finished_video"), "finished"),
+        (VideoId("skipped_video"), "skipped"),
+        (VideoId("filtered_video"), "filtered"),
+    ]
+    for video, expected_result in videos:
+        imitate_music_downloader(
+            tracker,
+            video,
+            preprocessors=["Preprocessor1", "Preprocessor2"],
+            postprocessors=["Postprocessor1", "Postprocessor2", "Postprocessor3"],
+            expected_result=expected_result,
+        )
 
 
 if __name__ == "__main__":
