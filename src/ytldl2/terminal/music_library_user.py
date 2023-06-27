@@ -19,15 +19,24 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
     ) -> None:
         self._progress = Progress()
         self._dl: dict[VideoId, TaskID] = {}
+        # self._dl: dict[VideoId, TaskID] = {}
         self._pp: dict[str, TaskID] = {}
         self._close_str = ""
 
     def new(self, video: VideoId) -> None:
         print(f"Starting download {video}...", end="\r")
+        if video in self._dl:
+            raise RuntimeError(f"Video {video} is already in tasks.")
+
         self._progress.start()
+        self._dl[video] = self._progress.add_task(video, total=None)
 
     def close(self, video: VideoId) -> None:
         """Called when a video is finished, after all postprocessors are done."""
+        self._progress.stop_task(self._dl[video])
+        self._progress.remove_task(self._dl[video])
+        del self._dl[video]
+
         self._progress.stop()
         clear_last_line(1)
         print(self._close_str)
@@ -49,15 +58,16 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
         downloaded_bytes: int,
     ) -> None:
         """Called on download progress."""
-        if video not in self._dl:
-            self._dl[video] = self._progress.add_task(f"{filename}", total=total_bytes)
-        self._progress.update(self._dl[video], completed=downloaded_bytes)
+        self._progress.update(
+            self._dl[video],
+            description=filename,
+            total=total_bytes,
+            completed=downloaded_bytes,
+        )
         if downloaded_bytes >= total_bytes:
             self._on_download_finished(video, filename)
 
     def _on_download_finished(self, video: VideoId, filename: str) -> None:
-        self._progress.remove_task(self._dl[video])
-        del self._dl[video]
         self._close_str = f"Finished download {video} as {filename}."
 
     def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
