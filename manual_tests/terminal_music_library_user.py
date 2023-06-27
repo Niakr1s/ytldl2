@@ -68,8 +68,11 @@ def main():
     videos: list[tuple[VideoId, ExpectedResult]] = [
         (VideoId("finished_video1"), "finished"),
         (VideoId("finished_video2"), "finished"),
-        (VideoId("skipped_video"), "skipped"),
-        (VideoId("filtered_video"), "filtered"),
+        (VideoId("skipped_video1"), "skipped"),
+        (VideoId("skipped_video2"), "skipped"),
+        (VideoId("skipped_video3"), "skipped"),
+        (VideoId("filtered_video1"), "filtered"),
+        (VideoId("filtered_video2"), "filtered"),
     ]
     for video, expected_result in videos:
         imitate_music_downloader(

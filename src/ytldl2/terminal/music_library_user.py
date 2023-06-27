@@ -17,29 +17,34 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
     def __init__(
         self,
     ) -> None:
-        self._progress = Progress()
-        self._dl: dict[VideoId, TaskID] = {}
-        # self._dl: dict[VideoId, TaskID] = {}
+        self._progress = Progress(expand=True)
+        self._dl: TaskID | None = None
         self._pp: dict[str, TaskID] = {}
         self._close_str = ""
 
     def new(self, video: VideoId) -> None:
+        self._clean()
         print(f"Starting download {video}...", end="\r")
-        if video in self._dl:
-            raise RuntimeError(f"Video {video} is already in tasks.")
 
         self._progress.start()
-        self._dl[video] = self._progress.add_task(video, total=None)
+        self._dl = self._progress.add_task(video, total=None)
 
     def close(self, video: VideoId) -> None:
         """Called when a video is finished, after all postprocessors are done."""
-        self._progress.stop_task(self._dl[video])
-        self._progress.remove_task(self._dl[video])
-        del self._dl[video]
-
+        self._clean()
         self._progress.stop()
+
         clear_last_line(1)
         print(self._close_str)
+
+    def _clean(self) -> None:
+        if self._dl is not None:
+            self._progress.remove_task(self._dl)
+            self._dl = None
+        if self._pp:
+            for pp in self._pp.values():
+                self._progress.remove_task(pp)
+            self._pp = {}
 
     def on_video_skipped(self, video: VideoId, reason: str) -> None:
         """Called when a video is skipped."""
@@ -59,7 +64,7 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
     ) -> None:
         """Called on download progress."""
         self._progress.update(
-            self._dl[video],
+            self._dl,  # type: ignore
             description=filename,
             total=total_bytes,
             completed=downloaded_bytes,
@@ -73,7 +78,7 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
     def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
         pp = progress["postprocessor"]
         if is_postprocessor_started(progress):
-            self._pp[pp] = self._progress.add_task(pp, total=None)
+            self._pp[pp] = self._progress.add_task(f"\t{pp}", total=None)
         if is_postprocessor_finished(progress):
             self._progress.remove_task(self._pp[pp])
             del self._pp[pp]
