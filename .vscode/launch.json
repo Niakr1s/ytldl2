@@ -11,7 +11,7 @@
             // "program": "${workspaceFolder}/manual_tests/terminal_music_library_user.py",
             "justMyCode": true,
             "console": "integratedTerminal",
-            "module": "manual.terminal_music_library_user"
+            "module": "manual_tests.terminal_music_library_user"
         },
         {
             "name": "Python: Module",
