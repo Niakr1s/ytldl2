@@ -14,7 +14,7 @@
             "module": "manual_tests.terminal_music_library_user"
         },
         {
-            "name": "Python: Module",
+            "name": "cli",
             "type": "python",
             "request": "launch",
             "module": "ytldl2_cli.cli",
