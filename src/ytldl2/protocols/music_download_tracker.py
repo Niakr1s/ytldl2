@@ -29,3 +29,30 @@ class MusicDownloadTracker(Protocol):
 
     def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
         """Called on postprocessor progress."""
+
+
+class NoMusicDownloadTracker(MusicDownloadTracker):
+    def new(self, video: VideoId) -> None:
+        pass
+
+    def close(self, video: VideoId) -> None:
+        pass
+
+    def on_video_skipped(self, video: VideoId, reason: str) -> None:
+        pass
+
+    def on_video_filtered(self, video: VideoId, filtered_reason: str) -> None:
+        pass
+
+    def on_download_progress(
+        self,
+        video: VideoId,
+        filename: str,
+        *,
+        total_bytes: int,
+        downloaded_bytes: int,
+    ) -> None:
+        pass
+
+    def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
+        pass

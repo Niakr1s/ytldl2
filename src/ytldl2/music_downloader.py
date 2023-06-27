@@ -23,7 +23,10 @@ from ytldl2.postprocessors import (
     SongFiltered,
 )
 from ytldl2.protocols.cache import Cache, CachedVideo, SongInfo
-from ytldl2.protocols.music_download_tracker import MusicDownloadTracker
+from ytldl2.protocols.music_download_tracker import (
+    MusicDownloadTracker,
+    NoMusicDownloadTracker,
+)
 
 
 class YoutubeDlParams:
@@ -128,33 +131,6 @@ class MusicDownloadError(Exception):
         self.queue = queue
 
 
-class _NoMusicDownloadTracker(MusicDownloadTracker):
-    def new(self, video: VideoId) -> None:
-        pass
-
-    def close(self, video: VideoId) -> None:
-        pass
-
-    def on_video_skipped(self, video: VideoId, reason: str) -> None:
-        pass
-
-    def on_video_filtered(self, video: VideoId, filtered_reason: str) -> None:
-        pass
-
-    def on_download_progress(
-        self,
-        video: VideoId,
-        filename: str,
-        *,
-        total_bytes: int,
-        downloaded_bytes: int,
-    ) -> None:
-        pass
-
-    def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
-        pass
-
-
 class _MusicDownloadExecutor:
     """
     Class, internally used by MusicDownloader.
@@ -174,7 +150,7 @@ class _MusicDownloadExecutor:
         self._ydl = self._init_ydl(ydl_builder)
         self._cancellation_token = cancellation_token
         self._skip_download = skip_download
-        self._tracker = tracker if tracker is not None else _NoMusicDownloadTracker()
+        self._tracker = tracker if tracker is not None else NoMusicDownloadTracker()
 
         self._queue = DownloadQueue(videos)
         """
