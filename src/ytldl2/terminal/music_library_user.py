@@ -1,3 +1,5 @@
+from typing import Protocol
+
 from tqdm import tqdm
 from ytldl2.download_queue import DownloadQueue
 from ytldl2.models.download_hooks import (
@@ -12,7 +14,15 @@ from ytldl2.protocols.music_download_tracker import MusicDownloadTracker
 from ytldl2.protocols.music_library_user import MusicLibraryUser
 
 
-class DownloadProgressBar:
+class DownlodProgressBar(Protocol):
+    def on_download(self, filename: str, total: int, downloaded: int) -> None:
+        ...
+
+    def close(self) -> None:
+        ...
+
+
+class TqdmDownloadProgressBar:
     def __init__(self) -> None:
         self._pbar: tqdm | None = None
         self._last_file: str | None = None
@@ -43,15 +53,38 @@ class DownloadProgressBar:
         self._last_file = None
 
 
-class PostprocessorProgressBar(tqdm):
-    def __init__(self, name: str) -> None:
-        super().__init__(leave=False, desc=name)
+class PostprocessorProgressBar(Protocol):
+    def start(self, name: str) -> None:
+        ...
+
+    def close(self, name: str) -> None:
+        ...
+
+
+class TqdmPostprocessorProgressBar(PostprocessorProgressBar):
+    def __init__(self) -> None:
+        self._bars = {}
+
+    def start(self, name: str) -> None:
+        self._bars[name] = tqdm(leave=False, desc=name)
+
+    def close(self, name: str) -> None:
+        self._bars[name].close()
+        del self._bars[name]
 
 
 class TerminalMusicDownloadTracker(MusicDownloadTracker):
-    def __init__(self) -> None:
-        self._download_pbar = DownloadProgressBar()
-        self._postprocessor_pbar: PostprocessorProgressBar | None = None
+    def __init__(
+        self,
+        download_pbar: DownlodProgressBar | None = None,
+        pp_pbar: PostprocessorProgressBar | None = None,
+    ) -> None:
+        self._download_pbar = (
+            download_pbar if download_pbar is not None else TqdmDownloadProgressBar()
+        )
+        self._pp_pbar = (
+            pp_pbar if pp_pbar is not None else TqdmPostprocessorProgressBar()
+        )
         self._current_video: VideoId | None = None
         self._end_str = ""
 
@@ -86,25 +119,14 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
         self._download_pbar.on_download(filename, total_bytes, downloaded_bytes)
         self._end_str = f"Finished download {video}."
 
-    def _close_postprocessor_bar(self) -> None:
-        if self._postprocessor_pbar is not None:
-            self._postprocessor_pbar.close()
-            self._postprocessor_pbar = None
-
     def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
         if is_postprocessor_started(progress):
-            self._close_postprocessor_bar()
-            self._postprocessor_pbar = PostprocessorProgressBar(
-                progress["postprocessor"]
-            )
+            self._pp_pbar.start(progress["postprocessor"])
         if is_postprocessor_finished(progress):
-            self._close_postprocessor_bar()
+            self._pp_pbar.close(progress["postprocessor"])
 
 
 class TerminalMusicLibraryUser(MusicLibraryUser):
-    def __init__(self) -> None:
-        self._pbar = DownloadProgressBar()
-
     def review_filter(
         self,
         home_items: HomeItems,
