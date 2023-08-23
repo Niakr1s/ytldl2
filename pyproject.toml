@@ -15,7 +15,7 @@ dependencies = [
     'yt-dlp>=2023.3.4',
     'ytmusicapi>=1.0.2',
     'robocrypt>=4.2.6',
-    'pydantic>=1.10.9,<2',
+    'pydantic>=2.2.0',
     'rich>=13.4.2',
 ]
 

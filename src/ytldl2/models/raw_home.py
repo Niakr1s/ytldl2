@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Iterator, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel
 
 
 class Thumbnail(BaseModel):
@@ -48,11 +48,11 @@ class HomeItem(BaseModel):
     contents: List[Content]
 
 
-class Home(BaseModel):
-    __root__: List[HomeItem]
+class Home(RootModel):
+    root: List[HomeItem]
 
     def __iter__(self) -> Iterator[HomeItem]:
-        return iter(self.__root__)
+        return iter(self.root)
 
     def __getitem__(self, item) -> HomeItem:
-        return self.__root__[item]
+        return self.root[item]
