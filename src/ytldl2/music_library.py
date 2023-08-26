@@ -34,14 +34,10 @@ class MusicLibraryConfig(pydantic.BaseModel):
         default_factory=default_home_items_filter
     )
 
-    @staticmethod
-    def _exclude() -> dict:
-        return {"config_path": True}
-
     def save(self):
         """Saves config to config_path."""
         with self.config_path.open("w", encoding="utf-8") as file:
-            file.write(self.model_dump_json(exclude=self._exclude(), indent=4))
+            file.write(self.model_dump_json(exclude={"config_path"}, indent=4))
 
     @staticmethod
     def load(config_path: pathlib.Path) -> MusicLibraryConfig:
