@@ -14,7 +14,7 @@ from ytldl2.models.home_items import HomeItemsFilter
 from ytldl2.models.song import Song
 from ytldl2.models.types import Title
 from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
-from ytldl2.oauth import get_oauth
+from ytldl2.oauth import get_oauth, get_oauth_crypto
 from ytldl2.protocols.cache import Cache
 from ytldl2.protocols.music_library_user import MusicLibraryUser
 from ytldl2.sqlite_cache import SqliteCache
@@ -56,6 +56,7 @@ class MusicLibrary:
     def __init__(
         self,
         home_dir: pathlib.Path,
+        password: str | None = None,
         user: MusicLibraryUser | None = None,
     ):
         self._user = user if user else TerminalMusicLibraryUser()
@@ -68,8 +69,15 @@ class MusicLibrary:
         self._cache = SqliteCache(self._db_path)
         self._downloader = self._init_downloader(home_dir=home_dir, cache=self._cache)
 
-        oauth_json_path = self._dot_dir / "oauth.json"
-        self._api = YtMusicApi(get_oauth(oauth_json_path))
+        self.oauth_path = self._dot_dir / "oauth"
+        oauth = (
+            get_oauth(self.oauth_path)
+            if password is None
+            else get_oauth_crypto(
+                self.oauth_path, self._dot_dir / "salt", password.encode()
+            )
+        )
+        self._api = YtMusicApi(oauth)
 
     @staticmethod
     def _init_dirs(dirs: list[pathlib.Path]):
