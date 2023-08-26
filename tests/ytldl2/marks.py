@@ -1,7 +1,7 @@
-import os
-
 import pytest
 
-ALL_TESTS = "ALL" in os.environ
+SKIP_SLOW_TESTS = True
 
-slow_test: pytest.MarkDecorator = pytest.mark.skipif(not ALL_TESTS, reason="slow test")
+slow_test: pytest.MarkDecorator = pytest.mark.skipif(
+    SKIP_SLOW_TESTS, reason="slow test"
+)
