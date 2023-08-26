@@ -19,6 +19,12 @@ class SongInfo(pydantic.BaseModel):
     artist: str
 
 
+class VideoInfo(pydantic.BaseModel):
+    id: VideoId
+    title: str
+    duration: int
+
+
 class Cache(Protocol):
     def close(self) -> None:
         """

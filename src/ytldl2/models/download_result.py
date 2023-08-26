@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from ytldl2.models.types import VideoId
-from ytldl2.protocols.cache import SongInfo
+from ytldl2.protocols.cache import SongInfo, VideoInfo
 
 
 @dataclass
@@ -17,6 +17,7 @@ class Filtered:
     """Download was processed and filtered out. Should be cached."""
 
     video_id: VideoId
+    info: VideoInfo
     reason: str
 
 

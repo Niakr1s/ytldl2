@@ -70,7 +70,9 @@ class TerminalMusicLibraryUser(MusicLibraryUser):
                     f"Downloaded: [{result.video_id}] ({result.info.artist} - {result.info.title})."  # noqa: E501
                 )
             case Filtered():
-                print(f"Filtered: [{result.video_id}], reason: {result.reason}")
+                print(
+                    f"Filtered: [{result.video_id}] ({result.info.title}), reason: {result.reason}"  # noqa: E501
+                )
             case Error():
                 print(f"Error: [{result.video_id}], reason: {result.error}")
             case _:

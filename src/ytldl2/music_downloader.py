@@ -18,7 +18,7 @@ from ytldl2.postprocessors import (
     RetainMainArtistPP,
     SongFiltered,
 )
-from ytldl2.protocols.cache import SongInfo
+from ytldl2.protocols.cache import SongInfo, VideoInfo
 from ytldl2.protocols.music_download_tracker import (
     MusicDownloadTracker,
 )
@@ -116,7 +116,7 @@ class MusicDownloader:
                 info = self._download_video(ydl, video_id)
                 yield Downloaded(video_id, info)
             except SongFiltered as e:
-                yield Filtered(video_id, str(e))
+                yield Filtered(video_id, VideoInfo.parse_obj(e.info), str(e))
             except Exception as e:
                 yield Error(video_id, e)
             finally:
