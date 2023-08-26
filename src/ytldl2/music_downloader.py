@@ -87,7 +87,8 @@ class MusicDownloader:
     def __init__(
         self,
         home_dir: pathlib.Path,
-        tmp_dir: pathlib.Path | None,
+        /,
+        tmp_dir: pathlib.Path | None = None,
     ) -> None:
         self._home_dir = home_dir
         self._tmp_dir = tmp_dir
