@@ -81,6 +81,7 @@ class MusicLibrary:
         songs = self._cache.filter_cached(songs)
         songs = list(songs)
 
+        downloaded = 0
         with self._downloader:
             for result in self._downloader.download(
                 videos=songs,
@@ -89,12 +90,9 @@ class MusicLibrary:
                 if cancellation_token.kill_requested:
                     break
 
-                if limit <= 0:
-                    break
-
                 match result:
                     case Downloaded():
-                        limit -= 1
+                        downloaded += 1
                         self._cache.set_info(result.info)
                         self._cache.set(
                             CachedVideo(video_id=result.video_id, filtered_reason=None)
@@ -107,3 +105,6 @@ class MusicLibrary:
                         )
 
                 self._user.on_download_result(result)
+
+                if limit != 0 and downloaded == limit:
+                    break
