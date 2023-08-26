@@ -1,18 +1,14 @@
 import logging
 import pathlib
-from typing import TypeGuard
+from typing import Generator
 
-import yt_dlp
 from yt_dlp import YoutubeDL
 
-from ytldl2.cancellation_tokens import CancellationToken
-from ytldl2.download_queue import DownloadQueue
-from ytldl2.models.download_hooks import (
-    DownloadProgress,
-    PostprocessorProgress,
-    is_progress_downloading,
-    is_progress_error,
-    is_progress_finished,
+from ytldl2.models.download_result import (
+    Downloaded,
+    DownloadResult,
+    Error,
+    Filtered,
 )
 from ytldl2.models.types import VideoId
 from ytldl2.postprocessors import (
@@ -22,10 +18,9 @@ from ytldl2.postprocessors import (
     RetainMainArtistPP,
     SongFiltered,
 )
-from ytldl2.protocols.cache import Cache, CachedVideo, SongInfo
+from ytldl2.protocols.cache import SongInfo
 from ytldl2.protocols.music_download_tracker import (
     MusicDownloadTracker,
-    NoMusicDownloadTracker,
 )
 
 
@@ -91,180 +86,56 @@ class MusicDownloader:
 
     def __init__(
         self,
-        cache: Cache,
         home_dir: pathlib.Path,
         tmp_dir: pathlib.Path | None,
     ) -> None:
-        """
-        :param cache: Songs, contained in cache, will be skipped.
-        :param youtubedl_params: Params, of which instance of SongYoutubeDlBuilder
-        will be created.
-        """
-        self._cache = cache
         self._home_dir = home_dir
-        self._tmp_dir = tmp_dir or home_dir
-        self._ydl_builder = MusicYoutubeDlBuilder(
-            YoutubeDlParams(home_dir=home_dir, tmp_dir=tmp_dir)
-        )
+        self._tmp_dir = tmp_dir
 
     def download(
         self,
         videos: list[VideoId],
-        limit: int | None = None,
-        cancellation_token: CancellationToken | None = None,
-        skip_download: bool = False,
         tracker: MusicDownloadTracker | None = None,
-    ) -> DownloadQueue:
+    ) -> Generator[DownloadResult, None, None]:
         """
         Download songs in best quality in current thread.
         Downloads only songs (e.g skips videos).
         """
-        return _MusicDownloadExecutor(
-            self._cache,
-            self._ydl_builder,
-            videos,
-            limit=limit,
-            cancellation_token=cancellation_token,
-            skip_download=skip_download,
-            tracker=tracker,
-        ).download()
+        ydl = MusicYoutubeDlBuilder(
+            YoutubeDlParams(home_dir=self._home_dir, tmp_dir=self._tmp_dir)
+        ).build()
+        if tracker is not None:
+            ydl.add_progress_hook(tracker.on_download_progress)
+            ydl.add_postprocessor_hook(tracker.on_postprocessor_progress)
 
-
-class MusicDownloadError(Exception):
-    def __init__(self, queue: DownloadQueue) -> None:
-        super().__init__()
-        self.queue = queue
-
-
-class _MusicDownloadExecutor:
-    """
-    Class, internally used by MusicDownloader.
-    """
-
-    def __init__(
-        self,
-        cache: Cache,
-        ydl_builder: MusicYoutubeDlBuilder,
-        videos: list[VideoId],
-        limit: int | None = None,
-        cancellation_token: CancellationToken | None = None,
-        skip_download: bool = False,
-        tracker: MusicDownloadTracker | None = None,
-    ) -> None:
-        self._cache = cache
-        self._ydl = self._init_ydl(ydl_builder)
-        self._cancellation_token = cancellation_token
-        self._skip_download = skip_download
-        self._tracker = tracker if tracker is not None else NoMusicDownloadTracker()
-
-        self._queue = DownloadQueue(videos)
-        """
-        Don't call self._queue.mark_as* methods directly, use self._mark_as* instead to
-        also call self._tracker methods.
-        """
-        self._limit = limit if limit is not None else len(videos)
-
-    def _init_ydl(
-        self,
-        ydl_builder: MusicYoutubeDlBuilder,
-    ) -> YoutubeDL:
-        ydl = ydl_builder.build()
-        ydl.add_progress_hook(self._progress_hook)
-        ydl.add_postprocessor_hook(self._postprocessor_hook)
-        return ydl
-
-    class VideoSkipped(Exception):
-        def __init__(self, skip_reason: str) -> None:
-            super().__init__()
-            self.skip_reason = skip_reason
-
-    def download(
-        self,
-    ) -> DownloadQueue:
-        """
-        Download songs in best quality in current thread.
-        Downloads only songs (e.g skips videos).
-        Should be called only once.
-        """
-        for video_id in self._queue:
-            if self._limit <= 0:
-                break
+        for video_id in videos:
             try:
-                self._tracker.new(video_id)
-                self._download_video(video_id)
-                self._limit -= 1
-            except self.VideoSkipped as e:
-                self._queue.mark_skipped("cancelled by cancellation token")
-                self._tracker.on_video_skipped(video_id, e.skip_reason)
-                self._limit -= 1
+                if tracker is not None:
+                    tracker.new(video_id)
+                info = self._download_video(ydl, video_id)
+                yield Downloaded(video_id, info)
             except SongFiltered as e:
-                filter_reason = str(e)
-                self._queue.mark_filtered(filter_reason)
-                self._tracker.on_video_filtered(video_id, filter_reason)
+                yield Filtered(video_id, str(e))
             except Exception as e:
-                self._dump_queue()
-                self._queue.revert()
-                raise MusicDownloadError(self._queue) from e
+                yield Error(video_id, e)
             finally:
-                self._tracker.close(video_id)
+                if tracker is not None:
+                    tracker.close(video_id)
 
-        self._dump_queue()
-        return self._queue
+    def _download_video(self, ydl: YoutubeDL, video_id: VideoId) -> SongInfo:
+        with ydl:
+            # complete_as_* will be operated in progress_hook method after this
+            raw_info = ydl.extract_info(video_id, download=True)
+            return SongInfo.parse_obj(raw_info)
 
-    def _download_video(self, video_id: VideoId) -> None:
-        if self._cancellation_token and self._cancellation_token.kill_requested:
-            raise self.VideoSkipped("cancellation requested")
+    def _clean_home_dir(self):
+        """Cleans home directory: removes *.part files."""
+        for path in self._home_dir.glob("*.part"):
+            path.unlink(missing_ok=True)
 
-        if video_id in self._cache:
-            raise self.VideoSkipped("already in cache")
+    def __enter__(self):
+        self._clean_home_dir()
 
-        info: SongInfo | None = None
-        with self._ydl:
-            try:
-                # complete_as_* will be operated in progress_hook method after this
-                raw_info = self._ydl.extract_info(
-                    video_id, download=not self._skip_download
-                )
-                info = SongInfo.parse_obj(raw_info)
-
-                if self._skip_download:
-                    raise self.VideoSkipped("skip_download")
-            finally:
-                if info:
-                    self._cache.set_info(info)
-
-    def _dump_queue(self):
-        for item in self._queue.downloaded:
-            self._cache.set(CachedVideo(video_id=item.video_id, filtered_reason=None))
-        for item in self._queue.filtered:
-            self._cache.set(
-                CachedVideo(
-                    video_id=item.video_id, filtered_reason=item.filtered_reason
-                )
-            )
-
-    def _progress_hook(self, progress: DownloadProgress):
-        filename = progress["filename"]
-
-        if self._queue_current_not_none_check(current := self._queue.current):
-            if is_progress_downloading(progress) or is_progress_finished(progress):
-                self._tracker.on_download_progress(
-                    current,
-                    filename,
-                    total_bytes=progress["total_bytes"],
-                    downloaded_bytes=progress["downloaded_bytes"],
-                )
-            if is_progress_finished(progress):
-                path = pathlib.Path(filename)
-                self._queue.mark_downloaded(path)
-        if is_progress_error(progress):
-            raise yt_dlp.utils.DownloadError("download error", progress["info_dict"])
-
-    def _postprocessor_hook(self, progress: PostprocessorProgress):
-        self._tracker.on_postprocessor_progress(progress)
-
-    @staticmethod
-    def _queue_current_not_none_check(current: VideoId | None) -> TypeGuard[VideoId]:
-        if not current:
-            raise RuntimeError("no current video in queue")
-        return True
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._clean_home_dir()
+        return False

@@ -53,10 +53,6 @@ def imitate_music_downloader(
         case "finished":
             downloader_loop(tracker, video)
             postprocessor_loop(tracker, postprocessors)
-        case "filtered":
-            tracker.on_video_filtered(video, "filtered")
-        case "skipped":
-            tracker.on_video_skipped(video, "skipped")
 
     tracker.close(video)
 

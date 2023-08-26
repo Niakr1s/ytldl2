@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from ytldl2.download_queue import DownloadQueue
+from ytldl2.models.download_result import DownloadResult
 from ytldl2.models.home_items import HomeItems, HomeItemsFilter
 from ytldl2.models.song import Song
 from ytldl2.protocols.music_download_tracker import MusicDownloadTracker
@@ -27,8 +27,8 @@ class MusicLibraryUser(Protocol):
         """
         ...
 
-    def display_result(self, queue: DownloadQueue):
-        """Called by library after download to display download result."""
+    def on_download_result(self, result: DownloadResult):
+        """Called by library to display download result."""
         ...
 
     def music_download_tracker(self) -> MusicDownloadTracker:

@@ -27,7 +27,7 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
     cache = SqliteCache(dot_dir / "cache.db")
 
     tmp_dir = pathlib.Path(tempfile.mkdtemp(suffix=".ytldl2_"))
-    downloader = MusicDownloader(cache, home_dir, tmp_dir)
+    downloader = MusicDownloader(home_dir, tmp_dir)
 
     oauth = Oauth(dot_dir / "oauth", password)
     oauth = oauth.get_oauth()
@@ -51,10 +51,7 @@ def main():
 
             match args.lib_action:
                 case "update":
-                    with lib:
-                        lib.update(
-                            limit=args.limit, cancellation_token=GracefulKiller()
-                        )
+                    lib.update(limit=args.limit, cancellation_token=GracefulKiller())
 
 
 if __name__ == "__main__":

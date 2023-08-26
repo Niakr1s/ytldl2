@@ -9,11 +9,12 @@ import pydantic
 
 from ytldl2.api import YtMusicApi
 from ytldl2.cancellation_tokens import CancellationToken
+from ytldl2.models.download_result import Downloaded, Filtered
 from ytldl2.models.home_items import HomeItemsFilter
 from ytldl2.models.song import Song
 from ytldl2.models.types import Title
 from ytldl2.music_downloader import MusicDownloader
-from ytldl2.protocols.cache import Cache
+from ytldl2.protocols.cache import Cache, CachedVideo
 from ytldl2.protocols.music_library_user import MusicLibraryUser
 from ytldl2.terminal.music_library_user import TerminalMusicLibraryUser
 
@@ -68,7 +69,6 @@ class MusicLibrary:
         self,
         limit: int = 100,
         cancellation_token: CancellationToken = CancellationToken(),
-        skip_download: bool = False,
     ):
         """
         Updates library
@@ -90,23 +90,29 @@ class MusicLibrary:
         songs = self._user.review_songs(songs)
         random.shuffle(songs)
 
-        result = self._downloader.download(
-            videos=[v.video_id for v in songs],
-            limit=limit,
-            cancellation_token=cancellation_token,
-            skip_download=skip_download,
-            tracker=self._user.music_download_tracker(),
-        )
-        self._user.display_result(result)
+        with self._downloader:
+            for result in self._downloader.download(
+                videos=[v.video_id for v in songs],
+                tracker=self._user.music_download_tracker(),
+            ):
+                if cancellation_token.kill_requested:
+                    break
 
-    def _clean_home_dir(self):
-        """Cleans home directory: removes *.part files."""
-        for path in self._downloader._home_dir.glob("*.part"):
-            path.unlink(missing_ok=True)
+                if limit <= 0:
+                    break
 
-    def __enter__(self):
-        self._clean_home_dir()
+                match result:
+                    case Downloaded():
+                        limit -= 1
+                        self._cache.set_info(result.info)
+                        self._cache.set(
+                            CachedVideo(video_id=result.video_id, filtered_reason=None)
+                        )
+                    case Filtered():
+                        self._cache.set(
+                            CachedVideo(
+                                video_id=result.video_id, filtered_reason=result.reason
+                            )
+                        )
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._clean_home_dir()
-        return False
+                self._user.on_download_result(result)
