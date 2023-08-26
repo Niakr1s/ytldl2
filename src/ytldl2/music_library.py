@@ -10,7 +10,6 @@ from ytldl2.api import YtMusicApi
 from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models.download_result import Downloaded, Filtered
 from ytldl2.models.home_items import HomeItemsFilter
-from ytldl2.models.song import Song
 from ytldl2.models.types import Title
 from ytldl2.music_downloader import MusicDownloader
 from ytldl2.protocols.cache import Cache, CachedVideo
@@ -77,16 +76,14 @@ class MusicLibrary:
         home_items = home_items.filtered(self._config.home_items_filter)
 
         videos = self._api.get_videos(home_items=home_items)
-        songs = [
-            Song(v.video_id, v.title, v.artist) for v in videos if v.artist is not None
-        ]
+        songs = {v.video_id for v in videos if v.artist is not None}
 
         songs = self._cache.filter_cached(songs)
-        songs = set(songs)
+        songs = list(songs)
 
         with self._downloader:
             for result in self._downloader.download(
-                videos=[v.video_id for v in songs],
+                videos=songs,
                 tracker=self._user.music_download_tracker(),
             ):
                 if cancellation_token.kill_requested:

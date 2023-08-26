@@ -1,8 +1,7 @@
-from typing import Iterator, Protocol
+from typing import Iterable, Iterator, Protocol
 
 import pydantic
-
-from ytldl2.models.types import VideoId, WithVideoIdT
+from ytldl2.models.types import VideoId
 
 
 class CachedVideo(pydantic.BaseModel):
@@ -47,6 +46,6 @@ class Cache(Protocol):
     def get_infos(self, video_ids: list[VideoId]) -> dict[VideoId, SongInfo | None]:
         return {id: self.get_info(id) for id in video_ids}
 
-    def filter_cached(self, videos: list[WithVideoIdT]) -> list[WithVideoIdT]:
+    def filter_cached(self, videos: Iterable[VideoId]) -> Iterable[VideoId]:
         """Filters out cached videos"""
-        return [video for video in videos if video.video_id not in self]
+        return (video for video in videos if video not in self)
