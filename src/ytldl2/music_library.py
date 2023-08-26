@@ -87,9 +87,6 @@ class MusicLibrary:
                 videos=songs,
                 tracker=self._user.music_download_tracker(),
             ):
-                if cancellation_token.kill_requested:
-                    break
-
                 match result:
                     case Downloaded():
                         downloaded += 1
@@ -105,6 +102,9 @@ class MusicLibrary:
                         )
 
                 self._user.on_download_result(result)
+
+                if cancellation_token.kill_requested:
+                    break
 
                 if limit != 0 and downloaded == limit:
                     break
