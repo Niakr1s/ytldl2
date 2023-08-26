@@ -3,7 +3,7 @@ import argparse
 
 def parse_args() -> argparse.Namespace:
     """Returns:
-    {!action='lib', !dir='tmp', !password='qwerty', !lib_action='update', !limit=50}
+    {!action='lib', !dir='tmp', !password='qwerty', !lib_action='update', !limit=0}
     """
 
     parser = argparse.ArgumentParser(
@@ -28,7 +28,7 @@ def _configure_lib_parser(lib_parser: argparse.ArgumentParser):
     lib_action_update_parser.add_argument(
         "-l",
         "--limit",
-        help="limit of downloaded tracks per playlist or channel",
-        default=50,
+        help="limit of downloaded tracks per playlist or channel, 0 means no limit",
+        default=0,
         type=int,
     )
