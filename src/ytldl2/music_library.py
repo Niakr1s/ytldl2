@@ -23,25 +23,25 @@ from ytldl2.terminal.music_library_user import TerminalMusicLibraryUser
 logger = logging.getLogger(__name__)
 
 
-def default_home_items_filter() -> HomeItemsFilter:
-    my_mixes = (f"My Mix {i}" for i in range(1, 7))
-    return HomeItemsFilter(playlists=[Title(x) for x in ["My Supermix", *my_mixes]])
-
-
 class MusicLibraryConfig(pydantic.BaseModel):
+    @staticmethod
+    def default_home_items_filter() -> HomeItemsFilter:
+        my_mixes = (f"My Mix {i}" for i in range(1, 7))
+        return HomeItemsFilter(playlists=[Title(x) for x in ["My Supermix", *my_mixes]])
+
     config_path: pathlib.Path
     home_items_filter: HomeItemsFilter = pydantic.Field(
         default_factory=default_home_items_filter
     )
 
+    @staticmethod
+    def _exclude() -> dict:
+        return {"config_path": True}
+
     def save(self):
         """Saves config to config_path."""
         with self.config_path.open("w", encoding="utf-8") as file:
             file.write(self.model_dump_json(exclude=self._exclude(), indent=4))
-
-    @staticmethod
-    def _exclude() -> dict:
-        return {"config_path": True}
 
     @staticmethod
     def load(config_path: pathlib.Path) -> MusicLibraryConfig:
