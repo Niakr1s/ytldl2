@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
+from ytldl2.models.info import SongInfo, VideoInfo
 from ytldl2.models.types import VideoId
-from ytldl2.protocols.cache import SongInfo, VideoInfo
 
 
 @dataclass

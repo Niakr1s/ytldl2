@@ -1,6 +1,7 @@
 from typing import Iterable, Iterator, Protocol
 
 import pydantic
+from ytldl2.models.info import SongInfo
 from ytldl2.models.types import VideoId
 
 
@@ -8,21 +9,6 @@ class CachedVideo(pydantic.BaseModel):
     video_id: VideoId
 
     filtered_reason: str | None
-
-
-class SongInfo(pydantic.BaseModel):
-    id: VideoId
-    title: str
-    duration: int
-    channel: str | None
-    """I'm pretty sure it won't have None, but made optional just in case"""
-    artist: str
-
-
-class VideoInfo(pydantic.BaseModel):
-    id: VideoId
-    title: str
-    duration: int
 
 
 class Cache(Protocol):

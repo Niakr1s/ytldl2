@@ -1,5 +1,5 @@
+from ytldl2.models.info import SongInfo
 from ytldl2.models.types import VideoId
-from ytldl2.protocols.cache import SongInfo
 from ytldl2.sqlite_cache import SqliteCache
 
 

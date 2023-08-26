@@ -10,6 +10,7 @@ from ytldl2.models.download_result import (
     Error,
     Filtered,
 )
+from ytldl2.models.info import SongInfo, VideoInfo
 from ytldl2.models.types import VideoId
 from ytldl2.postprocessors import (
     FilterSongPP,
@@ -18,7 +19,6 @@ from ytldl2.postprocessors import (
     RetainMainArtistPP,
     SongFiltered,
 )
-from ytldl2.protocols.cache import SongInfo, VideoInfo
 from ytldl2.protocols.music_download_tracker import (
     MusicDownloadTracker,
 )
