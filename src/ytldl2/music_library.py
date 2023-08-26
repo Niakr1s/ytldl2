@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 import pathlib
@@ -42,7 +44,7 @@ class MusicLibraryConfig(pydantic.BaseModel):
         return {"config_path": True}
 
     @staticmethod
-    def load(config_path: pathlib.Path) -> "MusicLibraryConfig":
+    def load(config_path: pathlib.Path) -> MusicLibraryConfig:
         try:
             jsn = json.loads(config_path.read_bytes())
             return MusicLibraryConfig(config_path=config_path, **jsn)

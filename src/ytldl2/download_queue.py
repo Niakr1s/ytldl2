@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pathlib
 from dataclasses import dataclass
 from typing import Iterator
@@ -22,11 +24,11 @@ class Skipped(WithVideoId):
 
 class QueueError(Exception):
     @staticmethod
-    def no_pending() -> "QueueError":
+    def no_pending() -> QueueError:
         return QueueError("no item, pending mark")
 
     @staticmethod
-    def has_pending() -> "QueueError":
+    def has_pending() -> QueueError:
         return QueueError("has item, pending mark")
 
 

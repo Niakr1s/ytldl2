@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 from dataclasses import dataclass
 from typing import Literal, TypeVar
@@ -34,7 +36,7 @@ class HomeItems:
             and len(self.channels) == 0
         )
 
-    def filtered(self, filter: HomeItemsFilter) -> "HomeItems":
+    def filtered(self, filter: HomeItemsFilter) -> HomeItems:
         """
         Filters home items and returns new copy.
         """
