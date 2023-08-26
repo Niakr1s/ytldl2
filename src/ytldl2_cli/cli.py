@@ -22,6 +22,7 @@ def init_logger(home_dir: pathlib.Path):
 
 def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
     dot_dir = home_dir / ".ytldl2"
+    dot_dir.mkdir(parents=True, exist_ok=True)
 
     config = MusicLibraryConfig.load(dot_dir / "config.json")
     cache = SqliteCache(dot_dir / "cache.db")
