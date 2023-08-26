@@ -14,7 +14,7 @@ from ytldl2.models.home_items import HomeItemsFilter
 from ytldl2.models.song import Song
 from ytldl2.models.types import Title
 from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
-from ytldl2.oauth import get_oauth, get_oauth_crypto
+from ytldl2.oauth import _get_oauth, _get_oauth_crypto
 from ytldl2.protocols.cache import Cache
 from ytldl2.protocols.music_library_user import MusicLibraryUser
 from ytldl2.sqlite_cache import SqliteCache
@@ -72,9 +72,9 @@ class MusicLibrary:
 
         self.oauth_path = self._dot_dir / "oauth"
         oauth = (
-            get_oauth(self.oauth_path)
+            _get_oauth(self.oauth_path)
             if password is None
-            else get_oauth_crypto(
+            else _get_oauth_crypto(
                 self.oauth_path, self._dot_dir / "salt", password.encode()
             )
         )

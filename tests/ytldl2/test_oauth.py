@@ -3,7 +3,7 @@ import pathlib
 
 import pytest
 import robocrypt
-from ytldl2.oauth import get_oauth, get_oauth_crypto, robo_salt
+from ytldl2.oauth import Oauth, robo_salt
 
 
 def test_get_oauth(tmp_path: pathlib.Path):
@@ -11,7 +11,8 @@ def test_get_oauth(tmp_path: pathlib.Path):
     contents = '{"contents": "some contents"}'
     oauth_path.write_text(contents)
 
-    assert contents == get_oauth(oauth_path)
+    oauth = Oauth(oauth_path)
+    assert contents == oauth.get_oauth()
 
 
 def test_get_oauth__empty(tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch):
@@ -21,7 +22,8 @@ def test_get_oauth__empty(tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatc
         "ytldl2.oauth.setup_oauth", lambda *args, **kwargs: json.loads(contents)
     )
 
-    assert contents == get_oauth(oauth_path)
+    oauth = Oauth(oauth_path)
+    assert contents == oauth.get_oauth()
     assert contents == oauth_path.read_text()
 
 
@@ -29,22 +31,23 @@ def test_get_oauth_crypto__empty(
     tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
 ):
     oauth_path = tmp_path / "tmp_oauth"
-    robo_salt_path = tmp_path / "salt.txt"
-    password = b"123"
+
     contents = '{"contents": "some contents"}'
     monkeypatch.setattr(
         "ytldl2.oauth.setup_oauth", lambda *args, **kwargs: json.loads(contents)
     )
 
-    assert contents == get_oauth_crypto(oauth_path, robo_salt_path, password)
-    assert robo_salt_path.exists()
+    oauth = Oauth(oauth_path, "123")
+    assert contents == oauth.get_oauth()
+    assert oauth.password == b"123"
+    assert oauth.robo_salt_path.exists()
     assert oauth_path.exists()
 
     with pytest.raises(robocrypt.DecryptionError):
-        robocrypt.decrypt(oauth_path.read_bytes(), password)
+        robocrypt.decrypt(oauth.oauth_path.read_bytes(), oauth.password)
 
-    with robo_salt(robo_salt_path):
-        decrypted = robocrypt.decrypt(oauth_path.read_bytes(), password)
+    with robo_salt(oauth.robo_salt_path):
+        decrypted = robocrypt.decrypt(oauth_path.read_bytes(), oauth.password)
         assert contents == decrypted.decode()
 
 

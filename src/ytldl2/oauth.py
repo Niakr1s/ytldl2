@@ -8,7 +8,47 @@ import robocrypt
 from ytmusicapi import setup_oauth
 
 
-def get_oauth(
+class Oauth:
+    def __init__(
+        self,
+        oauth_path=pathlib.Path.home() / ".ytldl2" / "oauth.json",
+        password: str | bytes | None = None,
+        /,
+        open_browser: bool = True,
+    ):
+        self.oauth_path = oauth_path
+        self.robo_salt_path = self.oauth_path.parent / "salt"
+
+        self.password: bytes | None
+        match password:
+            case str():
+                self.password = password.encode()
+            case _:
+                self.password = password
+
+        self.open_browser = open_browser
+
+    def get_oauth(self) -> str:
+        if self.password is None:
+            return _get_oauth(
+                self.oauth_path,
+                open_browser=self.open_browser,
+            )
+        else:
+            return _get_oauth_crypto(
+                self.oauth_path,
+                self.robo_salt_path,
+                self.password,
+                open_browser=self.open_browser,
+            )
+
+    def delete_data(self):
+        """Removes data from hard drive."""
+        self.oauth_path.unlink(missing_ok=True)
+        self.robo_salt_path.unlink(missing_ok=True)
+
+
+def _get_oauth(
     oauth_path: pathlib.Path = pathlib.Path.home() / ".ytldl2" / "oauth.json",
     /,
     open_browser: bool = True,
@@ -28,7 +68,7 @@ def get_oauth(
     return oauth
 
 
-def get_oauth_crypto(
+def _get_oauth_crypto(
     oauth_path: pathlib.Path,
     robo_salt_path: pathlib.Path,
     password: bytes,
