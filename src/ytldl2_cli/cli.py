@@ -4,6 +4,7 @@ import pathlib
 from robocrypt.library import DecryptionError
 from ytldl2.cancellation_tokens import GracefulKiller
 from ytldl2.music_library import MusicLibrary
+from ytldl2.oauth import Oauth
 from ytldl2.terminal.music_library_user import TerminalMusicLibraryUser
 
 from ytldl2_cli.args import parse_args
@@ -17,9 +18,12 @@ def main():
     match args.action:
         case "lib":
             home_dir = pathlib.Path(args.dir)
+            dot_dir = home_dir / ".ytldl2"
             log_path = home_dir / ".logs" / "main.log"
             log_path.parent.mkdir(parents=True, exist_ok=True)
             logging.basicConfig(level=logging.INFO, filename=log_path)
+
+            oauth = Oauth(dot_dir / "oauth", args.password)
 
             match args.lib_action:
                 case "update":
@@ -29,7 +33,7 @@ def main():
                         lib = MusicLibrary(
                             home_dir,
                             user=user,
-                            password=args.password,
+                            oauth=oauth.get_oauth(),
                         )
                         with lib:
                             lib.update(
