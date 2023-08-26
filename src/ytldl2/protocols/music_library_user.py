@@ -31,6 +31,6 @@ class MusicLibraryUser(Protocol):
         """Called by library after download to display download result."""
         ...
 
-    @property
     def music_download_tracker(self) -> MusicDownloadTracker:
+        """Should return class used to track music download progress."""
         ...

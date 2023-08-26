@@ -120,7 +120,7 @@ class MusicLibrary:
             limit=limit,
             cancellation_token=cancellation_token,
             skip_download=skip_download,
-            tracker=self._user.music_download_tracker,
+            tracker=self._user.music_download_tracker(),
         )
         self._user.display_result(result)
 

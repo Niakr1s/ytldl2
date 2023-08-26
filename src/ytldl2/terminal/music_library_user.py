@@ -125,6 +125,5 @@ class TerminalMusicLibraryUser(MusicLibraryUser):
         print()
         print("=" * len(title))
 
-    @property
     def music_download_tracker(self) -> MusicDownloadTracker:
         return TerminalMusicDownloadTracker()
