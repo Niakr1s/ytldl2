@@ -92,7 +92,8 @@ class MusicDownloader:
     def __init__(
         self,
         cache: Cache,
-        ydl_params: YoutubeDlParams,
+        home_dir: pathlib.Path,
+        tmp_dir: pathlib.Path | None,
     ) -> None:
         """
         :param cache: Songs, contained in cache, will be skipped.
@@ -100,7 +101,11 @@ class MusicDownloader:
         will be created.
         """
         self._cache = cache
-        self._ydl_builder = MusicYoutubeDlBuilder(ydl_params)
+        self._home_dir = home_dir
+        self._tmp_dir = tmp_dir or home_dir
+        self._ydl_builder = MusicYoutubeDlBuilder(
+            YoutubeDlParams(home_dir=home_dir, tmp_dir=tmp_dir)
+        )
 
     def download(
         self,

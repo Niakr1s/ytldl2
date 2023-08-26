@@ -4,7 +4,6 @@ import json
 import logging
 import pathlib
 import random
-import tempfile
 
 import pydantic
 
@@ -13,12 +12,10 @@ from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models.home_items import HomeItemsFilter
 from ytldl2.models.song import Song
 from ytldl2.models.types import Title
-from ytldl2.music_downloader import MusicDownloader, YoutubeDlParams
+from ytldl2.music_downloader import MusicDownloader
 from ytldl2.protocols.cache import Cache
 from ytldl2.protocols.music_library_user import MusicLibraryUser
-from ytldl2.sqlite_cache import SqliteCache
 from ytldl2.terminal.music_library_user import TerminalMusicLibraryUser
-from ytldl2.util.fs import init_dirs
 
 logger = logging.getLogger(__name__)
 
@@ -55,34 +52,17 @@ class MusicLibraryConfig(pydantic.BaseModel):
 class MusicLibrary:
     def __init__(
         self,
-        home_dir: pathlib.Path,
+        config: MusicLibraryConfig,
+        cache: Cache,
+        downloader: MusicDownloader,
         oauth: str,
         user: MusicLibraryUser | None = None,
     ):
-        self._user = user if user else TerminalMusicLibraryUser()
-        self._home_dir = home_dir
-        self._dot_dir = home_dir / ".ytldl2"
-        self._db_path = self._dot_dir / "cache.db"
-        init_dirs([self._home_dir, self._dot_dir])
-
-        self._config = MusicLibraryConfig.load(self._dot_dir / "config.json")
-        self._cache = SqliteCache(self._db_path)
-        self._downloader = self._init_downloader(home_dir=home_dir, cache=self._cache)
-
+        self._config = config
+        self._cache = cache
+        self._downloader = downloader
         self._api = YtMusicApi(oauth)
-
-    @staticmethod
-    def _init_downloader(
-        home_dir: pathlib.Path,
-        cache: Cache,
-    ) -> MusicDownloader:
-        tmp_dir = pathlib.Path(tempfile.mkdtemp(suffix=".ytldl2_"))
-        ydl_params = YoutubeDlParams(
-            home_dir=home_dir,
-            tmp_dir=tmp_dir,
-        )
-
-        return MusicDownloader(cache=cache, ydl_params=ydl_params)
+        self._user = user if user else TerminalMusicLibraryUser()
 
     def update(
         self,
@@ -121,11 +101,8 @@ class MusicLibrary:
 
     def _clean_home_dir(self):
         """Cleans home directory: removes *.part files."""
-        for path in self._home_dir.glob("*.part"):
-            try:
-                path.unlink()
-            except Exception:
-                pass
+        for path in self._downloader._home_dir.glob("*.part"):
+            path.unlink(missing_ok=True)
 
     def __enter__(self):
         self._clean_home_dir()
