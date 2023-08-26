@@ -19,6 +19,7 @@ from ytldl2.protocols.cache import Cache
 from ytldl2.protocols.music_library_user import MusicLibraryUser
 from ytldl2.sqlite_cache import SqliteCache
 from ytldl2.terminal.music_library_user import TerminalMusicLibraryUser
+from ytldl2.util.fs import init_dirs
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ class MusicLibrary:
         self._home_dir = home_dir
         self._dot_dir = home_dir / ".ytldl2"
         self._db_path = self._dot_dir / "cache.db"
-        self._init_dirs([self._home_dir, self._dot_dir])
+        init_dirs([self._home_dir, self._dot_dir])
 
         self._config = MusicLibraryConfig.load(self._dot_dir / "config.json")
         self._cache = SqliteCache(self._db_path)
@@ -78,11 +79,6 @@ class MusicLibrary:
             )
         )
         self._api = YtMusicApi(oauth)
-
-    @staticmethod
-    def _init_dirs(dirs: list[pathlib.Path]):
-        for dir in dirs:
-            dir.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
     def _init_downloader(
