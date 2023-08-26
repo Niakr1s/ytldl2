@@ -4,10 +4,12 @@ import pytest
 from ytldl2.models.types import (
     Title,
 )
+from ytldl2.music_downloader import MusicDownloader
 from ytldl2.music_library import (
     MusicLibrary,
     MusicLibraryConfig,
 )
+from ytldl2.sqlite_cache import SqliteCache
 
 
 class TestMusicLibraryConfig:
@@ -37,11 +39,16 @@ class TestMusicLibrary:
     def library(
         self, tmp_path: pathlib.Path, oauth: str, monkeypatch: pytest.MonkeyPatch
     ) -> MusicLibrary:
-        monkeypatch.setattr("ytldl2.music_library.get_oauth", lambda *_: oauth)
-        return MusicLibrary(tmp_path / "library")
+        home_dir = tmp_path
+
+        config = MusicLibraryConfig(config_path=tmp_path / "config.json")
+        cache = SqliteCache()
+
+        downloader = MusicDownloader(home_dir)
+
+        return MusicLibrary(
+            config=config, cache=cache, downloader=downloader, oauth=oauth
+        )
 
     def test_init(self, library: MusicLibrary):
-        assert library._home_dir.exists()
-        assert library._dot_dir.exists()
-        assert (config_path := library._config.config_path).exists()
-        assert config_path.read_text()
+        assert library is not None

@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import logging
 import pathlib
-import random
 
 import pydantic
 
@@ -75,10 +74,6 @@ class MusicLibrary:
         """
         home_items = self._api.get_home_items()
 
-        self._config.home_items_filter = self._user.review_filter(
-            home_items, self._config.home_items_filter
-        )
-        self._config.save()
         home_items = home_items.filtered(self._config.home_items_filter)
 
         videos = self._api.get_videos(home_items=home_items)
@@ -87,8 +82,7 @@ class MusicLibrary:
         ]
 
         songs = self._cache.filter_cached(songs)
-        songs = self._user.review_songs(songs)
-        random.shuffle(songs)
+        songs = set(songs)
 
         with self._downloader:
             for result in self._downloader.download(

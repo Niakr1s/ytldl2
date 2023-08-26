@@ -7,8 +7,6 @@ from ytldl2.models.download_hooks import (
     is_progress_downloading,
 )
 from ytldl2.models.download_result import Downloaded, DownloadResult, Error, Filtered
-from ytldl2.models.home_items import HomeItems, HomeItemsFilter
-from ytldl2.models.song import Song
 from ytldl2.models.types import VideoId
 from ytldl2.protocols.music_download_tracker import MusicDownloadTracker
 from ytldl2.protocols.music_library_user import MusicLibraryUser
@@ -60,29 +58,6 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
 
 
 class TerminalMusicLibraryUser(MusicLibraryUser):
-    def review_filter(
-        self,
-        home_items: HomeItems,
-        filter: HomeItemsFilter,
-    ) -> HomeItemsFilter:
-        """
-        Called by library to ask user to review filter.
-        :return: Reviewed filter, that is intended to be stored in library config.
-        """
-        return filter
-
-    def review_songs(self, songs: list[Song]) -> list[Song]:
-        """
-        Called by library to ask user to review songs.
-        :return: Reviewed songs, that is intended to be downloaded.
-        """
-        print(f"{len(songs)} songs will be downloaded:")
-        for song in songs:
-            print(f"{song.artist} - {song.title}")
-        print(f"Total: {len(songs)} songs.")
-        print()
-        return songs
-
     def on_download_result(self, result: DownloadResult):
         """Called by library after download to display download result."""
 
