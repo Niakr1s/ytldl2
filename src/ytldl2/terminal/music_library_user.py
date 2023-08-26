@@ -1,3 +1,5 @@
+import typing
+
 from rich.progress import Progress, TaskID
 from ytldl2.models.download_hooks import (
     DownloadProgress,
@@ -64,11 +66,15 @@ class TerminalMusicLibraryUser(MusicLibraryUser):
         clear_last_line()
         match result:
             case Downloaded():
-                print(f"Downloaded: [{result.video_id}].")
+                print(
+                    f"Downloaded: [{result.video_id}] ({result.info.artist} - {result.info.title})."  # noqa: E501
+                )
             case Filtered():
                 print(f"Filtered: [{result.video_id}], reason: {result.reason}")
             case Error():
                 print(f"Error: [{result.video_id}], reason: {result.error}")
+            case _:
+                typing.assert_never(result)
 
     def music_download_tracker(self) -> MusicDownloadTracker:
         return TerminalMusicDownloadTracker()
