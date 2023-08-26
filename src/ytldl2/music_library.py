@@ -23,7 +23,11 @@ class MusicLibraryConfig(pydantic.BaseModel):
     @staticmethod
     def default_home_items_filter() -> HomeItemsFilter:
         my_mixes = (f"My Mix {i}" for i in range(1, 7))
-        return HomeItemsFilter(playlists=[Title(x) for x in ["My Supermix", *my_mixes]])
+        return HomeItemsFilter(
+            playlists=[Title(x) for x in ["My Supermix", *my_mixes]],
+            channels=[],
+            videos=[],
+        )
 
     config_path: pathlib.Path
     home_items_filter: HomeItemsFilter = pydantic.Field(
