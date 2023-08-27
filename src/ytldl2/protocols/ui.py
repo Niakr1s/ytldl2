@@ -33,7 +33,7 @@ class HomeItemsReviewer(Protocol):
 
 
 class BatchDownloadTracker(Protocol):
-    def start(self, songs: list[Song], limit: int):
+    def start(self, songs: list[Song], limit: int | None):
         """Called by library before batch starts."""
         ...
 

@@ -85,7 +85,7 @@ class TerminalBatchDownloadTracker(BatchDownloadTracker):
         self._filtered: list[Filtered] = []
         self._errors: list[Error] = []
 
-    def start(self, songs: list[Song], limit: int):
+    def start(self, songs: list[Song], limit: int | None):
         print(f"Starting to download batch of {len(songs)} songs, limit={limit}")
 
     def on_download_result(self, result: DownloadResult):

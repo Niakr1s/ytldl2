@@ -28,7 +28,7 @@ def _configure_lib_parser(lib_parser: argparse.ArgumentParser):
     lib_action_update_parser.add_argument(
         "-l",
         "--limit",
-        help="limit of downloaded tracks per playlist or channel, 0 means no limit",
-        default=0,
+        help="limit of downloaded tracks per playlist or channel, default no limit",
+        default=None,
         type=int,
     )

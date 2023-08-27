@@ -73,7 +73,7 @@ class MusicLibrary:
 
     def update(
         self,
-        limit: int = 100,
+        limit: int | None = None,
         cancellation_token: CancellationToken = CancellationToken(),
     ):
         """
