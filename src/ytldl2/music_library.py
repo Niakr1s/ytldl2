@@ -77,6 +77,10 @@ class MusicLibrary:
         """
         home_items = self._api.get_home_items()
 
+        self._user.home_items_reviewer().review_home_items(
+            home_items, self._config.home_items_filter
+        )
+
         home_items = home_items.filtered(self._config.home_items_filter)
 
         videos = self._api.get_videos(home_items=home_items)

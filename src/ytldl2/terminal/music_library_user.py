@@ -9,8 +9,9 @@ from ytldl2.models.download_hooks import (
     is_progress_downloading,
 )
 from ytldl2.models.download_result import Downloaded, DownloadResult, Error, Filtered
+from ytldl2.models.home_items import HomeItems, HomeItemsFilter
 from ytldl2.models.types import VideoId
-from ytldl2.protocols.ui import ProgressBar, Ui
+from ytldl2.protocols.ui import HomeItemsReviewer, ProgressBar, Ui
 from ytldl2.util.console import clear_last_line
 
 
@@ -58,7 +59,29 @@ class TerminalMusicDownloadTracker(ProgressBar):
             del self._pp[pp]
 
 
+class TerminalHomeItemsReviewer(HomeItemsReviewer):
+    def review_home_items(
+        self, home_items: HomeItems, home_items_filter: HomeItemsFilter
+    ):
+        print("Got following home items:")
+        print(f"Videos: {len(home_items.videos)} items.")
+        print(f"Channels: {home_items.channels}")
+        print(f"Playlistst: {home_items.playlists}")
+        print()
+
+        print("They will be filtered with following filters:")
+        print(f"Videos: {home_items_filter.videos}")
+        print(f"Channels: {home_items_filter.channels}")
+        print(f"Playlists: {home_items_filter.playlists}")
+        print()
+
+        print("If you wish to review filters, please change them via config.")
+
+
 class TerminalMusicLibraryUser(Ui):
+    def home_items_reviewer(self) -> HomeItemsReviewer:
+        return TerminalHomeItemsReviewer()
+
     def on_download_result(self, result: DownloadResult):
         """Called by library after download to display download result."""
 

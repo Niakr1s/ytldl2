@@ -2,6 +2,7 @@ from typing import Protocol
 
 from ytldl2.models.download_hooks import DownloadProgress, PostprocessorProgress
 from ytldl2.models.download_result import DownloadResult
+from ytldl2.models.home_items import HomeItems, HomeItemsFilter
 from ytldl2.models.types import VideoId
 
 
@@ -19,8 +20,26 @@ class ProgressBar(Protocol):
         """Called on postprocessor progress."""
 
 
+class HomeItemsReviewer(Protocol):
+    def review_home_items(
+        self, home_items: HomeItems, home_items_filter: HomeItemsFilter
+    ):
+        """
+        Should review home items. Param home_items should be left unchangeable,
+        but home_items_filter can be changed. Every change in home_items_filter
+        will be persisted.
+        """
+
+
 class Ui(Protocol):
     """User for music library."""
+
+    def home_items_reviewer(self) -> HomeItemsReviewer:
+        """
+        Should return home items reviewer, that will be called after
+        home items have been fetched.
+        """
+        ...
 
     def on_download_result(self, result: DownloadResult):
         """Called by library to display download result."""
