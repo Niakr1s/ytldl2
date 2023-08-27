@@ -63,7 +63,7 @@ class YtMusicApi:
     ) -> list[Video]:
         """Helper method for get_songs()"""
         videos: list[Video] = [video for video in home_items.videos]
-        with ThreadPoolExecutor(max_workers=10) as executor:
+        with ThreadPoolExecutor(max_workers=3) as executor:
             futures: list[Future[list[Video]]] = []
             if playlists := home_items.playlists:
                 for playlist in playlists:
