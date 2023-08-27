@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 from dataclasses import dataclass
-from typing import Literal, TypeVar
+from typing import TypeVar
 
 import pydantic
 from ytldl2.models.channel import Channel
@@ -10,7 +10,7 @@ from ytldl2.models.playlist import Playlist
 from ytldl2.models.types import Title, WithTitle
 from ytldl2.models.video import Video
 
-_TitleFilter = list[Title] | Literal["retain_all"]
+_TitleFilter = list[Title] | None
 
 
 class HomeItemsFilter(pydantic.BaseModel):
@@ -18,9 +18,9 @@ class HomeItemsFilter(pydantic.BaseModel):
     Class, used in HomeItems.filtered() method.
     """
 
-    videos: _TitleFilter = "retain_all"
-    playlists: _TitleFilter = "retain_all"
-    channels: _TitleFilter = "retain_all"
+    videos: _TitleFilter = None
+    playlists: _TitleFilter = None
+    channels: _TitleFilter = None
 
 
 @dataclass
@@ -58,6 +58,6 @@ class HomeItems:
         items: list[WithTitleT],
         filter: _TitleFilter,
     ) -> list[WithTitleT]:
-        if filter == "retain_all":
+        if filter is None:
             return items[:]
         return [x for x in items if x.title in filter]

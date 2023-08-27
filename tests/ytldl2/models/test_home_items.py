@@ -64,6 +64,30 @@ class TestHomeItems:
         assert playlist_title == filtered.playlists[0].title
 
     def test_filtered__channels(self, home_items: HomeItems):
+        filtered = home_items.filtered(
+            HomeItemsFilter(videos=[], playlists=[], channels=None)
+        )
+        assert len(filtered.videos) == 0
+        assert len(filtered.playlists) == 0
+        assert len(filtered.channels) == 2
+
+    def test_filtered__videos_None(self, home_items: HomeItems):
+        filtered = home_items.filtered(
+            HomeItemsFilter(videos=None, playlists=[], channels=[])
+        )
+        assert len(filtered.videos) == 2
+        assert len(filtered.playlists) == 0
+        assert len(filtered.channels) == 0
+
+    def test_filtered__playlists_None(self, home_items: HomeItems):
+        filtered = home_items.filtered(
+            HomeItemsFilter(videos=[], playlists=None, channels=[])
+        )
+        assert len(filtered.videos) == 0
+        assert len(filtered.playlists) == 2
+        assert len(filtered.channels) == 0
+
+    def test_filtered__channels_None(self, home_items: HomeItems):
         channel_title = Title(self.CHANNEL_TITLES[0])
         filtered = home_items.filtered(
             HomeItemsFilter(videos=[], playlists=[], channels=[channel_title])
