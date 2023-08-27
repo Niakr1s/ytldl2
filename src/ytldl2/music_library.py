@@ -87,7 +87,7 @@ class MusicLibrary:
 
         home_items = home_items.filtered(self._config.home_items_filter)
 
-        videos = self._api.get_videos(home_items=home_items)
+        videos = set(self._api.get_videos(home_items=home_items))
         songs = [
             Song(video_id=v.video_id, title=v.title, artist=v.artist)
             for v in videos
@@ -97,9 +97,7 @@ class MusicLibrary:
         batch_download_tracker = self._ui.batch_download_tracker()
         batch_download_tracker.start(songs, limit)
 
-        songs = {v.video_id for v in songs}
-        songs = self._cache.filter_cached(songs)
-        songs = list(songs)
+        songs = list(self._cache.filter_cached((s.video_id for s in songs)))
 
         downloaded = 0
         with self._downloader:

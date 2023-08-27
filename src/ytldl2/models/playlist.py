@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from ytldl2.models.types import PlaylistId, WithTitle
 
 
-@dataclass
+@dataclass(frozen=True)
 class Playlist(WithTitle):
     """
     In raw home data, playlist is entity,

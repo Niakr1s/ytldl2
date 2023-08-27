@@ -9,12 +9,12 @@ BrowseId = NewType("BrowseId", str)
 Artist = NewType("Artist", str)
 
 
-@dataclass
+@dataclass(frozen=True)
 class WithTitle:
     title: Title
 
 
-@dataclass
+@dataclass(frozen=True)
 class WithVideoId:
     video_id: VideoId
 

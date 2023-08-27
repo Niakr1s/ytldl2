@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from ytldl2.models.types import BrowseId, ChannelId, WithTitle
 
 
-@dataclass
+@dataclass(frozen=True)
 class Channel(WithTitle):
     """
     In raw home data, channel is entity,
