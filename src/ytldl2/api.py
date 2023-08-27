@@ -35,7 +35,9 @@ class YtMusicApi:
         try:
             home_raw: list = self._yt.get_home(limit=home_limit)
             home = Home.parse_obj(home_raw)
-            return self._extractor.parse_home(home)
+            home_items = self._extractor.parse_home(home)
+            home_items.remove_dublicates()
+            return home_items
         except ExtractError:
             raise
         except Exception as e:

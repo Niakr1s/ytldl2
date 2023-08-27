@@ -29,6 +29,11 @@ class HomeItems:
     playlists: list[Playlist] = dataclasses.field(default_factory=list)
     channels: list[Channel] = dataclasses.field(default_factory=list)
 
+    def remove_dublicates(self):
+        self.videos = list(set(self.videos))
+        self.playlists = list(set(self.playlists))
+        self.channels = list(set(self.channels))
+
     def is_empty(self) -> bool:
         return (
             len(self.videos) == 0
