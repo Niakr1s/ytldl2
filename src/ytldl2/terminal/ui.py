@@ -67,7 +67,7 @@ class TerminalHomeItemsReviewer(HomeItemsReviewer):
         print("Got following home items:")
         print(f"Videos: {len(home_items.videos)} items.")
         print(f"Channels: {home_items.channels}")
-        print(f"Playlistst: {home_items.playlists}")
+        print(f"Playlists: {home_items.playlists}")
         print()
 
         print("They will be filtered with following filters:")
