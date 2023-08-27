@@ -44,7 +44,7 @@ class YtMusicApi:
     def get_videos(
         self,
         home_items: HomeItems,
-        each_playlist_limit: int = 50,
+        each_playlist_limit: int | None = None,
     ) -> list[Video]:
         """
         Returns all songs from user's youtube music home page.
@@ -59,7 +59,7 @@ class YtMusicApi:
             raise YtMusicApiError() from e
 
     def _get_videos(
-        self, home_items: HomeItems, each_playlist_limit: int = 50
+        self, home_items: HomeItems, each_playlist_limit: int | None = None
     ) -> list[Video]:
         """Helper method for get_songs()"""
         videos: list[Video] = [video for video in home_items.videos]
@@ -92,7 +92,7 @@ class YtMusicApi:
         return videos
 
     def get_videos_from_playlist(
-        self, playlist_id: PlaylistId, /, limit: int = 50
+        self, playlist_id: PlaylistId, /, limit: int | None = None
     ) -> list[Video]:
         """
         Extracts videoIds from playlist.
@@ -101,11 +101,13 @@ class YtMusicApi:
         is_watch = False
 
         try:
-            contents = self._yt.get_playlist(playlistId=playlist_id, limit=limit)
+            contents = self._yt.get_playlist(
+                playlistId=playlist_id, limit=limit  # type: ignore
+            )
         except Exception:
             try:
                 contents = self._yt.get_watch_playlist(
-                    playlistId=playlist_id, limit=limit
+                    playlistId=playlist_id, limit=limit  # type: ignore
                 )
                 is_watch = True
             except Exception:
@@ -118,7 +120,7 @@ class YtMusicApi:
         return self._extractor.extract_videos_from_playlist(contents)
 
     def get_videos_from_channel(
-        self, channel_id: ChannelId, /, limit: int = 50
+        self, channel_id: ChannelId, /, limit: int | None = None
     ) -> list[Video]:
         """
         Extracts videoIds from channel.
