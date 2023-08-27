@@ -94,15 +94,15 @@ class MusicLibrary:
             if v.artist is not None
         ]
 
+        songs = self._cache.filter_cached(songs)
+
         batch_download_tracker = self._ui.batch_download_tracker()
         batch_download_tracker.start(songs, limit)
-
-        songs = list(self._cache.filter_cached((s.video_id for s in songs)))
 
         downloaded = 0
         with self._downloader:
             for result in self._downloader.download(
-                videos=songs,
+                videos=[s.video_id for s in songs],
                 tracker=self._ui.progress_bar(),
             ):
                 match result:
