@@ -19,8 +19,8 @@ from ytldl2.postprocessors import (
     RetainMainArtistPP,
     SongFiltered,
 )
-from ytldl2.protocols.ui.music_download_tracker import (
-    MusicDownloadTracker,
+from ytldl2.protocols.ui.progress_bar import (
+    ProgressBar,
 )
 
 
@@ -96,7 +96,7 @@ class MusicDownloader:
     def download(
         self,
         videos: list[VideoId],
-        tracker: MusicDownloadTracker | None = None,
+        tracker: ProgressBar | None = None,
     ) -> Generator[DownloadResult, None, None]:
         """
         Download songs in best quality in current thread.

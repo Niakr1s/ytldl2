@@ -59,7 +59,7 @@ def imitate_music_downloader(
 
 def main():
     user = TerminalMusicLibraryUser()
-    tracker = user.music_download_tracker()
+    tracker = user.progress_bar()
 
     videos: list[tuple[VideoId, ExpectedResult]] = [
         (VideoId("finished_video1"), "finished"),

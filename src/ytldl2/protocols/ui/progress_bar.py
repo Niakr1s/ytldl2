@@ -4,7 +4,7 @@ from ytldl2.models.download_hooks import DownloadProgress, PostprocessorProgress
 from ytldl2.models.types import VideoId
 
 
-class MusicDownloadTracker(Protocol):
+class ProgressBar(Protocol):
     def new(self, video: VideoId) -> None:
         """Called when a new video is started."""
 

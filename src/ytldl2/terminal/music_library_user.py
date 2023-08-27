@@ -10,12 +10,12 @@ from ytldl2.models.download_hooks import (
 )
 from ytldl2.models.download_result import Downloaded, DownloadResult, Error, Filtered
 from ytldl2.models.types import VideoId
-from ytldl2.protocols.ui.music_download_tracker import MusicDownloadTracker
-from ytldl2.protocols.ui.music_library_user import MusicLibraryUser
+from ytldl2.protocols.ui.progress_bar import ProgressBar
+from ytldl2.protocols.ui.user import User
 from ytldl2.util.console import clear_last_line
 
 
-class TerminalMusicDownloadTracker(MusicDownloadTracker):
+class TerminalMusicDownloadTracker(ProgressBar):
     def __init__(
         self,
     ) -> None:
@@ -59,7 +59,7 @@ class TerminalMusicDownloadTracker(MusicDownloadTracker):
             del self._pp[pp]
 
 
-class TerminalMusicLibraryUser(MusicLibraryUser):
+class TerminalMusicLibraryUser(User):
     def on_download_result(self, result: DownloadResult):
         """Called by library after download to display download result."""
 
@@ -78,5 +78,5 @@ class TerminalMusicLibraryUser(MusicLibraryUser):
             case _:
                 typing.assert_never(result)
 
-    def music_download_tracker(self) -> MusicDownloadTracker:
+    def progress_bar(self) -> ProgressBar:
         return TerminalMusicDownloadTracker()
