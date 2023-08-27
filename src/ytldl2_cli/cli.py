@@ -7,7 +7,7 @@ from ytldl2.music_downloader import MusicDownloader
 from ytldl2.music_library import MusicLibrary, MusicLibraryConfig
 from ytldl2.oauth import Oauth
 from ytldl2.sqlite_cache import SqliteCache
-from ytldl2.terminal.music_library_user import TerminalMusicLibraryUser
+from ytldl2.terminal.ui import TerminalUi
 
 from ytldl2_cli.args import parse_args
 
@@ -33,10 +33,10 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
     oauth = Oauth(dot_dir / "oauth", password)
     oauth = oauth.get_oauth()
 
-    user = TerminalMusicLibraryUser()
+    ui = TerminalUi()
 
     return MusicLibrary(
-        config=config, cache=cache, downloader=downloader, oauth=oauth, user=user
+        config=config, cache=cache, downloader=downloader, oauth=oauth, ui=ui
     )
 
 

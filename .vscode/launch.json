@@ -5,13 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "TerminalLibraryUserManualTest",
+            "name": "TerminalUiManualTest",
             "type": "python",
             "request": "launch",
-            // "program": "${workspaceFolder}/manual_tests/terminal_music_library_user.py",
             "justMyCode": true,
             "console": "integratedTerminal",
-            "module": "manual_tests.terminal_music_library_user"
+            "module": "manual_tests.terminal_ui"
         },
         {
             "name": "cli",

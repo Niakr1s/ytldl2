@@ -14,7 +14,7 @@ from ytldl2.models.types import Title
 from ytldl2.music_downloader import MusicDownloader
 from ytldl2.protocols.cache import Cache, CachedVideo
 from ytldl2.protocols.ui import Ui
-from ytldl2.terminal.music_library_user import TerminalMusicLibraryUser
+from ytldl2.terminal.ui import TerminalUi
 
 logger = logging.getLogger(__name__)
 
@@ -59,13 +59,13 @@ class MusicLibrary:
         cache: Cache,
         downloader: MusicDownloader,
         oauth: str,
-        user: Ui | None = None,
+        ui: Ui | None = None,
     ):
         self._config = config
         self._cache = cache
         self._downloader = downloader
         self._api = YtMusicApi(oauth)
-        self._user = user if user else TerminalMusicLibraryUser()
+        self._ui = ui if ui else TerminalUi()
 
     def update(
         self,
@@ -77,7 +77,7 @@ class MusicLibrary:
         """
         home_items = self._api.get_home_items()
 
-        self._user.home_items_reviewer().review_home_items(
+        self._ui.home_items_reviewer().review_home_items(
             home_items, self._config.home_items_filter
         )
 
@@ -93,7 +93,7 @@ class MusicLibrary:
         with self._downloader:
             for result in self._downloader.download(
                 videos=songs,
-                tracker=self._user.progress_bar(),
+                tracker=self._ui.progress_bar(),
             ):
                 match result:
                     case Downloaded():
@@ -109,7 +109,7 @@ class MusicLibrary:
                             )
                         )
 
-                self._user.on_download_result(result)
+                self._ui.on_download_result(result)
 
                 if cancellation_token.kill_requested:
                     break

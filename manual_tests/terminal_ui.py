@@ -6,7 +6,7 @@ from ytldl2.models.download_hooks import (
 )
 from ytldl2.models.types import VideoId
 from ytldl2.protocols.music_download_tracker import MusicDownloadTracker
-from ytldl2.terminal.music_library_user import TerminalMusicLibraryUser
+from ytldl2.terminal.ui import TerminalUi
 
 
 def postprocessor_loop(tracker: MusicDownloadTracker, preprocessors: list[str]):
@@ -58,7 +58,7 @@ def imitate_music_downloader(
 
 
 def main():
-    user = TerminalMusicLibraryUser()
+    user = TerminalUi()
     tracker = user.progress_bar()
 
     videos: list[tuple[VideoId, ExpectedResult]] = [

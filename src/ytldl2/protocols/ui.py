@@ -32,7 +32,7 @@ class HomeItemsReviewer(Protocol):
 
 
 class Ui(Protocol):
-    """User for music library."""
+    """Ui for music library."""
 
     def home_items_reviewer(self) -> HomeItemsReviewer:
         """

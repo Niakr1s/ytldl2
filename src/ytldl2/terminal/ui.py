@@ -15,7 +15,7 @@ from ytldl2.protocols.ui import HomeItemsReviewer, ProgressBar, Ui
 from ytldl2.util.console import clear_last_line
 
 
-class TerminalMusicDownloadTracker(ProgressBar):
+class TerminalProgressBar(ProgressBar):
     def __init__(
         self,
     ) -> None:
@@ -78,7 +78,7 @@ class TerminalHomeItemsReviewer(HomeItemsReviewer):
         print("If you wish to review filters, please change them via config.")
 
 
-class TerminalMusicLibraryUser(Ui):
+class TerminalUi(Ui):
     def home_items_reviewer(self) -> HomeItemsReviewer:
         return TerminalHomeItemsReviewer()
 
@@ -101,4 +101,4 @@ class TerminalMusicLibraryUser(Ui):
                 typing.assert_never(result)
 
     def progress_bar(self) -> ProgressBar:
-        return TerminalMusicDownloadTracker()
+        return TerminalProgressBar()
