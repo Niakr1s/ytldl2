@@ -3,6 +3,7 @@ from typing import Protocol
 from ytldl2.models.download_hooks import DownloadProgress, PostprocessorProgress
 from ytldl2.models.download_result import DownloadResult
 from ytldl2.models.home_items import HomeItems, HomeItemsFilter
+from ytldl2.models.song import Song
 from ytldl2.models.types import VideoId
 
 
@@ -31,6 +32,20 @@ class HomeItemsReviewer(Protocol):
         """
 
 
+class BatchDownloadTracker(Protocol):
+    def start(self, songs: list[Song], limit: int):
+        """Called by library before batch starts."""
+        ...
+
+    def on_download_result(self, result: DownloadResult):
+        """Called by library on each download result."""
+        ...
+
+    def end(self):
+        """Called by library after batch ends."""
+        ...
+
+
 class Ui(Protocol):
     """Ui for music library."""
 
@@ -41,8 +56,8 @@ class Ui(Protocol):
         """
         ...
 
-    def on_download_result(self, result: DownloadResult):
-        """Called by library to display download result."""
+    def batch_download_tracker(self) -> BatchDownloadTracker:
+        """Should return class used to track batch download progress."""
         ...
 
     def progress_bar(self) -> ProgressBar:

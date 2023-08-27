@@ -10,8 +10,9 @@ from ytldl2.models.download_hooks import (
 )
 from ytldl2.models.download_result import Downloaded, DownloadResult, Error, Filtered
 from ytldl2.models.home_items import HomeItems, HomeItemsFilter
+from ytldl2.models.song import Song
 from ytldl2.models.types import VideoId
-from ytldl2.protocols.ui import HomeItemsReviewer, ProgressBar, Ui
+from ytldl2.protocols.ui import BatchDownloadTracker, HomeItemsReviewer, ProgressBar, Ui
 from ytldl2.util.console import clear_last_line
 
 
@@ -78,27 +79,47 @@ class TerminalHomeItemsReviewer(HomeItemsReviewer):
         print("If you wish to review filters, please change them via config.")
 
 
-class TerminalUi(Ui):
-    def home_items_reviewer(self) -> HomeItemsReviewer:
-        return TerminalHomeItemsReviewer()
+class TerminalBatchDownloadTracker(BatchDownloadTracker):
+    def __init__(self) -> None:
+        self._downloaded: list[Downloaded] = []
+        self._filtered: list[Filtered] = []
+        self._errors: list[Error] = []
+
+    def start(self, songs: list[Song], limit: int):
+        print(f"Starting to download batch of {len(songs)} songs, limit={limit}")
 
     def on_download_result(self, result: DownloadResult):
-        """Called by library after download to display download result."""
-
         clear_last_line()
         match result:
             case Downloaded():
                 print(
                     f"Downloaded: [{result.video_id}] ({result.info.artist} - {result.info.title})."  # noqa: E501
                 )
+                self._downloaded.append(result)
             case Filtered():
                 print(
                     f"Filtered: [{result.video_id}] ({result.info.title}), reason: {result.reason}"  # noqa: E501
                 )
+                self._filtered.append(result)
             case Error():
                 print(f"Error: [{result.video_id}], reason: {result.error}")
+                self._errors.append(result)
             case _:
                 typing.assert_never(result)
+
+    def end(self):
+        print("Batch download ended with result:")
+        print(f"Downloaded:\t{len(self._downloaded)} songs")
+        print(f"Filtered:\t{len(self._filtered)} songs")
+        print(f"Errors:\t\t{len(self._errors)} songs")
+
+
+class TerminalUi(Ui):
+    def home_items_reviewer(self) -> HomeItemsReviewer:
+        return TerminalHomeItemsReviewer()
+
+    def batch_download_tracker(self):
+        return TerminalBatchDownloadTracker()
 
     def progress_bar(self) -> ProgressBar:
         return TerminalProgressBar()
