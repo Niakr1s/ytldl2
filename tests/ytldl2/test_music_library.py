@@ -23,8 +23,8 @@ class TestMusicLibraryConfig:
         assert (
             isinstance(pf := config.home_items_filter.playlists, list) and len(pf) > 0
         )
-        assert config.home_items_filter.videos == "retain_all"
-        assert config.home_items_filter.channels == "retain_all"
+        assert config.home_items_filter.videos == []
+        assert config.home_items_filter.channels == []
 
         include_channels = [Title("1"), Title("2"), Title("3")]
         config.home_items_filter.channels = include_channels
