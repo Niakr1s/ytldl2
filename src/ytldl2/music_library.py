@@ -13,7 +13,7 @@ from ytldl2.models.home_items import HomeItemsFilter
 from ytldl2.models.types import Title
 from ytldl2.music_downloader import MusicDownloader
 from ytldl2.protocols.cache import Cache, CachedVideo
-from ytldl2.protocols.ui.user import User
+from ytldl2.protocols.ui import Ui
 from ytldl2.terminal.music_library_user import TerminalMusicLibraryUser
 
 logger = logging.getLogger(__name__)
@@ -59,7 +59,7 @@ class MusicLibrary:
         cache: Cache,
         downloader: MusicDownloader,
         oauth: str,
-        user: User | None = None,
+        user: Ui | None = None,
     ):
         self._config = config
         self._cache = cache

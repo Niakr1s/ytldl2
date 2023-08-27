@@ -19,7 +19,7 @@ from ytldl2.postprocessors import (
     RetainMainArtistPP,
     SongFiltered,
 )
-from ytldl2.protocols.ui.progress_bar import (
+from ytldl2.protocols.ui import (
     ProgressBar,
 )
 
