@@ -24,7 +24,10 @@ class MusicLibraryConfig(pydantic.BaseModel):
     def default_home_items_filter() -> HomeItemsFilter:
         my_mixes = (f"My Mix {i}" for i in range(1, 7))
         return HomeItemsFilter(
-            playlists=[Title(x) for x in ["My Supermix", *my_mixes]],
+            playlists=[
+                Title("Your Likes"),
+                *[Title(x) for x in ["My Supermix", *my_mixes]],
+            ],
             channels=[],
             videos=[],
         )
