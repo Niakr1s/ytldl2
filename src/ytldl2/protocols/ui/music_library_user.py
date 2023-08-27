@@ -1,7 +1,7 @@
 from typing import Protocol
 
 from ytldl2.models.download_result import DownloadResult
-from ytldl2.protocols.music_download_tracker import MusicDownloadTracker
+from ytldl2.protocols.ui.music_download_tracker import MusicDownloadTracker
 
 
 class MusicLibraryUser(Protocol):

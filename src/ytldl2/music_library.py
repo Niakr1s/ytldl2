@@ -13,7 +13,7 @@ from ytldl2.models.home_items import HomeItemsFilter
 from ytldl2.models.types import Title
 from ytldl2.music_downloader import MusicDownloader
 from ytldl2.protocols.cache import Cache, CachedVideo
-from ytldl2.protocols.music_library_user import MusicLibraryUser
+from ytldl2.protocols.ui.music_library_user import MusicLibraryUser
 from ytldl2.terminal.music_library_user import TerminalMusicLibraryUser
 
 logger = logging.getLogger(__name__)

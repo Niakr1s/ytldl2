@@ -10,8 +10,8 @@ from ytldl2.models.download_hooks import (
 )
 from ytldl2.models.download_result import Downloaded, DownloadResult, Error, Filtered
 from ytldl2.models.types import VideoId
-from ytldl2.protocols.music_download_tracker import MusicDownloadTracker
-from ytldl2.protocols.music_library_user import MusicLibraryUser
+from ytldl2.protocols.ui.music_download_tracker import MusicDownloadTracker
+from ytldl2.protocols.ui.music_library_user import MusicLibraryUser
 from ytldl2.util.console import clear_last_line
 
 

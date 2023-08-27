@@ -19,7 +19,7 @@ from ytldl2.postprocessors import (
     RetainMainArtistPP,
     SongFiltered,
 )
-from ytldl2.protocols.music_download_tracker import (
+from ytldl2.protocols.ui.music_download_tracker import (
     MusicDownloadTracker,
 )
 
