@@ -18,7 +18,7 @@ def init_logger(home_dir: pathlib.Path):
     log_path = home_dir / ".logs" / "main.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,
         filename=log_path,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         filemode="w",

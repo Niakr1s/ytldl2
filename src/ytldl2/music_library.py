@@ -87,12 +87,14 @@ class MusicLibrary:
         home_items.videos = self._cache.filter_cached(home_items.videos)
         logger.debug(f"Got home items: {home_items}")
 
-        logger.debug(f"Filter before review {self._config.home_items_filter}")
+        logger.debug(
+            f"Home items filter before review {self._config.home_items_filter}"
+        )
         self._ui.home_items_reviewer().review_home_items(
             home_items, self._config.home_items_filter
         )
         self._config.save()
-        logger.debug(f"Filter after review {self._config.home_items_filter}")
+        logger.debug(f"Home items filter after review {self._config.home_items_filter}")
 
         home_items = home_items.filtered(self._config.home_items_filter)
         logger.info(f"Home items after being filtered by user {home_items}")
