@@ -3,7 +3,7 @@ name = "ytldl2"
 authors = [{ name = "Niakr1s", email = "pavel2188@gmail.com" }]
 description = "YouTube music local library"
 readme = "README.md"
-version = "0.3.0"
+version = "0.3.1"
 requires-python = ">=3.11"
 keywords = ["youtube", "music", "youtube music"]
 license = { file = "LICENSE" }
