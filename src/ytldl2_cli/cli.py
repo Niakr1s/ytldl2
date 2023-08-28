@@ -4,7 +4,8 @@ import tempfile
 
 from ytldl2.cancellation_tokens import GracefulKiller
 from ytldl2.music_downloader import MusicDownloader
-from ytldl2.music_library import MusicLibrary, MusicLibraryConfig
+from ytldl2.music_library import MusicLibrary
+from ytldl2.music_library_config import MusicLibraryConfig
 from ytldl2.oauth import Oauth
 from ytldl2.sqlite_cache import SqliteCache
 from ytldl2.terminal.ui import TerminalUi
