@@ -148,4 +148,4 @@ class MusicLibrary:
                     break
 
         batch_download_tracker.end()
-        logger.info("Batch download ended")
+        logger.info(f"Batch download ended, downloaded {downloaded} songs")
