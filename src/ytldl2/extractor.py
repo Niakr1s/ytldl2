@@ -75,7 +75,7 @@ class Extractor:
         def get_artist(track: Track) -> Artist | None:
             return Artist(track.artists[0].name) if track.artists else None
 
-        return [
+        videos = [
             Video(
                 title=Title(track.title),
                 artist=get_artist(track),
@@ -83,6 +83,10 @@ class Extractor:
             )
             for track in tracks
         ]
+        logger.debug(
+            f"Extracted {len(videos)} videos from playlist {playlist}: {videos}"
+        )
+        return videos
 
     def extract_playlist_id_from_artist(self, artist: RawArtist) -> PlaylistId:
         """
@@ -91,7 +95,9 @@ class Extractor:
         """
         try:
             # it's kinda tricky: songs have "browseId" key, but it actually playlistId
-            return PlaylistId(artist.songs.browse_id)
+            res = PlaylistId(artist.songs.browse_id)
+            logger.debug(f"Extracted playlist id {res} from artist {artist}")
+            return res
         except Exception as e:
             raise ExtractError(
                 f"error occured in {self.extract_playlist_id_from_artist.__name__}"

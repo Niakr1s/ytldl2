@@ -21,7 +21,13 @@ class RawPlaylist(BaseModel):
     title: str
     tracks: List[Track]
 
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(id={self.id}, title={self.title})"
+
 
 class RawWatchPlaylist(BaseModel):
     playlist_id: str = Field(..., alias="playlistId")
     tracks: List[Track]
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__} (playlist_id={self.playlist_id})"
