@@ -17,7 +17,13 @@ logger = logging.getLogger()
 def init_logger(home_dir: pathlib.Path):
     log_path = home_dir / ".logs" / "main.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    logging.basicConfig(level=logging.INFO, filename=log_path)
+    logging.basicConfig(
+        level=logging.INFO,
+        filename=log_path,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        filemode="w",
+        encoding="utf-8",
+    )
 
 
 def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
@@ -49,9 +55,11 @@ def main():
             init_logger(home_dir)
 
             lib = init_music_library(home_dir, args.password)
+            logger.info("Music library initiated.")
 
             match args.lib_action:
                 case "update":
+                    logger.info("Starting update music library.")
                     lib.update(limit=args.limit, cancellation_token=GracefulKiller())
 
 

@@ -81,32 +81,45 @@ class MusicLibrary:
         """
         Updates library
         """
-        home_items = self._api.get_home_items()
 
+        logger.info("Starting to get home items")
+        home_items = self._api.get_home_items()
+        logger.debug(f"Got home items: {home_items}")
+
+        logger.debug(f"Filter before review {self._config.home_items_filter}")
         self._ui.home_items_reviewer().review_home_items(
             home_items, self._config.home_items_filter
         )
+        self._config.save()
+        logger.debug(f"Filter after review {self._config.home_items_filter}")
 
         home_items = home_items.filtered(self._config.home_items_filter)
+        logger.info(f"Home items after being filtered by user {home_items}")
 
         videos = set(self._api.get_videos(home_items=home_items))
+        logger.debug(f"Got {len(videos)} videos: {videos}")
         songs = [
             Song(video_id=v.video_id, title=v.title, artist=v.artist)
             for v in videos
             if v.artist is not None
         ]
+        del videos
+        logger.debug(f"Got {len(songs)} unfiltered songs: {songs}")
 
         songs = self._cache.filter_cached(songs)
+        logger.info(f"Got {len(songs)} filtered songs: {songs}")
 
         batch_download_tracker = self._ui.batch_download_tracker()
         batch_download_tracker.start(songs, limit)
 
+        logger.info(f"Starting batch download of {len(songs)} with limit={limit}")
         downloaded = 0
         with self._downloader:
             for result in self._downloader.download(
                 videos=[s.video_id for s in songs],
                 tracker=self._ui.progress_bar(),
             ):
+                logger.info(f"Got download result: {result}")
                 match result:
                     case Downloaded():
                         downloaded += 1
@@ -124,9 +137,12 @@ class MusicLibrary:
                 batch_download_tracker.on_download_result(result)
 
                 if cancellation_token.kill_requested:
+                    logger.info("Stopping download: cancel was requested")
                     break
 
                 if limit != 0 and downloaded == limit:
+                    logger.info("Stopping download: limit reached")
                     break
 
         batch_download_tracker.end()
+        logger.info("Batch download ended")
