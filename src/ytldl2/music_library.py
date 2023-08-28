@@ -45,16 +45,18 @@ class MusicLibrary:
         logger.debug(f"Got home items: {home_items}")
 
         logger.debug(
-            f"Home items filter before review {self._config.home_items_filter}"
+            f"Home items filter before review: {self._config.home_items_filter}"
         )
         self._ui.home_items_reviewer().review_home_items(
             home_items, self._config.home_items_filter
         )
         self._config.save()
-        logger.debug(f"Home items filter after review {self._config.home_items_filter}")
+        logger.debug(
+            f"Home items filter after review: {self._config.home_items_filter}"
+        )
 
         home_items = home_items.filtered(self._config.home_items_filter)
-        logger.info(f"Home items after being filtered by user {home_items}")
+        logger.info(f"Home items after being filtered: {home_items}")
 
         videos = set(self._api.get_videos(home_items=home_items))
         logger.debug(f"Got {len(videos)} videos: {videos}")
@@ -72,7 +74,7 @@ class MusicLibrary:
         batch_download_tracker = self._ui.batch_download_tracker()
         batch_download_tracker.start(songs, limit)
 
-        logger.info(f"Starting batch download of {len(songs)} with limit={limit}")
+        logger.info(f"Starting batch download of {len(songs)} songs with limit={limit}")
         downloaded = 0
         with self._downloader:
             for result in self._downloader.download(
