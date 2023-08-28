@@ -84,6 +84,7 @@ class MusicLibrary:
 
         logger.info("Starting to get home items")
         home_items = self._api.get_home_items()
+        home_items.videos = self._cache.filter_cached(home_items.videos)
         logger.debug(f"Got home items: {home_items}")
 
         logger.debug(f"Filter before review {self._config.home_items_filter}")
