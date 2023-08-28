@@ -18,7 +18,7 @@
             "request": "launch",
             "module": "ytldl2_cli.cli",
             "justMyCode": false,
-            "args": ["lib", "-d", "d:/!YT", "-p", "qwerty", "update"]
+            "args": ["--debug", "lib", "-d", "d:/!YT", "-p", "qwerty", "update"]
         },
         {
             "name": "Debug Unit Test",

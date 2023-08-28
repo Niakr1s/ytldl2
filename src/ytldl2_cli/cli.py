@@ -15,11 +15,11 @@ from ytldl2_cli.args import parse_args
 logger = logging.getLogger()
 
 
-def init_logger(home_dir: pathlib.Path):
+def init_logger(home_dir: pathlib.Path, level: int):
     log_path = home_dir / ".logs" / "main.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=level,
         filename=log_path,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         filemode="w",
@@ -49,11 +49,12 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
 
 def main():
     args = parse_args()
+    log_level = logging.DEBUG if args.debug else logging.INFO
 
     match args.action:
         case "lib":
             home_dir = pathlib.Path(args.dir)
-            init_logger(home_dir)
+            init_logger(home_dir, log_level)
 
             lib = init_music_library(home_dir, args.password)
             logger.info("Music library initiated.")

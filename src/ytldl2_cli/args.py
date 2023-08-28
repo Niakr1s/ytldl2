@@ -10,6 +10,8 @@ def parse_args() -> argparse.Namespace:
         description="Program to download music library from youtube."
     )
 
+    parser.add_argument("--debug", action="store_true", help="Logger level flag")
+
     action_parsers = parser.add_subparsers(dest="action", required=True)
     _configure_lib_parser(action_parsers.add_parser("lib"))
 
