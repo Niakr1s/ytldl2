@@ -5,27 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "TerminalUiManualTest",
-            "type": "python",
-            "request": "launch",
-            "justMyCode": true,
-            "console": "integratedTerminal",
-            "module": "manual_tests.terminal_ui"
-        },
-        {
             "name": "cli",
             "type": "python",
             "request": "launch",
             "module": "ytldl2_cli.cli",
             "justMyCode": false,
-            "args": ["--debug", "lib", "-d", "d:/!YT", "-p", "qwerty", "update"]
-        },
-        {
-            "name": "Debug Unit Test",
-            "type": "python",
-            "request": "test",
-            "justMyCode": false,
-            // "env": {"ALL": "True"}
+            "args": [
+                "--debug",
+                "lib",
+                "-d",
+                "d:/!YT",
+                "-p",
+                "qwerty",
+                "update"
+            ]
         },
     ]
 }
