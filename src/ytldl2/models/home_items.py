@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 from dataclasses import dataclass
-from typing import TypeVar
+from typing import OrderedDict, TypeVar
 
 import pydantic
 from ytldl2.models.channel import Channel
@@ -30,9 +30,9 @@ class HomeItems:
     channels: list[Channel] = dataclasses.field(default_factory=list)
 
     def remove_dublicates(self):
-        self.videos = list(set(self.videos))
-        self.playlists = list(set(self.playlists))
-        self.channels = list(set(self.channels))
+        self.videos = list(OrderedDict.fromkeys(self.videos))
+        self.playlists = list(OrderedDict.fromkeys(self.playlists))
+        self.channels = list(OrderedDict.fromkeys(self.channels))
 
     def is_empty(self) -> bool:
         return (
