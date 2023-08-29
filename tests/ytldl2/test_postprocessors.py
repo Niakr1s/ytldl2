@@ -1,7 +1,5 @@
 import pytest
 import requests
-
-from tests.ytldl2 import DATA
 from ytldl2.postprocessors import (
     FilterSongPP,
     LyricsPP,
@@ -10,7 +8,7 @@ from ytldl2.postprocessors import (
     SongFiltered,
 )
 
-from . import marks
+from tests.ytldl2 import DATA
 
 
 class TestLyricsPP:
@@ -21,15 +19,15 @@ class TestLyricsPP:
     def lyrics_pp(self) -> LyricsPP:
         return LyricsPP()
 
-    @marks.slow_test
+    @pytest.mark.slow
     def test_get__song_with_lyrics(self, lyrics_pp: LyricsPP):
         assert lyrics_pp.get_lyrics(self.VIDEO_ID_WITH_LYRICS)
 
-    @marks.slow_test
+    @pytest.mark.slow
     def test_get__song_without_lyrics(self, lyrics_pp: LyricsPP):
         assert not lyrics_pp.get_lyrics(self.VIDEO_ID_WITHOUT_LYRICS)
 
-    @marks.slow_test
+    @pytest.mark.slow
     def test_run__song_with_lyrics(
         self, lyrics_pp: LyricsPP, monkeypatch: pytest.MonkeyPatch
     ):
@@ -39,7 +37,7 @@ class TestLyricsPP:
         lyrics_pp.run(info)
         assert info["lyrics"]
 
-    @marks.slow_test
+    @pytest.mark.slow
     def test_run__song_without_lyrics(
         self, lyrics_pp: LyricsPP, monkeypatch: pytest.MonkeyPatch
     ):

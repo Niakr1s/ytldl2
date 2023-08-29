@@ -1,5 +1,6 @@
 import pathlib
 
+import pytest
 from yt_dlp.postprocessor.ffmpeg import FFmpegExtractAudioPP
 from ytldl2.models.download_result import Downloaded, Error, Filtered
 from ytldl2.models.types import VideoId
@@ -10,11 +11,9 @@ from ytldl2.music_downloader import (
 )
 from ytldl2.postprocessors import FilterSongPP, LyricsPP, MetadataPP, RetainMainArtistPP
 
-from tests.ytldl2.marks import slow_test
-
 
 class TestMusicYoutubeDlBuilder:
-    @slow_test
+    @pytest.mark.slow
     def test_build(self):
         params = YoutubeDlParams(
             home_dir=pathlib.Path("~"),
@@ -47,7 +46,7 @@ class TestMusicDownloader:
     SONG_WITHOUT_LYRICS = VideoId("rVryEboMof8")
     VIDEO = VideoId("F7NOovxx3lg")
 
-    @slow_test
+    @pytest.mark.slow
     def test_download(self, tmp_path):
         expected_errors = {self.INVALID_VIDEO}
         expected_filtered = {self.VIDEO}
