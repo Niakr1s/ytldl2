@@ -4,6 +4,7 @@ from rich import box
 from rich.console import Console
 from rich.progress import Progress, TaskID
 from rich.table import Table
+from typing_extensions import override
 from ytldl2.models.download_hooks import (
     DownloadProgress,
     PostprocessorProgress,
@@ -30,11 +31,13 @@ class TerminalProgressBar(ProgressBar):
         self._dl: TaskID | None = None
         self._pp: dict[str, TaskID] = {}
 
+    @override
     def new(self, video: VideoId) -> None:
         self._clean()
         self._progress.start()
         self._dl = self._progress.add_task(video, total=None)
 
+    @override
     def close(self, video: VideoId) -> None:
         self._clean()
         self._progress.stop()
@@ -49,6 +52,7 @@ class TerminalProgressBar(ProgressBar):
                 self._progress.remove_task(pp)
             self._pp = {}
 
+    @override
     def on_download_progress(self, progress: DownloadProgress) -> None:
         if is_progress_downloading(progress) or is_progress_finished(progress):
             self._progress.update(
@@ -58,6 +62,7 @@ class TerminalProgressBar(ProgressBar):
                 completed=progress["downloaded_bytes"],
             )
 
+    @override
     def on_postprocessor_progress(self, progress: PostprocessorProgress) -> None:
         pp = progress["postprocessor"]
         if is_postprocessor_started(progress):
@@ -68,6 +73,7 @@ class TerminalProgressBar(ProgressBar):
 
 
 class TerminalHomeItemsReviewer(HomeItemsReviewer):
+    @override
     def review_home_items(
         self, home_items: HomeItems, home_items_filter: HomeItemsFilter
     ):
@@ -88,9 +94,11 @@ class TerminalBatchDownloadTracker(BatchDownloadTracker):
         self._filtered: list[Filtered] = []
         self._errors: list[Error] = []
 
+    @override
     def start(self, songs: list[Song], limit: int | None):
         print(f"\nStarting to download batch of {len(songs)} songs, limit={limit}:")
 
+    @override
     def on_download_result(self, result: DownloadResult):
         clear_last_line()
         match result:
@@ -110,6 +118,7 @@ class TerminalBatchDownloadTracker(BatchDownloadTracker):
             case _:
                 typing.assert_never(result)
 
+    @override
     def end(self):
         print()
         self._print_download_result_table()
@@ -131,11 +140,14 @@ class TerminalBatchDownloadTracker(BatchDownloadTracker):
 
 
 class TerminalUi(Ui):
+    @override
     def home_items_reviewer(self) -> HomeItemsReviewer:
         return TerminalHomeItemsReviewer()
 
+    @override
     def batch_download_tracker(self):
         return TerminalBatchDownloadTracker()
 
+    @override
     def progress_bar(self) -> ProgressBar:
         return TerminalProgressBar()
