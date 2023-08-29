@@ -43,7 +43,7 @@ class TerminalProgressBar(ProgressBar):
             self._pp = {}
 
     def on_download_progress(self, progress: DownloadProgress) -> None:
-        if is_progress_downloading(progress) or is_progress_downloading(progress):
+        if is_progress_downloading(progress) or is_progress_finished(progress):
             self._progress.update(
                 self._dl,  # type: ignore
                 description=progress["filename"],
