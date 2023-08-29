@@ -5,6 +5,7 @@ import logging
 from ytldl2.api import YtMusicApi
 from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models.download_result import Downloaded, Filtered
+from ytldl2.models.home_items import HomeItems
 from ytldl2.models.song import Song
 from ytldl2.music_downloader import MusicDownloader
 from ytldl2.music_library_config import MusicLibraryConfig
@@ -38,12 +39,31 @@ class MusicLibrary:
         """
         Updates library
         """
+        home_items = self._get_home_items()
 
+        if cancellation_token.kill_requested:
+            self._log_cancel_requested()
+            return
+
+        self._review_home_items(home_items)
+        songs = self._extract_songs(home_items)
+
+        if cancellation_token.kill_requested:
+            self._log_cancel_requested()
+            return
+
+        self._batch_download(cancellation_token, songs, limit)
+
+    def _get_home_items(self) -> HomeItems:
+        """Gets home items from api. Filters out cached videos."""
         logger.info("Starting to get home items")
         home_items = self._api.get_home_items()
         home_items.videos = self._cache.filter_cached(home_items.videos)
         logger.debug(f"Got home items: {home_items}")
+        return home_items
 
+    def _review_home_items(self, home_items: HomeItems) -> HomeItems:
+        """Suggests user to review home items filter and filters home items with it."""
         logger.debug(
             f"Home items filter before review: {self._config.home_items_filter}"
         )
@@ -54,10 +74,12 @@ class MusicLibrary:
         logger.debug(
             f"Home items filter after review: {self._config.home_items_filter}"
         )
-
-        home_items = home_items.filtered(self._config.home_items_filter)
+        home_items.filter(self._config.home_items_filter)
         logger.info(f"Home items after being filtered: {home_items}")
+        return home_items
 
+    def _extract_songs(self, home_items: HomeItems) -> list[Song]:
+        """Extract songs from home items via api. Returns uncached songs list."""
         videos = set(self._api.get_videos(home_items=home_items))
         logger.debug(f"Got {len(videos)} videos: {videos}")
         songs = [
@@ -65,12 +87,18 @@ class MusicLibrary:
             for v in videos
             if v.artist is not None
         ]
-        del videos
         logger.debug(f"Got {len(songs)} unfiltered songs: {songs}")
 
         songs = self._cache.filter_cached(songs)
         logger.info(f"Got {len(songs)} filtered songs: {songs}")
+        return songs
 
+    def _batch_download(
+        self,
+        cancellation_token: CancellationToken,
+        songs: list[Song],
+        limit: int | None,
+    ):
         batch_download_tracker = self._ui.batch_download_tracker()
         batch_download_tracker.start(songs, limit)
 

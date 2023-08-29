@@ -51,6 +51,12 @@ class HomeItems:
             channels=self._filter(self.channels, filter.channels),
         )
 
+    def filter(self, filter: HomeItemsFilter):
+        """Filters home items in place."""
+        self.videos = self._filter(self.videos, filter.videos)
+        self.playlists = self._filter(self.playlists, filter.playlists)
+        self.channels = self._filter(self.channels, filter.channels)
+
     WithTitleT = TypeVar("WithTitleT", bound=WithTitle)
 
     @staticmethod
