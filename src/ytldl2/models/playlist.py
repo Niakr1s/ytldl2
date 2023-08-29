@@ -10,11 +10,11 @@ class Playlist(WithTitle):
     that contains "playlistId" field.
     """
 
-    playlistId: PlaylistId
+    playlist_id: PlaylistId
 
     def is_valid(self) -> bool:
-        return bool(self.title) and bool(self.playlistId)
+        return bool(self.title) and bool(self.playlist_id)
 
     @property
     def youtube_music_url(self) -> str:
-        return f"https://music.youtube.com/playlist?list={self.playlistId}"
+        return f"https://music.youtube.com/playlist?list={self.playlist_id}"

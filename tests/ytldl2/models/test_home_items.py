@@ -22,7 +22,7 @@ class TestHomeItems:
                 for id, title in enumerate(self.VIDEO_TITLES)
             ],
             playlists=[
-                Playlist(playlistId=PlaylistId(str(id)), title=Title(title))
+                Playlist(playlist_id=PlaylistId(str(id)), title=Title(title))
                 for id, title in enumerate(self.PLAYLIST_TITLES)
             ],
             channels=[

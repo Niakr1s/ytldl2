@@ -58,7 +58,7 @@ class Extractor:
                     f"Appending playlist {title} with playlistId: {playlist_id}"
                 )
                 res.playlists.append(
-                    Playlist(title=title, playlistId=PlaylistId(playlist_id))
+                    Playlist(title=title, playlist_id=PlaylistId(playlist_id))
                 )
         return res
 
