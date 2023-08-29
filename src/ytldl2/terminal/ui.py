@@ -141,6 +141,10 @@ class TerminalBatchDownloadTracker(BatchDownloadTracker):
 
 class TerminalUi(Ui):
     @override
+    def library_update_started(self):
+        print("Library update started...")
+
+    @override
     def home_items_reviewer(self) -> HomeItemsReviewer:
         return TerminalHomeItemsReviewer()
 

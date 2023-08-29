@@ -49,6 +49,10 @@ class BatchDownloadTracker(Protocol):
 class Ui(Protocol):
     """Ui for music library."""
 
+    def library_update_started(self):
+        """Should inform user that library update started."""
+        ...
+
     def home_items_reviewer(self) -> HomeItemsReviewer:
         """
         Should return home items reviewer, that will be called after

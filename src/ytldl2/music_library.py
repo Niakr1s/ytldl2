@@ -39,6 +39,7 @@ class MusicLibrary:
         """
         Updates library
         """
+        self._ui.library_update_started()
         home_items = self._get_home_items()
 
         if cancellation_token.kill_requested:
