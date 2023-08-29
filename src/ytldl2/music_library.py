@@ -99,7 +99,7 @@ class MusicLibrary:
                 batch_download_tracker.on_download_result(result)
 
                 if cancellation_token.kill_requested:
-                    logger.info("Stopping download: cancel was requested")
+                    self._log_cancel_requested()
                     break
 
                 if limit != 0 and downloaded == limit:
@@ -108,3 +108,6 @@ class MusicLibrary:
 
         batch_download_tracker.end()
         logger.info(f"Batch download ended, downloaded {downloaded} songs")
+
+    def _log_cancel_requested(self):
+        logger.info("Stopping download: cancel was requested")
