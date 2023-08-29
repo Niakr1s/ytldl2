@@ -7,6 +7,7 @@ from ytldl2.models.download_hooks import (
     is_postprocessor_finished,
     is_postprocessor_started,
     is_progress_downloading,
+    is_progress_finished,
 )
 from ytldl2.models.download_result import Downloaded, DownloadResult, Error, Filtered
 from ytldl2.models.home_items import HomeItems, HomeItemsFilter
@@ -32,6 +33,7 @@ class TerminalProgressBar(ProgressBar):
     def close(self, video: VideoId) -> None:
         self._clean()
         self._progress.stop()
+        clear_last_line()
 
     def _clean(self) -> None:
         if self._dl is not None:
