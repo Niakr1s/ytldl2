@@ -1,6 +1,9 @@
 import typing
 
+from rich import box
+from rich.console import Console
 from rich.progress import Progress, TaskID
+from rich.table import Table
 from ytldl2.models.download_hooks import (
     DownloadProgress,
     PostprocessorProgress,
@@ -15,6 +18,8 @@ from ytldl2.models.song import Song
 from ytldl2.models.types import VideoId
 from ytldl2.protocols.ui import BatchDownloadTracker, HomeItemsReviewer, ProgressBar, Ui
 from ytldl2.util.console import clear_last_line
+
+console = Console()
 
 
 class TerminalProgressBar(ProgressBar):
@@ -66,19 +71,15 @@ class TerminalHomeItemsReviewer(HomeItemsReviewer):
     def review_home_items(
         self, home_items: HomeItems, home_items_filter: HomeItemsFilter
     ):
-        print("Got following home items:")
+        print("\nGot following home items:")
         print(f"Videos: {len(home_items.videos)} items.")
-        print(f"Channels: {home_items.channels}")
-        print(f"Playlists: {home_items.playlists}")
-        print()
+        print(f"Channels: {[c.title for c in home_items.channels]}")
+        print(f"Playlists: {[c.title for c in home_items.playlists]}")
 
-        print("They will be filtered with following filters:")
+        print("\nThey will be filtered with following filters:")
         print(f"Videos: {home_items_filter.videos}")
         print(f"Channels: {home_items_filter.channels}")
         print(f"Playlists: {home_items_filter.playlists}")
-        print()
-
-        print("If you wish to review filters, please change them via config.")
 
 
 class TerminalBatchDownloadTracker(BatchDownloadTracker):
@@ -88,7 +89,7 @@ class TerminalBatchDownloadTracker(BatchDownloadTracker):
         self._errors: list[Error] = []
 
     def start(self, songs: list[Song], limit: int | None):
-        print(f"Starting to download batch of {len(songs)} songs, limit={limit}")
+        print(f"\nStarting to download batch of {len(songs)} songs, limit={limit}:")
 
     def on_download_result(self, result: DownloadResult):
         clear_last_line()
@@ -110,10 +111,23 @@ class TerminalBatchDownloadTracker(BatchDownloadTracker):
                 typing.assert_never(result)
 
     def end(self):
-        print("Batch download ended with result:")
-        print(f"Downloaded:\t{len(self._downloaded)} songs")
-        print(f"Filtered:\t{len(self._filtered)} songs")
-        print(f"Errors:\t\t{len(self._errors)} songs")
+        print()
+        self._print_download_result_table()
+
+    def _print_download_result_table(self):
+        d = len(self._downloaded)
+        f = len(self._filtered)
+        e = len(self._errors)
+
+        table = Table(show_footer=True, box=box.MINIMAL)
+        table.add_column("Result", footer="Total")
+        table.add_column("Count", justify="center", footer=str(d + f + e))
+
+        table.add_row("Downloaded", str(d))
+        table.add_row("Filtered", str(f))
+        table.add_row("Errors", str(e))
+
+        console.print(table)
 
 
 class TerminalUi(Ui):
