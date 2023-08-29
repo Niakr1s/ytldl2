@@ -10,15 +10,15 @@ class Channel(WithTitle):
     that contains "subscribers" and "browseId" fields
     """
 
-    browseId: BrowseId
+    browse_id: BrowseId
     """Actually, in raw home data, this represents as "browseId"."""
 
     @property
     def channelId(self) -> ChannelId:
-        return ChannelId(self.browseId)
+        return ChannelId(self.browse_id)
 
     def is_valid(self) -> bool:
-        return bool(self.title) and bool(self.browseId)
+        return bool(self.title) and bool(self.browse_id)
 
     @property
     def youtube_music_url(self) -> str:

@@ -26,7 +26,7 @@ class TestHomeItems:
                 for id, title in enumerate(self.PLAYLIST_TITLES)
             ],
             channels=[
-                Channel(browseId=BrowseId(str(id)), title=Title(title))
+                Channel(browse_id=BrowseId(str(id)), title=Title(title))
                 for id, title in enumerate(self.CHANNEL_TITLES)
             ],
         )

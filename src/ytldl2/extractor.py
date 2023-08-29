@@ -42,7 +42,7 @@ class Extractor:
             # channels
             if content.subscribers and (browse_id := content.browse_id):
                 logger.debug(f"Appending channel {title} with browseId: {browse_id}")
-                res.channels.append(Channel(title=title, browseId=BrowseId(browse_id)))
+                res.channels.append(Channel(title=title, browse_id=BrowseId(browse_id)))
 
             # videos
             elif video_id := content.video_id:
