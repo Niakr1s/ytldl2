@@ -81,7 +81,7 @@ class YtMusicApi:
                     futures.append(
                         executor.submit(
                             self.get_videos_from_channel,
-                            channel.channelId,
+                            channel.channel_id,
                             limit=each_playlist_limit,
                         )
                     )
