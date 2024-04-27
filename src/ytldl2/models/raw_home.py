@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 from typing import Iterator, List, Optional
 
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
 
 
 class Thumbnail(BaseModel):
@@ -48,8 +51,18 @@ class HomeItem(BaseModel):
     contents: List[Content]
 
 
-class Home(RootModel):
+class Home(BaseModel):
     root: List[HomeItem]
+
+    def parse_obj(obj: list) -> Home:
+        root = []
+        for raw_home_item in obj:
+            try:
+                home_item = HomeItem.parse_obj(raw_home_item)
+                root.append(home_item)
+            except Exception as e:
+                logger.error(e)
+        return Home(root=root)
 
     def __iter__(self) -> Iterator[HomeItem]:
         return iter(self.root)
