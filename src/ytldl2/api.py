@@ -104,12 +104,14 @@ class YtMusicApi:
 
         try:
             contents = self._yt.get_playlist(
-                playlistId=playlist_id, limit=limit  # type: ignore
+                playlistId=playlist_id,
+                limit=limit,  # type: ignore
             )
         except Exception:
             try:
                 contents = self._yt.get_watch_playlist(
-                    playlistId=playlist_id, limit=limit  # type: ignore
+                    playlistId=playlist_id,
+                    limit=limit,  # type: ignore
                 )
                 is_watch = True
             except Exception:
