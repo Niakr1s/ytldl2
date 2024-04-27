@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "cli",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "ytldl2_cli.cli",
             "justMyCode": false,
@@ -16,7 +16,7 @@
                 "-d",
                 "d:/!YT",
                 "-p",
-                "qwerty",
+                "2188",
                 "update"
             ]
         },
