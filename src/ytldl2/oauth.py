@@ -80,13 +80,27 @@ def _get_oauth_crypto(
     :param oauth_path: Path oauth will be read from. If not exists, it will be created.
     If exists, function will just return it's contents.
     """
+
+    client_id = os.environ.get("CLIENT_ID")
+    client_secret = os.environ.get("CLIENT_SECRET")
+    if client_id is None or client_secret is None:
+        raise ValueError(
+            "CLIENT_ID and CLIENT_SECRET must be set in environment variables."
+        )
+
     with robo_salt(robo_salt_path):
         oauth: str
         if oauth_path.exists():
             decrypted = robocrypt.decrypt(oauth_path.read_bytes(), password)
             oauth = decrypted.decode()
         else:
-            oauth = json.dumps(setup_oauth(open_browser=open_browser))
+            oauth = json.dumps(
+                setup_oauth(
+                    client_id=client_id,
+                    client_secret=client_secret,
+                    open_browser=open_browser,
+                )
+            )
             oauth_path.parent.mkdir(parents=True, exist_ok=True)
             encrypted = robocrypt.encrypt(oauth.encode(encoding="utf-8"), password)
             oauth_path.write_bytes(encrypted)

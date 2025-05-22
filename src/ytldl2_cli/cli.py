@@ -2,6 +2,8 @@ import logging
 import pathlib
 import tempfile
 
+from dotenv import load_dotenv
+
 from ytldl2.cancellation_tokens import GracefulKiller
 from ytldl2.music_downloader import MusicDownloader
 from ytldl2.music_library import MusicLibrary
@@ -9,7 +11,6 @@ from ytldl2.music_library_config import MusicLibraryConfig
 from ytldl2.oauth import Oauth
 from ytldl2.sqlite_cache import SqliteCache
 from ytldl2.terminal.ui import TerminalUi
-
 from ytldl2_cli.args import parse_args
 
 logger = logging.getLogger()
@@ -48,6 +49,7 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
 
 
 def main():
+    load_dotenv()
     args = parse_args()
     log_level = logging.DEBUG if args.debug else logging.INFO
 
