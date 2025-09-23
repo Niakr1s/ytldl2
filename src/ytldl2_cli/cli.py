@@ -42,7 +42,7 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
     # oauth = Oauth(dot_dir / "oauth", password)
     # oauth = oauth.get_oauth()
 
-    salt_path = home_dir / "salt"
+    salt_path = dot_dir / "salt"
     headers_path = dot_dir / "headers"
     if not headers_path.exists():
         headers = ytmusicapi.setup()
