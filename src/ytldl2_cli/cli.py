@@ -2,13 +2,13 @@ import logging
 import pathlib
 import tempfile
 
+import ytmusicapi
 from dotenv import load_dotenv
 
 from ytldl2.cancellation_tokens import GracefulKiller
 from ytldl2.music_downloader import MusicDownloader
 from ytldl2.music_library import MusicLibrary
 from ytldl2.music_library_config import MusicLibraryConfig
-from ytldl2.oauth import Oauth
 from ytldl2.sqlite_cache import SqliteCache
 from ytldl2.terminal.ui import TerminalUi
 from ytldl2_cli.args import parse_args
@@ -38,13 +38,20 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
     tmp_dir = pathlib.Path(tempfile.mkdtemp(suffix=".ytldl2_"))
     downloader = MusicDownloader(home_dir, tmp_dir)
 
-    oauth = Oauth(dot_dir / "oauth", password)
-    oauth = oauth.get_oauth()
+    # oauth = Oauth(dot_dir / "oauth", password)
+    # oauth = oauth.get_oauth()
+
+    headers_path = dot_dir / "headers"
+    if not headers_path.exists():
+        headers = ytmusicapi.setup(filepath=str(headers_path))
+        # TODO: encrypt headers_path
+    else:
+        headers = headers_path.read_text()  # TODO: decrypt
 
     ui = TerminalUi()
 
     return MusicLibrary(
-        config=config, cache=cache, downloader=downloader, oauth=oauth, ui=ui
+        config=config, cache=cache, downloader=downloader, oauth=headers, ui=ui
     )
 
 
