@@ -19,11 +19,11 @@ class YtMusicApiError(Exception):
 
 
 class YtMusicApi:
-    def __init__(self, oauth: str) -> None:
+    def __init__(self, auth: str) -> None:
         """
         :param oauth: oauth file,
         """
-        self._yt = YTMusic(auth=oauth)
+        self._yt = YTMusic(auth=auth)
         self._extractor = Extractor()
 
     def get_home_items(self, home_limit: int = 100) -> HomeItems:

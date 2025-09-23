@@ -22,13 +22,13 @@ class MusicLibrary:
         config: MusicLibraryConfig,
         cache: Cache,
         downloader: MusicDownloader,
-        oauth: str,
+        auth: str,
         ui: Ui | None = None,
     ):
         self._config = config
         self._cache = cache
         self._downloader = downloader
-        self._api = YtMusicApi(oauth)
+        self._api = YtMusicApi(auth)
         self._ui = ui if ui else TerminalUi()
 
     def update(

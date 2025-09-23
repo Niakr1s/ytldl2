@@ -4,7 +4,7 @@ from tests.ytldl2 import OAUTH_PATH
 
 
 @pytest.fixture(scope="module")
-def oauth() -> str:
+def auth() -> str:
     if OAUTH_PATH.exists():
         return OAUTH_PATH.read_text()
     raise FileNotFoundError(
@@ -13,4 +13,4 @@ def oauth() -> str:
     )
 
 
-__all__ = ["oauth"]
+__all__ = ["auth"]

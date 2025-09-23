@@ -1,4 +1,5 @@
 import pytest
+
 from ytldl2.api import YtMusicApi
 from ytldl2.models.home_items import HomeItems
 from ytldl2.models.types import ChannelId, PlaylistId
@@ -6,8 +7,8 @@ from ytldl2.models.types import ChannelId, PlaylistId
 
 class TestYtMusicApi:
     @pytest.fixture()
-    def yt_music_api(self, oauth) -> YtMusicApi:
-        return YtMusicApi(oauth=oauth)
+    def yt_music_api(self, auth) -> YtMusicApi:
+        return YtMusicApi(auth=auth)
 
     @pytest.fixture()
     def home_items(self, yt_music_api: YtMusicApi) -> HomeItems:

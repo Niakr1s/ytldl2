@@ -51,7 +51,7 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
     ui = TerminalUi()
 
     return MusicLibrary(
-        config=config, cache=cache, downloader=downloader, oauth=headers, ui=ui
+        config=config, cache=cache, downloader=downloader, auth=headers, ui=ui
     )
 
 
