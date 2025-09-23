@@ -1,3 +1,5 @@
+# DEPRECATED, I couldn't make Oauth work
+
 import contextlib
 import json
 import os
