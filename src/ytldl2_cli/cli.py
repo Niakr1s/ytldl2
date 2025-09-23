@@ -5,6 +5,7 @@ import tempfile
 import ytmusicapi
 from dotenv import load_dotenv
 
+from ytldl2 import crypto
 from ytldl2.cancellation_tokens import GracefulKiller
 from ytldl2.music_downloader import MusicDownloader
 from ytldl2.music_library import MusicLibrary
@@ -41,12 +42,15 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
     # oauth = Oauth(dot_dir / "oauth", password)
     # oauth = oauth.get_oauth()
 
+    salt_path = home_dir / "salt"
     headers_path = dot_dir / "headers"
     if not headers_path.exists():
-        headers = ytmusicapi.setup(filepath=str(headers_path))
-        # TODO: encrypt headers_path
+        headers = ytmusicapi.setup()
+        headers_encoded = crypto.encrypt(headers, password.encode(), salt_path)
+        headers_path.write_bytes(headers_encoded)
     else:
-        headers = headers_path.read_text()  # TODO: decrypt
+        headers_encoded = headers_path.read_bytes()
+        headers = crypto.decrypt(headers_encoded, password.encode(), salt_path)
 
     ui = TerminalUi()
 
