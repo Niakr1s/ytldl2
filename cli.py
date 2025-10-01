@@ -27,6 +27,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-p", "--password", help="password for oauth data", required=True
     )
+    parser.add_argument(
+        "-e",
+        "--endless",
+        action="store_true",
+        default=False,
+        help="endless mode",
+        required=False,
+    )
 
     res = parser.parse_args()
     return res
@@ -85,8 +93,10 @@ def main():
     lib = init_music_library(home_dir, args.password)
     logger.info("Music library initiated.")
 
-    logger.info("Starting update music library.")
-    lib.update(cancellation_token=GracefulKiller())
+    while True:
+        lib.update(cancellation_token=GracefulKiller())
+        if not args.endless:
+            break
 
 
 if __name__ == "__main__":
