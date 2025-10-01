@@ -33,7 +33,6 @@ class MusicLibrary:
 
     def update(
         self,
-        limit: int | None = None,
         cancellation_token: CancellationToken = CancellationToken(),
     ):
         """
@@ -53,7 +52,7 @@ class MusicLibrary:
             self._log_cancel_requested()
             return
 
-        self._batch_download(cancellation_token, songs, limit)
+        self._batch_download(cancellation_token, songs)
 
     def _get_home_items(self) -> HomeItems:
         """Gets home items from api. Filters out cached videos."""
@@ -98,12 +97,11 @@ class MusicLibrary:
         self,
         cancellation_token: CancellationToken,
         songs: list[Song],
-        limit: int | None,
     ):
         batch_download_tracker = self._ui.batch_download_tracker()
-        batch_download_tracker.start(songs, limit)
+        batch_download_tracker.start(songs)
 
-        logger.info(f"Starting batch download of {len(songs)} songs with limit={limit}")
+        logger.info(f"Starting batch download of {len(songs)} songs")
         downloaded = 0
         with self._downloader:
             for result in self._downloader.download(
@@ -129,10 +127,6 @@ class MusicLibrary:
 
                 if cancellation_token.kill_requested:
                     self._log_cancel_requested()
-                    break
-
-                if limit != 0 and downloaded == limit:
-                    logger.info("Stopping download: limit reached")
                     break
 
         batch_download_tracker.end()

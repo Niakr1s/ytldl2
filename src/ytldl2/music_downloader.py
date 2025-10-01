@@ -1,5 +1,6 @@
 import logging
 import pathlib
+import time
 from typing import Generator
 
 from yt_dlp import YoutubeDL
@@ -23,6 +24,8 @@ from ytldl2.protocols.ui import (
     ProgressBar,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class YoutubeDlParams:
     def __init__(
@@ -45,7 +48,7 @@ class MusicYoutubeDlBuilder:
 
     def build(self) -> YoutubeDL:
         ydl_opts = self._make_youtube_dl_opts()
-        ydl = YoutubeDL(ydl_opts)
+        ydl = YoutubeDL(ydl_opts)  # type: ignore
         # pre processors
         ydl.add_post_processor(FilterSongPP(), when="pre_process")
         ydl.add_post_processor(RetainMainArtistPP(), when="pre_process")
@@ -109,19 +112,34 @@ class MusicDownloader:
             ydl.add_progress_hook(tracker.on_download_progress)
             ydl.add_postprocessor_hook(tracker.on_postprocessor_progress)
 
+        MAXIMUM_DELAY_FOR_ERRORS = 3600
+        DELAY_BETWEEN_DOWNLOADED = 60
         for video_id in videos:
-            try:
-                if tracker is not None:
-                    tracker.new(video_id)
-                info = self._download_video(ydl, video_id)
-                yield Downloaded(video_id, info)
-            except SongFiltered as e:
-                yield Filtered(video_id, VideoInfo.parse_obj(e.info), str(e))
-            except Exception as e:
-                yield Error(video_id, e)
-            finally:
-                if tracker is not None:
-                    tracker.close(video_id)
+            done = False
+            delay_for_errors = 30
+            while not done:
+                try:
+                    if tracker is not None:
+                        tracker.new(video_id)
+                    info = self._download_video(ydl, video_id)
+                    done = True
+                    yield Downloaded(video_id, info)
+                    time.sleep(DELAY_BETWEEN_DOWNLOADED)
+                except SongFiltered as e:
+                    done = True
+                    yield Filtered(video_id, VideoInfo.parse_obj(e.info), str(e))
+                except Exception as e:
+                    delay_for_errors = min(
+                        delay_for_errors * 2, MAXIMUM_DELAY_FOR_ERRORS
+                    )  # diminishing returns
+                    yield Error(video_id, e)
+                    logger.info(
+                        f"{video_id}: Got error {e}, try to retry in {delay_for_errors} seconds"
+                    )
+                    time.sleep(delay_for_errors)
+                finally:
+                    if tracker is not None:
+                        tracker.close(video_id)
 
     def _download_video(self, ydl: YoutubeDL, video_id: VideoId) -> SongInfo:
         with ydl:

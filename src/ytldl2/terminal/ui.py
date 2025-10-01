@@ -5,6 +5,7 @@ from rich.console import Console
 from rich.progress import Progress, TaskID
 from rich.table import Table
 from typing_extensions import override
+
 from ytldl2.models.download_hooks import (
     DownloadProgress,
     PostprocessorProgress,
@@ -95,8 +96,8 @@ class TerminalBatchDownloadTracker(BatchDownloadTracker):
         self._errors: list[Error] = []
 
     @override
-    def start(self, songs: list[Song], limit: int | None):
-        print(f"\nStarting to download batch of {len(songs)} songs, limit={limit}:")
+    def start(self, songs: list[Song]):
+        print(f"\nStarting to download batch of {len(songs)} songs:")
 
     @override
     def on_download_result(self, result: DownloadResult):

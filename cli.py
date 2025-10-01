@@ -1,3 +1,4 @@
+import argparse
 import logging
 import pathlib
 import tempfile
@@ -12,9 +13,23 @@ from ytldl2.music_library import MusicLibrary
 from ytldl2.music_library_config import MusicLibraryConfig
 from ytldl2.sqlite_cache import SqliteCache
 from ytldl2.terminal.ui import TerminalUi
-from ytldl2_cli.args import parse_args
 
 logger = logging.getLogger()
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Program to download music library from youtube."
+    )
+
+    parser.add_argument("--debug", action="store_true", help="Logger level flag")
+    parser.add_argument("-d", "--dir", help="sets output directory", required=True)
+    parser.add_argument(
+        "-p", "--password", help="password for oauth data", required=True
+    )
+
+    res = parser.parse_args()
+    return res
 
 
 def init_logger(home_dir: pathlib.Path, level: int):
@@ -64,18 +79,14 @@ def main():
     args = parse_args()
     log_level = logging.DEBUG if args.debug else logging.INFO
 
-    match args.action:
-        case "lib":
-            home_dir = pathlib.Path(args.dir)
-            init_logger(home_dir, log_level)
+    home_dir = pathlib.Path(args.dir)
+    init_logger(home_dir, log_level)
 
-            lib = init_music_library(home_dir, args.password)
-            logger.info("Music library initiated.")
+    lib = init_music_library(home_dir, args.password)
+    logger.info("Music library initiated.")
 
-            match args.lib_action:
-                case "update":
-                    logger.info("Starting update music library.")
-                    lib.update(limit=args.limit, cancellation_token=GracefulKiller())
+    logger.info("Starting update music library.")
+    lib.update(cancellation_token=GracefulKiller())
 
 
 if __name__ == "__main__":
