@@ -113,7 +113,7 @@ class MusicDownloader:
             ydl.add_postprocessor_hook(tracker.on_postprocessor_progress)
 
         MAXIMUM_DELAY_FOR_ERRORS = 3600
-        DELAY_BETWEEN_DOWNLOADED = 60
+        DELAY_BETWEEN_DOWNLOADED = 10
         for video_id in videos:
             done = False
             delay_for_errors = 30
