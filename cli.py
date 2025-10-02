@@ -36,6 +36,14 @@ def parse_args() -> argparse.Namespace:
         help="endless mode",
         required=False,
     )
+    parser.add_argument(
+        "-r",
+        "--refresh-headers",
+        action="store_true",
+        default="False",
+        help="Refresh headers on first run",
+        required=False,
+    )
 
     res = parser.parse_args()
     return res
@@ -51,6 +59,9 @@ def init_logger(home_dir: pathlib.Path, level: int):
         filemode="w",
         encoding="utf-8",
     )
+
+
+args = parse_args()
 
 
 def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
@@ -70,7 +81,7 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
 
     salt_path = dot_dir / "salt"
     headers_path = dot_dir / "headers"
-    if not headers_path.exists():
+    if not headers_path.exists() or args.refresh_headers:
         headers = ytmusicapi.setup()
         headers_encoded = crypto.encrypt(headers, password.encode(), salt_path)
         headers_path.write_bytes(headers_encoded)
@@ -92,7 +103,6 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
 
 def main():
     load_dotenv()
-    args = parse_args()
     log_level = logging.DEBUG if args.debug else logging.INFO
 
     home_dir = pathlib.Path(args.dir)
