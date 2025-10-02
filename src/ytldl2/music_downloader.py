@@ -112,11 +112,16 @@ class MusicDownloader:
             ydl.add_progress_hook(tracker.on_download_progress)
             ydl.add_postprocessor_hook(tracker.on_postprocessor_progress)
 
+        STRANGE_ERRORS = {
+            "KeyError('downloaded_bytes')"
+        }  # bunch of strange errors that I don't want to timeout
+
+        INITIAL_DELAY_FOR_ERRORS = 15
         MAXIMUM_DELAY_FOR_ERRORS = 3600
         DELAY_BETWEEN_DOWNLOADED = 10
         for video_id in videos:
             done = False
-            delay_for_errors = 30
+            delay_for_errors = INITIAL_DELAY_FOR_ERRORS
             while not done:
                 try:
                     if tracker is not None:
@@ -128,11 +133,14 @@ class MusicDownloader:
                 except SongFiltered as e:
                     done = True
                     yield Filtered(video_id, VideoInfo.parse_obj(e.info), str(e))
+
                 except Exception as e:
                     delay_for_errors = min(
                         delay_for_errors * 2, MAXIMUM_DELAY_FOR_ERRORS
                     )  # diminishing returns
                     yield Error(video_id, e)
+                    if repr(e) in STRANGE_ERRORS:
+                        break
                     logger.info(
                         f"{video_id}: Got error {e}, try to retry in {delay_for_errors} seconds"
                     )
