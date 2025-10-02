@@ -121,7 +121,7 @@ class MusicDownloader:
         }  # bunch of strange errors that I don't want to timeout
 
         INITIAL_DELAY_FOR_ERRORS = 15
-        MAXIMUM_DELAY_FOR_ERRORS = 3600
+        MAXIMUM_DELAY_FOR_ERRORS = 300
         DELAY_BETWEEN_DOWNLOADED = 10
         for video_id in videos:
             done = False
