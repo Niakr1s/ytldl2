@@ -119,6 +119,7 @@ class MusicDownloader:
         STRANGE_ERRORS = {
             "downloaded_bytes",
             "unable to open for writing",
+            "confirm your age",
         }  # bunch of strange errors that I don't want to timeout
 
         INITIAL_DELAY_FOR_ERRORS = 60
