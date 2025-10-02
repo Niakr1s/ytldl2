@@ -103,7 +103,7 @@ def main():
         ui=ui,
     )
 
-    while True:
+    while not cancellation_token.kill_requested:
         lib = MusicLibrary(
             config=config,
             cache=cache,
