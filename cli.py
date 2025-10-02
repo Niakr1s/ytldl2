@@ -40,7 +40,7 @@ def parse_args() -> argparse.Namespace:
         "-r",
         "--refresh-headers",
         action="store_true",
-        default="False",
+        default=False,
         help="Refresh headers on first run",
         required=False,
     )
