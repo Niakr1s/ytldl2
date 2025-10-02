@@ -120,7 +120,7 @@ class MusicDownloader:
             "KeyError('downloaded_bytes')"
         }  # bunch of strange errors that I don't want to timeout
 
-        INITIAL_DELAY_FOR_ERRORS = 15
+        INITIAL_DELAY_FOR_ERRORS = 60
         MAXIMUM_DELAY_FOR_ERRORS = 300
         DELAY_BETWEEN_DOWNLOADED = 10
         for video_id in videos:
