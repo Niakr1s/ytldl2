@@ -117,7 +117,8 @@ class MusicDownloader:
             ydl.add_postprocessor_hook(tracker.on_postprocessor_progress)
 
         STRANGE_ERRORS = {
-            "KeyError('downloaded_bytes')"
+            "downloaded_bytes",
+            "unable to open for writing",
         }  # bunch of strange errors that I don't want to timeout
 
         INITIAL_DELAY_FOR_ERRORS = 60
@@ -143,7 +144,7 @@ class MusicDownloader:
                         delay_for_errors * 2, MAXIMUM_DELAY_FOR_ERRORS
                     )  # diminishing returns
                     yield Error(video_id, e)
-                    if repr(e) in STRANGE_ERRORS:
+                    if any(substr in str(e) for substr in STRANGE_ERRORS):
                         break
                     logger.info(
                         f"{video_id}: Got error {e}, try to retry in {delay_for_errors} seconds"
