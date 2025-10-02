@@ -23,36 +23,35 @@ class MusicLibrary:
         cache: Cache,
         downloader: MusicDownloader,
         auth: str,
+        cancellation_token: CancellationToken,
         ui: Ui | None = None,
     ):
         self._config = config
         self._cache = cache
         self._downloader = downloader
         self._api = YtMusicApi(auth)
+        self._cancellation_token = cancellation_token
         self._ui = ui if ui else TerminalUi()
 
-    def update(
-        self,
-        cancellation_token: CancellationToken = CancellationToken(),
-    ):
+    def update(self):
         """
         Updates library
         """
         self._ui.library_update_started()
         home_items = self._get_home_items()
 
-        if cancellation_token.kill_requested:
+        if self._cancellation_token.kill_requested:
             self._log_cancel_requested()
             return
 
         self._review_home_items(home_items)
         songs = self._extract_songs(home_items)
 
-        if cancellation_token.kill_requested:
+        if self._cancellation_token.kill_requested:
             self._log_cancel_requested()
             return
 
-        self._batch_download(cancellation_token, songs)
+        self._batch_download(songs)
 
     def _get_home_items(self) -> HomeItems:
         """Gets home items from api. Filters out cached videos."""
@@ -95,7 +94,6 @@ class MusicLibrary:
 
     def _batch_download(
         self,
-        cancellation_token: CancellationToken,
         songs: list[Song],
     ):
         batch_download_tracker = self._ui.batch_download_tracker()
@@ -125,7 +123,7 @@ class MusicLibrary:
 
                 batch_download_tracker.on_download_result(result)
 
-                if cancellation_token.kill_requested:
+                if self._cancellation_token.kill_requested:
                     self._log_cancel_requested()
                     break
 

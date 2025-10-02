@@ -61,7 +61,9 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
     cache = SqliteCache(dot_dir / "cache.db")
 
     tmp_dir = pathlib.Path(tempfile.mkdtemp(suffix=".ytldl2_"))
-    downloader = MusicDownloader(home_dir, tmp_dir)
+
+    cancellation_token = GracefulKiller()
+    downloader = MusicDownloader(home_dir, cancellation_token, tmp_dir)
 
     # oauth = Oauth(dot_dir / "oauth", password)
     # oauth = oauth.get_oauth()
@@ -79,7 +81,12 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
     ui = TerminalUi()
 
     return MusicLibrary(
-        config=config, cache=cache, downloader=downloader, auth=headers, ui=ui
+        config=config,
+        cache=cache,
+        downloader=downloader,
+        auth=headers,
+        cancellation_token=cancellation_token,
+        ui=ui,
     )
 
 
@@ -95,7 +102,7 @@ def main():
     logger.info("Music library initiated.")
 
     while True:
-        lib.update(cancellation_token=GracefulKiller())
+        lib.update()
         if not args.endless:
             break
 

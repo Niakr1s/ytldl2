@@ -5,6 +5,7 @@ from typing import Generator
 
 from yt_dlp import YoutubeDL
 
+from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models.download_result import (
     Downloaded,
     DownloadResult,
@@ -23,6 +24,7 @@ from ytldl2.postprocessors import (
 from ytldl2.protocols.ui import (
     ProgressBar,
 )
+from ytldl2.util.time import sleep_with_cancel
 
 logger = logging.getLogger(__name__)
 
@@ -90,11 +92,13 @@ class MusicDownloader:
     def __init__(
         self,
         home_dir: pathlib.Path,
+        cancellation_token: CancellationToken,
         /,
         tmp_dir: pathlib.Path | None = None,
     ) -> None:
         self._home_dir = home_dir
         self._tmp_dir = tmp_dir
+        self._cancellation_token = cancellation_token
 
     def download(
         self,
@@ -144,7 +148,10 @@ class MusicDownloader:
                     logger.info(
                         f"{video_id}: Got error {e}, try to retry in {delay_for_errors} seconds"
                     )
-                    time.sleep(delay_for_errors)
+                    sleep_with_cancel(
+                        delay_for_errors,
+                        self._cancellation_token,
+                    )
                 finally:
                     if tracker is not None:
                         tracker.close(video_id)
