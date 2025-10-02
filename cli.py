@@ -61,10 +61,14 @@ def init_logger(home_dir: pathlib.Path, level: int):
     )
 
 
-args = parse_args()
+def main():
+    args = parse_args()
+    load_dotenv()
+    log_level = logging.DEBUG if args.debug else logging.INFO
 
+    home_dir = pathlib.Path(args.dir)
+    init_logger(home_dir, log_level)
 
-def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
     dot_dir = home_dir / ".ytldl2"
     dot_dir.mkdir(parents=True, exist_ok=True)
 
@@ -76,8 +80,7 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
     cancellation_token = GracefulKiller()
     downloader = MusicDownloader(home_dir, cancellation_token, tmp_dir)
 
-    # oauth = Oauth(dot_dir / "oauth", password)
-    # oauth = oauth.get_oauth()
+    password = args.password
 
     salt_path = dot_dir / "salt"
     headers_path = dot_dir / "headers"
@@ -91,7 +94,7 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
 
     ui = TerminalUi()
 
-    return MusicLibrary(
+    lib = MusicLibrary(
         config=config,
         cache=cache,
         downloader=downloader,
@@ -100,16 +103,15 @@ def init_music_library(home_dir: pathlib.Path, password: str) -> MusicLibrary:
         ui=ui,
     )
 
-
-def main():
-    load_dotenv()
-    log_level = logging.DEBUG if args.debug else logging.INFO
-
-    home_dir = pathlib.Path(args.dir)
-    init_logger(home_dir, log_level)
-
     while True:
-        lib = init_music_library(home_dir, args.password)
+        lib = MusicLibrary(
+            config=config,
+            cache=cache,
+            downloader=downloader,
+            auth=headers,
+            cancellation_token=cancellation_token,
+            ui=ui,
+        )
         logger.info("Music library initiated.")
 
         lib.update()
