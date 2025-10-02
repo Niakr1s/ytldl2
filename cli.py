@@ -98,10 +98,10 @@ def main():
     home_dir = pathlib.Path(args.dir)
     init_logger(home_dir, log_level)
 
-    lib = init_music_library(home_dir, args.password)
-    logger.info("Music library initiated.")
-
     while True:
+        lib = init_music_library(home_dir, args.password)
+        logger.info("Music library initiated.")
+
         lib.update()
         if not args.endless:
             break
