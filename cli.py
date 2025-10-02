@@ -5,6 +5,7 @@ import tempfile
 
 import ytmusicapi
 from dotenv import load_dotenv
+from uuid_extensions import uuid7str
 
 from ytldl2 import crypto
 from ytldl2.cancellation_tokens import GracefulKiller
@@ -41,7 +42,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def init_logger(home_dir: pathlib.Path, level: int):
-    log_path = home_dir / ".logs" / "main.log"
+    log_path = home_dir / ".logs" / f"ytidl2.{uuid7str()}.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(
         level=level,

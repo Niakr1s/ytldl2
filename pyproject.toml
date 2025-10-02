@@ -19,6 +19,7 @@ dependencies = [
     'rich >=13.4.2, <14',
     "pip>=25.1.1",
     "python-dotenv>=1.1.0",
+    "uuid7>=0.1.0",
 ]
 
 
