@@ -19,7 +19,7 @@ class YtMusicApiError(Exception):
 
 
 class YtMusicApi:
-    def __init__(self, auth: str, ytm: YTMusic) -> None:
+    def __init__(self, ytm: YTMusic) -> None:
         """
         :param oauth: oauth file,
         """

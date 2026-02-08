@@ -45,7 +45,7 @@ class MusicLibrary:
         ytm = ytmusic_build(auth, proxy)
         ytlb = YoutubeDlBuilder(home_dir=home_dir, tmp_dir=tmp_dir, proxy=proxy)
         self._downloader = MusicDownloader(ytlb=ytlb)
-        self._api = YtMusicApi(auth, ytm)
+        self._api = YtMusicApi(ytm=ytm)
 
     def update(self, each_playlist_limit: int = 200):
         """
