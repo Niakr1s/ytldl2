@@ -26,7 +26,12 @@ from ytldl2.protocols.ui import (
 )
 
 
-class YoutubeDlParams:
+class MusicYoutubeDlBuilder:
+    """
+    Class, that builds YoutubeDL, that downloads only music. So, videos will be skipped.
+    Downloaded song will have valid metadata (including lyrics) written.
+    """
+
     def __init__(
         self,
         home_dir: pathlib.Path | None = None,
@@ -36,16 +41,6 @@ class YoutubeDlParams:
         self.home_dir = home_dir
         self.tmp_dir = tmp_dir
         self.proxy = proxy
-
-
-class MusicYoutubeDlBuilder:
-    """
-    Class, that builds YoutubeDL, that downloads only music. So, videos will be skipped.
-    Downloaded song will have valid metadata (including lyrics) written.
-    """
-
-    def __init__(self, params: YoutubeDlParams) -> None:
-        self._params = params
 
     def build(self) -> YoutubeDL:
         ydl_opts = self._make_youtube_dl_opts()
@@ -72,13 +67,13 @@ class MusicYoutubeDlBuilder:
             "paths": {},
             "windowsfilenames": True,
         }
-        if self._params.proxy is not None:
-            ydl_opts["proxy"] = self._params.proxy
+        if self.proxy is not None:
+            ydl_opts["proxy"] = self.proxy
         ydl_opts["logger"] = logging.getLogger(__name__ + "." + YoutubeDL.__name__)
-        if self._params.home_dir:
-            ydl_opts["paths"]["home"] = str(self._params.home_dir)
-        if self._params.tmp_dir:
-            ydl_opts["paths"]["tmp"] = str(self._params.tmp_dir)
+        if self.home_dir:
+            ydl_opts["paths"]["home"] = str(self.home_dir)
+        if self.tmp_dir:
+            ydl_opts["paths"]["tmp"] = str(self.tmp_dir)
 
         return ydl_opts
 
@@ -113,9 +108,9 @@ class MusicDownloader:
         Downloads only songs (e.g skips videos).
         """
         ydl = MusicYoutubeDlBuilder(
-            YoutubeDlParams(
-                home_dir=self._home_dir, tmp_dir=self._tmp_dir, proxy=self._proxy
-            )
+            home_dir=self._home_dir,
+            tmp_dir=self._tmp_dir,
+            proxy=self._proxy,
         ).build()
         if tracker is not None:
             ydl.add_progress_hook(tracker.on_download_progress)
