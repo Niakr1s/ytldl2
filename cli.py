@@ -1,6 +1,7 @@
 import argparse
 import logging
 import pathlib
+import shutil
 import tempfile
 
 import ytmusicapi
@@ -61,6 +62,10 @@ def init_logger(home_dir: pathlib.Path, level: int):
 
 
 def main():
+    if not shutil.which("deno"):
+        print("No deno installation found, install it and run this again")
+        return
+
     args = parse_args()
     load_dotenv()
     log_level = logging.DEBUG if args.debug else logging.INFO
