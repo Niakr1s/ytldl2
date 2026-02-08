@@ -106,10 +106,10 @@ class MusicLibrary:
             for v in videos
             if v.artist is not None
         ]
-        logger.debug(f"Got {len(songs)} unfiltered songs: {songs}")
+        logger.info(f"Got {len(songs)} unfiltered songs")
 
         songs = self._cache.filter_cached(songs)
-        logger.info(f"Got {len(songs)} filtered songs: {songs}")
+        logger.info(f"Got {len(songs)} filtered songs")
         return songs
 
     def _batch_download(
