@@ -87,7 +87,7 @@ class MusicLibrary:
         logger.debug(
             f"Home items filter after review: {self._config.home_items_filter}"
         )
-        home_items.filter(self._config.home_items_filter)
+        home_items.filter(self._config.home_items_filter.to_re())
         logger.info(f"Home items after being filtered: {home_items}")
         return home_items
 

@@ -1,16 +1,26 @@
 from __future__ import annotations
 
 import dataclasses
+import re
 from dataclasses import dataclass
 from typing import OrderedDict, TypeVar
 
 import pydantic
+
 from ytldl2.models.channel import Channel
 from ytldl2.models.playlist import Playlist
 from ytldl2.models.types import Title, WithTitle
 from ytldl2.models.video import Video
 
 _TitleFilter = list[Title] | None
+"""Can be regex also"""
+
+
+@dataclass
+class HomeItemsFilterRe:
+    videos: list[re.Pattern]
+    playlists: list[re.Pattern]
+    channels: list[re.Pattern]
 
 
 class HomeItemsFilter(pydantic.BaseModel):
@@ -21,6 +31,13 @@ class HomeItemsFilter(pydantic.BaseModel):
     videos: _TitleFilter = None
     playlists: _TitleFilter = None
     channels: _TitleFilter = None
+
+    def to_re(self):
+        videos = [re.compile(f) for f in self.videos or []]
+        playlists = [re.compile(f) for f in self.playlists or []]
+        channels = [re.compile(f) for f in self.channels or []]
+
+        return HomeItemsFilterRe(videos=videos, playlists=playlists, channels=channels)
 
 
 @dataclass
@@ -41,7 +58,7 @@ class HomeItems:
             and len(self.channels) == 0
         )
 
-    def filtered(self, filter: HomeItemsFilter) -> HomeItems:
+    def filtered(self, filter: HomeItemsFilterRe) -> HomeItems:
         """
         Filters home items and returns new copy.
         """
@@ -51,7 +68,7 @@ class HomeItems:
             channels=self._filter(self.channels, filter.channels),
         )
 
-    def filter(self, filter: HomeItemsFilter):
+    def filter(self, filter: HomeItemsFilterRe):
         """Filters home items in place."""
         self.videos = self._filter(self.videos, filter.videos)
         self.playlists = self._filter(self.playlists, filter.playlists)
@@ -62,8 +79,6 @@ class HomeItems:
     @staticmethod
     def _filter(
         items: list[WithTitleT],
-        filter: _TitleFilter,
+        filter: list[re.Pattern],
     ) -> list[WithTitleT]:
-        if filter is None:
-            return items[:]
-        return [x for x in items if x.title in filter]
+        return [x for x in items if any((f for f in filter if f.match(x.title)))]
