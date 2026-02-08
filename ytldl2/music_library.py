@@ -33,7 +33,7 @@ class MusicLibrary:
         self._cancellation_token = cancellation_token
         self._ui = ui if ui else TerminalUi()
 
-    def update(self):
+    def update(self, each_playlist_limit: int = 200):
         """
         Updates library
         """
@@ -45,7 +45,7 @@ class MusicLibrary:
             return
 
         self._review_home_items(home_items)
-        songs = self._extract_songs(home_items)
+        songs = self._extract_songs(home_items, each_playlist_limit=each_playlist_limit)
 
         if self._cancellation_token.kill_requested:
             self._log_cancel_requested()
@@ -77,9 +77,15 @@ class MusicLibrary:
         logger.info(f"Home items after being filtered: {home_items}")
         return home_items
 
-    def _extract_songs(self, home_items: HomeItems) -> list[Song]:
+    def _extract_songs(
+        self, home_items: HomeItems, each_playlist_limit: int
+    ) -> list[Song]:
         """Extract songs from home items via api. Returns uncached songs list."""
-        videos = set(self._api.get_videos(home_items=home_items))
+        videos = set(
+            self._api.get_videos(
+                home_items=home_items, each_playlist_limit=each_playlist_limit
+            )
+        )
         logger.debug(f"Got {len(videos)} videos: {videos}")
         songs = [
             Song(video_id=v.video_id, title=v.title, artist=v.artist)

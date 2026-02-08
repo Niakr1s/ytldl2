@@ -26,7 +26,7 @@ class YtMusicApi:
         self._yt = YTMusic(auth=auth)
         self._extractor = Extractor()
 
-    def get_home_items(self, home_limit: int = 100) -> HomeItems:
+    def get_home_items(self, home_limit: int = 1000) -> HomeItems:
         """
         Gets home items from user's youtube music home page.
         :param home_limit: Amount of items, requested from home items.
@@ -46,7 +46,7 @@ class YtMusicApi:
     def get_videos(
         self,
         home_items: HomeItems,
-        each_playlist_limit: int | None = None,
+        each_playlist_limit: int,
     ) -> list[Video]:
         """
         Returns all songs from user's youtube music home page.
@@ -61,7 +61,7 @@ class YtMusicApi:
             raise YtMusicApiError() from e
 
     def _get_videos(
-        self, home_items: HomeItems, each_playlist_limit: int | None = None
+        self, home_items: HomeItems, each_playlist_limit: int
     ) -> list[Video]:
         """Helper method for get_songs()"""
         videos: list[Video] = [video for video in home_items.videos]
@@ -94,7 +94,7 @@ class YtMusicApi:
         return videos
 
     def get_videos_from_playlist(
-        self, playlist_id: PlaylistId, /, limit: int | None = None
+        self, playlist_id: PlaylistId, /, limit: int = 200
     ) -> list[Video]:
         """
         Extracts videoIds from playlist.

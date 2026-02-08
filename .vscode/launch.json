@@ -5,20 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "cli",
+            "name": "test",
             "type": "debugpy",
             "request": "launch",
-            "module": "ytldl2_cli.cli",
+            "program": "cli.py",
+            "console": "integratedTerminal",
             "justMyCode": false,
-            "args": [
-                "--debug",
-                "lib",
-                "-d",
-                "d:/!YT",
-                "-p",
-                "2188",
-                "update"
-            ]
-        },
+            "args": "--debug -d d:\\!YT_test -p 123"
+        }
     ]
 }
