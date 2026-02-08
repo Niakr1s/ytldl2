@@ -18,6 +18,7 @@ class MusicLibraryConfig(pydantic.BaseModel):
         return HomeItemsFilter(
             playlists=[
                 Title("Your Likes"),
+                Title("Liked Music"),
                 Title("My Supermix"),
                 Title("My Mix.*"),
             ],
