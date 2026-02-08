@@ -14,21 +14,15 @@ from ytldl2.music_downloader import MusicDownloader
 from ytldl2.music_library_config import MusicLibraryConfig
 from ytldl2.protocols.cache import Cache, CachedVideo
 from ytldl2.protocols.ui import Ui
+from ytldl2.proxies import to_proxies
 from ytldl2.terminal.ui import TerminalUi
+from ytldl2.youtube_dl_builder import YoutubeDlBuilder
 
 logger = logging.getLogger(__name__)
 
 
-def make_ytmusic(auth, proxy: str | None) -> YTMusic:
-    proxies = None
-
-    proxy = proxy or None
-    if proxy is not None:
-        proxies = {
-            "http": proxy,
-            "https": proxy,
-        }
-    return YTMusic(auth=auth, proxies=proxies)
+def ytmusic_build(auth, proxy: str | None) -> YTMusic:
+    return YTMusic(auth=auth, proxies=to_proxies(proxy=proxy))
 
 
 class MusicLibrary:
@@ -48,14 +42,10 @@ class MusicLibrary:
         self._ui = ui if ui else TerminalUi()
 
         proxy = config.proxy
-        self._yt = make_ytmusic(auth, proxy)
-        self._downloader = MusicDownloader(
-            home_dir,
-            cancellation_token,
-            tmp_dir=tmp_dir,
-            proxy=proxy,
-        )
-        self._api = YtMusicApi(auth, self._yt)
+        ytm = ytmusic_build(auth, proxy)
+        ytlb = YoutubeDlBuilder(home_dir=home_dir, tmp_dir=tmp_dir, proxy=proxy)
+        self._downloader = MusicDownloader(ytlb=ytlb)
+        self._api = YtMusicApi(auth, ytm)
 
     def update(self, each_playlist_limit: int = 200):
         """

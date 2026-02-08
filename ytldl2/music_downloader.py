@@ -1,11 +1,8 @@
-import logging
-import pathlib
 import time
 from typing import Generator
 
 from yt_dlp import YoutubeDL
 
-from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models.download_result import (
     Downloaded,
     DownloadResult,
@@ -15,67 +12,12 @@ from ytldl2.models.download_result import (
 from ytldl2.models.info import SongInfo, VideoInfo
 from ytldl2.models.types import VideoId
 from ytldl2.postprocessors import (
-    FilterSongPP,
-    LyricsPP,
-    MetadataPP,
-    RetainMainArtistPP,
     SongFiltered,
 )
 from ytldl2.protocols.ui import (
     ProgressBar,
 )
-
-
-class MusicYoutubeDlBuilder:
-    """
-    Class, that builds YoutubeDL, that downloads only music. So, videos will be skipped.
-    Downloaded song will have valid metadata (including lyrics) written.
-    """
-
-    def __init__(
-        self,
-        home_dir: pathlib.Path | None = None,
-        tmp_dir: pathlib.Path | None = None,
-        proxy: str | None = None,
-    ) -> None:
-        self.home_dir = home_dir
-        self.tmp_dir = tmp_dir
-        self.proxy = proxy
-
-    def build(self) -> YoutubeDL:
-        ydl_opts = self._make_youtube_dl_opts()
-        ydl = YoutubeDL(ydl_opts)  # type: ignore
-        # pre processors
-        ydl.add_post_processor(FilterSongPP(), when="pre_process")
-        ydl.add_post_processor(RetainMainArtistPP(), when="pre_process")
-        # post processors
-        ydl.add_post_processor(LyricsPP(), when="post_process")
-        ydl.add_post_processor(MetadataPP(), when="post_process")
-        return ydl
-
-    def _make_youtube_dl_opts(self):
-        ydl_opts = {
-            "format": "m4a/bestaudio/best",
-            # See help(yt_dlp.postprocessor) for a list of available Postprocessors
-            "postprocessors": [
-                {  # Extract audio using ffmpeg
-                    "key": "FFmpegExtractAudio",
-                    "preferredcodec": "m4a",
-                },
-            ],
-            "outtmpl": "%(artist)s - %(title)s [%(id)s].%(ext)s",
-            "paths": {},
-            "windowsfilenames": True,
-        }
-        if self.proxy is not None:
-            ydl_opts["proxy"] = self.proxy
-        ydl_opts["logger"] = logging.getLogger(__name__ + "." + YoutubeDL.__name__)
-        if self.home_dir:
-            ydl_opts["paths"]["home"] = str(self.home_dir)
-        if self.tmp_dir:
-            ydl_opts["paths"]["tmp"] = str(self.tmp_dir)
-
-        return ydl_opts
+from ytldl2.youtube_dl_builder import YoutubeDlBuilder
 
 
 class MusicDownloader:
@@ -85,18 +27,8 @@ class MusicDownloader:
     Uses MusicYoutubeDlBuilder internally.
     """
 
-    def __init__(
-        self,
-        home_dir: pathlib.Path,
-        cancellation_token: CancellationToken,
-        /,
-        tmp_dir: pathlib.Path | None = None,
-        proxy: str | None = None,
-    ) -> None:
-        self._home_dir = home_dir
-        self._tmp_dir = tmp_dir
-        self._cancellation_token = cancellation_token
-        self._proxy = proxy
+    def __init__(self, ytlb: YoutubeDlBuilder) -> None:
+        self._ydlb = ytlb
 
     def download(
         self,
@@ -107,11 +39,7 @@ class MusicDownloader:
         Download songs in best quality in current thread.
         Downloads only songs (e.g skips videos).
         """
-        ydl = MusicYoutubeDlBuilder(
-            home_dir=self._home_dir,
-            tmp_dir=self._tmp_dir,
-            proxy=self._proxy,
-        ).build()
+        ydl = self._ydlb.build()
         if tracker is not None:
             ydl.add_progress_hook(tracker.on_download_progress)
             ydl.add_postprocessor_hook(tracker.on_postprocessor_progress)
@@ -140,7 +68,7 @@ class MusicDownloader:
 
     def _clean_home_dir(self):
         """Cleans home directory: removes *.part files."""
-        for path in self._home_dir.glob("*.part"):
+        for path in self._ydlb.home_dir.glob("*.part"):
             path.unlink(missing_ok=True)
 
     def __enter__(self):

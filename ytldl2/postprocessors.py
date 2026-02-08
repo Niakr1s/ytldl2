@@ -7,6 +7,7 @@ from yt_dlp.postprocessor import PostProcessor
 from ytmusicapi import YTMusic
 
 from ytldl2.metadata import write_metadata
+from ytldl2.proxies import to_proxies
 
 
 class LyricsPP(PostProcessor):
@@ -14,9 +15,9 @@ class LyricsPP(PostProcessor):
     Gets lyrics and adds it to info
     """
 
-    def __init__(self, downloader=None):
+    def __init__(self, downloader=None, proxy: str | None = None):
         super().__init__(downloader)
-        self.yt = YTMusic()
+        self.yt = YTMusic(proxies=to_proxies(proxy=proxy))
 
     def run(self, info):
         video_id = info["id"]
@@ -51,7 +52,9 @@ class MetadataPP(PostProcessor):
     Raises UnexpectedFileTypeError, if file is not MP4
     """
 
-    def __init__(self, with_lyrics_strict: bool = True, downloader=None):
+    def __init__(
+        self, with_lyrics_strict: bool = True, downloader=None, proxy: str | None = None
+    ):
         """
         :param with_lyrics_strict: If set to True, raises KeyError at run() method,
         if "lyrics" not in info.
@@ -60,6 +63,7 @@ class MetadataPP(PostProcessor):
         """
         super().__init__(downloader)
         self._with_lyrics_strict = with_lyrics_strict
+        self._proxy = proxy
 
     def run(self, info: dict[str, Any]):
         if self._with_lyrics_strict and "lyrics" not in info:
@@ -90,7 +94,7 @@ class MetadataPP(PostProcessor):
         self.to_screen(f"Wrote metadata to {filepath}")
 
     def get_image_bytes(self, url: str, format: str = "png") -> bytes:
-        response = requests.get(url)
+        response = requests.get(url, proxies=to_proxies(self._proxy))
         img = Image.open(BytesIO(response.content))
         img_jpg = BytesIO()
         img.save(img_jpg, format=format)
