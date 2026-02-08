@@ -89,6 +89,7 @@ class MusicLibrary:
         )
         home_items.filter(self._config.home_items_filter.to_re())
         logger.info(f"Home items after being filtered: {home_items}")
+        print(f"Home items after being filtered: {home_items}")
         return home_items
 
     def _extract_songs(
