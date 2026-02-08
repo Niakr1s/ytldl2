@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 from ytldl2.api import YtMusicApi
 from ytldl2.cancellation_tokens import CancellationToken
@@ -19,19 +20,30 @@ logger = logging.getLogger(__name__)
 class MusicLibrary:
     def __init__(
         self,
+        home_dir: Path,
+        tmp_dir: Path,
         config: MusicLibraryConfig,
         cache: Cache,
-        downloader: MusicDownloader,
         auth: str,
         cancellation_token: CancellationToken,
         ui: Ui | None = None,
     ):
         self._config = config
         self._cache = cache
-        self._downloader = downloader
-        self._api = YtMusicApi(auth, proxy=config.proxy or None)
         self._cancellation_token = cancellation_token
         self._ui = ui if ui else TerminalUi()
+
+        proxy: str | None = config.proxy or None
+        self._downloader = MusicDownloader(
+            home_dir,
+            cancellation_token,
+            tmp_dir=tmp_dir,
+            proxy=proxy,
+        )
+        self._api = YtMusicApi(
+            auth,
+            proxy=proxy,
+        )
 
     def update(self, each_playlist_limit: int = 200):
         """

@@ -9,7 +9,6 @@ from uuid_extensions import uuid7str
 
 from ytldl2 import crypto
 from ytldl2.cancellation_tokens import GracefulKiller
-from ytldl2.music_downloader import MusicDownloader
 from ytldl2.music_library import MusicLibrary
 from ytldl2.music_library_config import MusicLibraryConfig
 from ytldl2.sqlite_cache import SqliteCache
@@ -75,15 +74,7 @@ def main():
     config = MusicLibraryConfig.load(dot_dir / "config.json")
     cache = SqliteCache(dot_dir / "cache.db")
 
-    tmp_dir = pathlib.Path(tempfile.mkdtemp(suffix=".ytldl2_"))
-
     cancellation_token = GracefulKiller()
-    downloader = MusicDownloader(
-        home_dir,
-        cancellation_token,
-        tmp_dir=tmp_dir,
-        proxy=config.proxy or None,
-    )
 
     password = args.password
 
@@ -99,20 +90,13 @@ def main():
 
     ui = TerminalUi()
 
-    lib = MusicLibrary(
-        config=config,
-        cache=cache,
-        downloader=downloader,
-        auth=headers,
-        cancellation_token=cancellation_token,
-        ui=ui,
-    )
-
+    tmp_dir = pathlib.Path(tempfile.mkdtemp(suffix=".ytldl2_"))
     while not cancellation_token.kill_requested:
         lib = MusicLibrary(
+            home_dir=home_dir,
+            tmp_dir=tmp_dir,
             config=config,
             cache=cache,
-            downloader=downloader,
             auth=headers,
             cancellation_token=cancellation_token,
             ui=ui,
