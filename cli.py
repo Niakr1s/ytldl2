@@ -103,7 +103,7 @@ def main():
         )
         logger.info("Music library initiated.")
 
-        lib.update(each_playlist_limit=1000)
+        lib.update(each_playlist_limit=100)
         if not args.endless:
             break
 
