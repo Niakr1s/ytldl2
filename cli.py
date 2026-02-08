@@ -78,7 +78,12 @@ def main():
     tmp_dir = pathlib.Path(tempfile.mkdtemp(suffix=".ytldl2_"))
 
     cancellation_token = GracefulKiller()
-    downloader = MusicDownloader(home_dir, cancellation_token, tmp_dir)
+    downloader = MusicDownloader(
+        home_dir,
+        cancellation_token,
+        tmp_dir=tmp_dir,
+        proxy=config.proxy or None,
+    )
 
     password = args.password
 

@@ -29,7 +29,7 @@ class MusicLibrary:
         self._config = config
         self._cache = cache
         self._downloader = downloader
-        self._api = YtMusicApi(auth)
+        self._api = YtMusicApi(auth, proxy=config.proxy or None)
         self._cancellation_token = cancellation_token
         self._ui = ui if ui else TerminalUi()
 

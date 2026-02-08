@@ -31,6 +31,7 @@ class MusicLibraryConfig(pydantic.BaseModel):
     home_items_filter: HomeItemsFilter = pydantic.Field(
         default_factory=default_home_items_filter
     )
+    proxy: str = pydantic.Field(default="")
 
     def save(self):
         """Saves config to config_path."""

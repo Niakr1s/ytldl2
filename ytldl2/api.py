@@ -19,11 +19,19 @@ class YtMusicApiError(Exception):
 
 
 class YtMusicApi:
-    def __init__(self, auth: str) -> None:
+    def __init__(self, auth: str, proxy: str | None = None) -> None:
         """
         :param oauth: oauth file,
         """
-        self._yt = YTMusic(auth=auth)
+        proxy = proxy or None
+        if proxy is None:
+            proxies = None
+        else:
+            proxies = {
+                "http": proxy,
+                "https": proxy,
+            }
+        self._yt = YTMusic(auth=auth, proxies=proxies)
         self._extractor = Extractor()
 
     def get_home_items(self, home_limit: int = 1000) -> HomeItems:
