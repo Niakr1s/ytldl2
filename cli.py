@@ -61,10 +61,17 @@ def init_logger(home_dir: pathlib.Path, level: int):
     )
 
 
+def check_needed_programs_in_path():
+    programs = ["deno", "ffmpeg", "ffprobe"]
+    for program in programs:
+        if not shutil.which(program):
+            raise Exception(
+                f"No '{program}' found in PATH, add or install it and run this script again"
+            )
+
+
 def main():
-    if not shutil.which("deno"):
-        print("No deno installation found, install it and run this again")
-        return
+    check_needed_programs_in_path()
 
     args = parse_args()
     load_dotenv()
