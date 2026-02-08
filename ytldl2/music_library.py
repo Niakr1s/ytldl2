@@ -34,6 +34,7 @@ class MusicLibrary:
         cache: Cache,
         auth: str,
         cancellation_token: CancellationToken,
+        proxy: str | None,
         ui: Ui | None = None,
     ):
         self._config = config
@@ -41,7 +42,6 @@ class MusicLibrary:
         self._cancellation_token = cancellation_token
         self._ui = ui if ui else TerminalUi()
 
-        proxy = config.proxy
         ytm = ytmusic_build(auth, proxy)
         ytlb = YoutubeDlBuilder(home_dir=home_dir, tmp_dir=tmp_dir, proxy=proxy)
         self._downloader = MusicDownloader(ytlb=ytlb)

@@ -28,6 +28,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-p", "--password", help="password for oauth data", required=True
     )
+    parser.add_argument("--proxy", help="proxy:port", required=False)
     parser.add_argument(
         "-e",
         "--endless",
@@ -88,6 +89,7 @@ def main():
 
     cancellation_token = GracefulKiller()
 
+    proxy = args.proxy
     password = args.password
 
     salt_path = dot_dir / "salt"
@@ -110,6 +112,7 @@ def main():
             config=config,
             cache=cache,
             auth=headers,
+            proxy=proxy,
             cancellation_token=cancellation_token,
             ui=ui,
         )
