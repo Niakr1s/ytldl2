@@ -34,7 +34,7 @@ def parse_args() -> argparse.Namespace:
         "--endless",
         action="store_true",
         default=False,
-        help="endless mode",
+        help="endless mode (ignored when --videos is used)",
         required=False,
     )
     parser.add_argument(
@@ -43,6 +43,14 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         default=False,
         help="Refresh headers on first run",
+        required=False,
+    )
+    # New argument for downloading specific videos
+    parser.add_argument(
+        "-v",
+        "--videos",
+        nargs="+",
+        help="List of video IDs to download (instead of updating the whole library)",
         required=False,
     )
 
@@ -105,7 +113,21 @@ def main():
     ui = TerminalUi()
 
     tmp_dir = pathlib.Path(tempfile.mkdtemp(suffix=".ytldl2_"))
-    while not cancellation_token.kill_requested:
+
+    lib = MusicLibrary(
+        home_dir=home_dir,
+        tmp_dir=tmp_dir,
+        config=config,
+        cache=cache,
+        auth=headers,
+        proxy=proxy,
+        cancellation_token=cancellation_token,
+        ui=ui,
+    )
+    logger.info("Music library initiated.")
+
+    # If video IDs are provided, download them directly (ignore endless mode)
+    if args.videos:
         lib = MusicLibrary(
             home_dir=home_dir,
             tmp_dir=tmp_dir,
@@ -116,8 +138,12 @@ def main():
             cancellation_token=cancellation_token,
             ui=ui,
         )
-        logger.info("Music library initiated.")
+        logger.info("Downloading specific videos: %s", args.videos)
+        lib.batch_download(songs=args.videos)
+        return
 
+    # Otherwise, run the normal update loop
+    while not cancellation_token.kill_requested:
         lib.update(each_playlist_limit=100)
         if not args.endless:
             break
