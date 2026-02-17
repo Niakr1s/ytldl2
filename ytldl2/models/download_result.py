@@ -27,6 +27,7 @@ class Error:
 
     video_id: VideoId
     error: Exception
+    tb: str
 
 
 DownloadResult = Downloaded | Filtered | Error

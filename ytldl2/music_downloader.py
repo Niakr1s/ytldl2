@@ -1,4 +1,5 @@
 import time
+import traceback
 from typing import Generator
 
 from yt_dlp import YoutubeDL
@@ -55,7 +56,7 @@ class MusicDownloader:
             except SongFiltered as e:
                 yield Filtered(video_id, VideoInfo.parse_obj(e.info), str(e))
             except Exception as e:
-                yield Error(video_id, e)
+                yield Error(video_id, e, traceback.format_exc())
             finally:
                 if tracker is not None:
                     tracker.close(video_id)

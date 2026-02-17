@@ -117,7 +117,9 @@ class TerminalBatchDownloadTracker(BatchDownloadTracker):
                 )
                 self._filtered.append(result)
             case Error():
-                print(f"Error: [{result.video_id}], reason: {result.error}")
+                print(
+                    f"Error: [{result.video_id}], reason: {result.error}, traceback: {result.tb}"
+                )
                 self._errors.append(result)
             case _:
                 typing.assert_never(result)
