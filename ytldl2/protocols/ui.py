@@ -3,7 +3,6 @@ from typing import Protocol
 from ytldl2.models.download_hooks import DownloadProgress, PostprocessorProgress
 from ytldl2.models.download_result import DownloadResult
 from ytldl2.models.home_items import HomeItems, HomeItemsFilter
-from ytldl2.models.song import Song
 from ytldl2.models.types import VideoId
 
 
@@ -33,7 +32,7 @@ class HomeItemsReviewer(Protocol):
 
 
 class BatchDownloadTracker(Protocol):
-    def start(self, songs: list[Song]):
+    def start(self, songs: list[VideoId]):
         """Called by library before batch starts."""
 
     def on_download_result(self, result: DownloadResult):

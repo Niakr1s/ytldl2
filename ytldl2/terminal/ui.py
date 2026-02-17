@@ -16,7 +16,6 @@ from ytldl2.models.download_hooks import (
 )
 from ytldl2.models.download_result import Downloaded, DownloadResult, Error, Filtered
 from ytldl2.models.home_items import HomeItems, HomeItemsFilter
-from ytldl2.models.song import Song
 from ytldl2.models.types import VideoId
 from ytldl2.protocols.ui import BatchDownloadTracker, HomeItemsReviewer, ProgressBar, Ui
 from ytldl2.util.console import clear_last_line
@@ -100,7 +99,7 @@ class TerminalBatchDownloadTracker(BatchDownloadTracker):
         self._errors: list[Error] = []
 
     @override
-    def start(self, songs: list[Song]):
+    def start(self, songs: list[VideoId]):
         print(f"\nStarting to download batch of {len(songs)} songs:")
 
     @override
