@@ -56,11 +56,15 @@ class TerminalProgressBar(ProgressBar):
     @override
     def on_download_progress(self, progress: DownloadProgress) -> None:
         if is_progress_downloading(progress) or is_progress_finished(progress):
+            if progress["status"] == "finished":
+                downloaded_bytes = progress["total_bytes"]
+            else:
+                downloaded_bytes = progress["downloaded_bytes"]
             self._progress.update(
                 self._dl,  # type: ignore
                 description=progress["filename"],
                 total=progress["total_bytes"],
-                completed=progress["downloaded_bytes"],
+                completed=downloaded_bytes,
             )
 
     @override
