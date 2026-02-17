@@ -10,6 +10,7 @@ from ytldl2.cancellation_tokens import CancellationToken
 from ytldl2.models import download_result
 from ytldl2.models.home_items import HomeItems
 from ytldl2.models.song import Song
+from ytldl2.models.types import VideoId
 from ytldl2.music_downloader import MusicDownloader
 from ytldl2.music_library_config import MusicLibraryConfig
 from ytldl2.protocols.cache import Cache, CachedVideo
@@ -65,7 +66,7 @@ class MusicLibrary:
             self._log_cancel_requested()
             return
 
-        self._batch_download(songs)
+        self.batch_download([s.video_id for s in songs])
 
     def _get_home_items(self) -> HomeItems:
         """Gets home items from api. Filters out cached videos."""
@@ -113,9 +114,9 @@ class MusicLibrary:
         logger.info(f"Got {len(songs)} filtered songs")
         return songs
 
-    def _batch_download(
+    def batch_download(
         self,
-        songs: list[Song],
+        songs: list[VideoId],
     ):
         batch_download_tracker = self._ui.batch_download_tracker()
         batch_download_tracker.start(songs)
@@ -124,7 +125,7 @@ class MusicLibrary:
         downloaded = 0
         with self._downloader:
             for result in self._downloader.download(
-                videos=[s.video_id for s in songs],
+                videos=songs,
                 tracker=self._ui.progress_bar(),
             ):
                 logger.info(f"Got download result: {result}")
