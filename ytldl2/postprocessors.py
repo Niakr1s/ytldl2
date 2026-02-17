@@ -41,7 +41,10 @@ class LyricsPP(PostProcessor):
         if not lyrics_browse_id:
             return None
         self.write_debug(f"Got lyrics browseId={lyrics_browse_id}")
-        return self.yt.get_lyrics(lyrics_browse_id).get("lyrics")
+        try:
+            return self.yt.get_lyrics(lyrics_browse_id).get("lyrics")
+        except AttributeError:
+            return None
 
 
 class MetadataPP(PostProcessor):
