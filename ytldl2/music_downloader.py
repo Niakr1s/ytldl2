@@ -67,10 +67,14 @@ class MusicDownloader:
             raw_info = ydl.extract_info(video_id, download=True)
             return SongInfo.parse_obj(raw_info)
 
+    def _remove_files_glob(self, glob: str):
+        for path in self._ydlb.home_dir.glob(glob):
+            path.unlink(missing_ok=True)
+
     def _clean_home_dir(self):
         """Cleans home directory: removes *.part files."""
-        for path in self._ydlb.home_dir.glob("*.part"):
-            path.unlink(missing_ok=True)
+        for glob in ["*.part", "*.ytdl"]:
+            self._remove_files_glob(glob)
 
     def __enter__(self):
         self._clean_home_dir()
