@@ -7,7 +7,7 @@ from ytmusicapi import YTMusic
 
 from ytldl2.api import YtMusicApi
 from ytldl2.cancellation_tokens import CancellationToken
-from ytldl2.models.download_result import Downloaded, Filtered
+from ytldl2.models import download_result
 from ytldl2.models.home_items import HomeItems
 from ytldl2.models.song import Song
 from ytldl2.music_downloader import MusicDownloader
@@ -129,18 +129,23 @@ class MusicLibrary:
             ):
                 logger.info(f"Got download result: {result}")
                 match result:
-                    case Downloaded():
+                    case download_result.Downloaded():
                         downloaded += 1
                         self._cache.set_info(result.info)
                         self._cache.set(
                             CachedVideo(video_id=result.video_id, filtered_reason=None)
                         )
-                    case Filtered():
+                    case download_result.Filtered():
                         self._cache.set(
                             CachedVideo(
                                 video_id=result.video_id, filtered_reason=result.reason
                             )
                         )
+                    case download_result.Error():
+                        # TODO: I need to fix postprocessors
+                        # seems Lyrics postprocessor can't retrieve empty lyrics
+                        # so I need to signal it somehow, or simply delete got file
+                        pass
 
                 batch_download_tracker.on_download_result(result)
 
