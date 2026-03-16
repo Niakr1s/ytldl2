@@ -1,9 +1,10 @@
 {pkgs ? import <nixpkgs> {}}:
 pkgs.mkShell {
-  buildInputs = [
-    pkgs.zlib
-    pkgs.libjpeg # Often needed for full Pillow functionality
-    pkgs.pkg-config # Helps build systems find libraries
+  buildInputs = with pkgs; [
+    zlib
+    libjpeg
+    libwebp
+    pkg-config # Helps build systems find libraries
   ];
 
   shellHook = ''
